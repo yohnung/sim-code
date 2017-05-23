@@ -3,10 +3,10 @@
 #include "Type_and_Macro_Definition.h"
 #include "Basic_Parameter.h"
 #include "Runtime_Diagnostic_Parameter.h"
-#include <iostream>
-#include <fstream>
-#include <iomanip>
-using namespace std;
+//#include <iostream>
+//#include <fstream>
+//#include <iomanip>
+//using namespace std;
 
 class BASIC_VARIABLE
 {

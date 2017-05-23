@@ -34,12 +34,12 @@ void smooth(VARIABLE *, double, int);
 void make_pressure_positive(BASIC_VARIABLE &, double);
 
 // Update variables using 2-order Lax-Wendroff method
-void exclude_soucrce_half_update(VARIABLE *, VARIABLE *, BASIC_VARIABLE [][3], double, Order);
+void exclude_soucrce_half_update(VARIABLE *, BASIC_VARIABLE [][3], double, Order);
 
 // Update variables from source term
 void source_update(VARIABLE *, double);
 
-void boudary_set(VARIABLE &,Symmetry_Type, Symmetry_Type);
+void boudary_set(VARIABLE &, Symmetry_Type, Symmetry_Type);
 
 // Copying action
 void copy(VARIABLE *, VARIABLE *);

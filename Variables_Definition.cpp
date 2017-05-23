@@ -1,5 +1,12 @@
-#include "Variables_Definition.h"
+// Variables_Definition.cpp
+// output is changed to 2D output
 
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <cmath>
+using namespace std;
+#include "Variables_Definition.h"
 // Clarification of mesh-grid
 extern double X[], Y[], Z[], X_interval[], Y_interval[], Z_interval[];
 
@@ -8,10 +15,18 @@ void BASIC_VARIABLE::record(ofstream &out_obj)       // recrd1
 			   {
 				   out_obj<<setprecision(5)<<setiosflags(ios::fixed);
 				   int i,j,k;
+				   j=1;
 				   for (i=0;i<Grid_Num_x;i++)
+				   {
 					   for (j=0;j<Grid_Num_y;j++)
+					   {
 						   for (k=0;k<Grid_Num_z;k++)
+						   {
 							   out_obj<<" "<<value[i][j][k];
+						   }
+					   out_obj<<endl;
+					   }
+				   }
 				   //cout<<"BASIC_VARIABLE::record invoked! But I don't write anything, just to show up!"<<endl;
 				   //Recording the value
 			   }
@@ -121,9 +136,9 @@ void VARIABLE::smooth_xyz(int times)
 			{
 				for(k=1;k<Grid_Num_z-1;k++)
 				{
-					theta=3.1415926*(i-1)/(Num_Smooth_x-3);              //...........??????没懂这是什么意思
+					theta=3.1415926*(i-1)/(Num_Smooth_x-3);              //...........?????
 					value[i][j][k]=value[i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
-						temp_var[i][j][k];                               //...........??????没懂这是什么意思						
+						temp_var[i][j][k];                               //...........?????						
 				}
 			}
 		}
@@ -135,9 +150,9 @@ void VARIABLE::smooth_xyz(int times)
 				{
 					for(k=1;k<Grid_Num_z-1;k++)
 					{
-						theta=3.1415926*(Grid_Num_x-i-2)/(Num_Smooth_x-3);              //...........??????没懂这是什么意思
+						theta=3.1415926*(Grid_Num_x-i-2)/(Num_Smooth_x-3);              //...........?????
 						value[i][j][k]=value[i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
-							temp_var[i][j][k];                               //...........??????没懂这是什么意思						
+							temp_var[i][j][k];                               //...........?????						
 					}
 				}
 			}
@@ -151,9 +166,9 @@ void VARIABLE::smooth_xyz(int times)
 				{
 					for(k=1;k<Grid_Num_z-1;k++)
 					{
-						theta=3.1415926*(j-1)/(Num_Smooth_x-3);              //...........??????没懂这是什么意思
+						theta=3.1415926*(j-1)/(Num_Smooth_y-3);              //...........?????
 						value[i][j][k]=value[i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
-							temp_var[i][j][k];                               //...........??????没懂这是什么意思						
+							temp_var[i][j][k];                               //...........?????						
 					}
 				}
 			}
@@ -163,9 +178,9 @@ void VARIABLE::smooth_xyz(int times)
 				{
 					for(k=1;k<Grid_Num_z-1;k++)
 					{
-						theta=3.1415926*(Grid_Num_y-j-2)/(Num_Smooth_x-3);              //...........??????没懂这是什么意思
+						theta=3.1415926*(Grid_Num_y-j-2)/(Num_Smooth_y-3);              //...........?????
 						value[i][j][k]=value[i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
-							temp_var[i][j][k];                               //...........??????没懂这是什么意思						
+							temp_var[i][j][k];                               //...........?????						
 					}
 				}
 			}
@@ -183,13 +198,14 @@ void VARIABLE::smooth_xyz(int times)
 			{
 				for(k=1;k<Grid_Num_z-1;k++)
 				{
-					// theta=2*3.1415926*Z[k]/Z_min;              //...........??????没懂这是什么意思
+					// theta=2*3.1415926*Z[k]/z_min;              //...........?????
 					value[i][j][k]=value[i][j][k]+(1./48.)* \
-						temp_var[i][j][k];                        //...........??????没懂这是什么意思
-					// (1./48.)* (2.+cos(theta)/3.*temp_var[i][j][k];       
+						temp_var[i][j][k];                        //...........?????
+					// (1./48.)* (2.+cos(theta))/3.*temp_var[i][j][k];       
 				}
 			}
 		}
+/*
 		if(half_z==False)
 		{
 			for(i=1;i<Grid_Num_x-1;i++)
@@ -198,14 +214,14 @@ void VARIABLE::smooth_xyz(int times)
 				{
 					for(k=Grid_Num_z-Num_Smooth_z;k<Grid_Num_z-1;k++)
 					{
-						theta=3.1415926*(Grid_Num_z-k-2)/(Num_Smooth_x-3);         //...........??????没懂这是什么意思
+						theta=3.1415926*(Grid_Num_z-k-2)/(Num_Smooth_z-3);         //...........?????
 						value[i][j][k]=value[i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
-							temp_var[i][j][k];                                     //...........??????没懂这是什么意思
+							temp_var[i][j][k];                                     //...........?????
 					}
 				}
 			}
 		}		
-		
+*/
 	}	
 }
 

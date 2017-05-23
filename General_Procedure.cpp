@@ -1,11 +1,18 @@
+// General_Procedure.cpp
+
+#include <iostream>
+#include <fstream>
+#include <iomanip>
 #include <cmath>
+using namespace std;
 #include "Variables_Definition.h"
 #include "Procedure.h"
 
 
 // Clarification of mesh-grid
 extern double X[], Y[], Z[], X_interval[], Y_interval[], Z_interval[];
-extern double var_x[][Grid_Num_x], var_x_plushalfdx[][Grid_Num_x];          // 声明声明声明声明
+extern double var_x[][Grid_Num_x], var_x_plushalfdx[][Grid_Num_x];          // Declaration of external variables
+extern double sub_var[8][Grid_Num_x][Grid_Num_y][Grid_Num_z];
 
 void make_pressure_positive(BASIC_VARIABLE & pressure_obj, double positive_value)
 {
@@ -25,13 +32,12 @@ void make_pressure_positive(BASIC_VARIABLE & pressure_obj, double positive_value
 			}
 		}
 	}
-	;
 }
 
 // Integarting variables for half dt from Fluxes using 2-order Lax-Wendroff method
 // First time (Order o=1) forward difference; Second time (Order o=2) backward difference
-void exclude_soucrce_half_update(VARIABLE *update_var, VARIABLE *parameter_var, \
-	BASIC_VARIABLE flux[][3], double time_interv, Order o)
+void exclude_soucrce_half_update(VARIABLE *update_var, BASIC_VARIABLE flux[][3], \
+	double time_interv, Order o)
 {	
 	double Temp_var;
 	double dtflux_x, dtflux_y, dtflux_z;                    // for fdx, gdy, hdz
@@ -56,8 +62,9 @@ void exclude_soucrce_half_update(VARIABLE *update_var, VARIABLE *parameter_var, 
 							dx=X_interval[i];                      
 							dy=Y_interval[j];
 							dz=Z_interval[k];
-							f000=flux[n][0].value[i][j][k];        // 这是最简单寻址方式，可以改进							
-							f100=flux[n][0].value[i+1][j][k];      // 但就是改进了寻址方式，用于计算的数量却没有少
+// following used is the most simple addressing method, which could be improved
+							f000=flux[n][0].value[i][j][k];        // simple addressing method, be able to improve						
+							f100=flux[n][0].value[i+1][j][k];      // but times of computing remains the same
 							f010=flux[n][0].value[i][j+1][k];
 							f001=flux[n][0].value[i][j][k+1];
 							f110=flux[n][0].value[i+1][j+1][k];
@@ -65,45 +72,45 @@ void exclude_soucrce_half_update(VARIABLE *update_var, VARIABLE *parameter_var, 
 							f011=flux[n][0].value[i][j+1][k+1];
 							f111=flux[n][0].value[i+1][j+1][k+1];
 
-							dtflux_x=dt*(f111-f011 \
+							dtflux_x=-dt*(f111-f011 \
 									    +f101-f001 \
 										+f110-f010 \
-										+f100-f000)/(4*dx);
+										+f100-f000)/(4.*dx);      // attention to the mius sign  "-" in front of dt
 
-							f000=flux[n][1].value[i][j][k];        // 这是最简单寻址方式，可以改进							
-							f100=flux[n][1].value[i+1][j][k];      // 但就是改进了寻址方式，用于计算的数量却没有少
+							f000=flux[n][1].value[i][j][k];       						
+							f100=flux[n][1].value[i+1][j][k];      
 							f010=flux[n][1].value[i][j+1][k];
 							f001=flux[n][1].value[i][j][k+1];
 							f110=flux[n][1].value[i+1][j+1][k];
 							f101=flux[n][1].value[i+1][j][k+1];
 							f011=flux[n][1].value[i][j+1][k+1];
 							f111=flux[n][1].value[i+1][j+1][k+1];
-							dtflux_y=dt*(f111-f101 \
+							dtflux_y=-dt*(f111-f101 \
 									    +f110-f100 \
 										+f011-f001 \
 										+f010-f000)/(4*dy);
 
-							f000=flux[n][2].value[i][j][k];        // 这是最简单寻址方式，可以改进							
-							f100=flux[n][2].value[i+1][j][k];      // 但就是改进了寻址方式，用于计算的数量却没有少
+							f000=flux[n][2].value[i][j][k];      				
+							f100=flux[n][2].value[i+1][j][k];   
 							f010=flux[n][2].value[i][j+1][k];
 							f001=flux[n][2].value[i][j][k+1];
 							f110=flux[n][2].value[i+1][j+1][k];
 							f101=flux[n][2].value[i+1][j][k+1];
 							f011=flux[n][2].value[i][j+1][k+1];
 							f111=flux[n][2].value[i+1][j+1][k+1];
-							dtflux_z=dt*(f111-f110 \
+							dtflux_z=-dt*(f111-f110 \
 									    +f011-f010 \
 										+f101-f100 \
 										+f001-f000)/(4*dz);
 
-							v000=parameter_var[n].value[i][j][k];        // 这是最简单寻址方式，可以改进							
-							v100=parameter_var[n].value[i+1][j][k];      // 但就是改进了寻址方式，用于计算的数量却没有少
-							v010=parameter_var[n].value[i][j+1][k];
-							v001=parameter_var[n].value[i][j][k+1];
-							v110=parameter_var[n].value[i+1][j+1][k];
-							v101=parameter_var[n].value[i+1][j][k+1];
-							v011=parameter_var[n].value[i][j+1][k+1];
-							v111=parameter_var[n].value[i+1][j+1][k+1];
+							v000=sub_var[n][i][j][k];      					
+							v100=sub_var[n][i+1][j][k];      
+							v010=sub_var[n][i][j+1][k];
+							v001=sub_var[n][i][j][k+1];
+							v110=sub_var[n][i+1][j+1][k];
+							v101=sub_var[n][i+1][j][k+1];
+							v011=sub_var[n][i][j+1][k+1];
+							v111=sub_var[n][i+1][j+1][k+1];
 
 							Temp_var=(v000+v100+v010+v001+v110+v101+v011+v111)/8.;
 
@@ -116,7 +123,7 @@ void exclude_soucrce_half_update(VARIABLE *update_var, VARIABLE *parameter_var, 
 		}
 	case Second:
 		{
-			dt=0.5*time_interv;
+			dt=time_interv;
 			for (n=0;n<8;n++)
 			{				
 				for (i=1;i<Grid_Num_x-1;i++)
@@ -128,8 +135,9 @@ void exclude_soucrce_half_update(VARIABLE *update_var, VARIABLE *parameter_var, 
 							dx=X_interval[i-1];
 							dy=Y_interval[j-1];
 							dz=Z_interval[k-1];
-							f000=flux[n][0].value[i-1][j-1][k-1];        // 这是最简单寻址方式，可以改进							
-							f100=flux[n][0].value[i-1+1][j-1][k-1];      // 但就是改进了寻址方式，用于计算的数量却没有少
+// following used is the most simple addressing method, which could be improved
+							f000=flux[n][0].value[i-1][j-1][k-1];       							
+							f100=flux[n][0].value[i-1+1][j-1][k-1];      
 							f010=flux[n][0].value[i-1][j-1+1][k-1];
 							f001=flux[n][0].value[i-1][j-1][k-1+1];
 							f110=flux[n][0].value[i-1+1][j-1+1][k-1];
@@ -137,37 +145,37 @@ void exclude_soucrce_half_update(VARIABLE *update_var, VARIABLE *parameter_var, 
 							f011=flux[n][0].value[i-1][j-1+1][k-1+1];
 							f111=flux[n][0].value[i-1+1][j-1+1][k-1+1];
 
-							dtflux_x=dt*(f111-f011 \
+							dtflux_x=-dt*(f111-f011 \
 									    +f101-f001 \
 										+f110-f010 \
 										+f100-f000)/(4*dx);
 
-							f000=flux[n][1].value[i-1][j-1][k-1];        // 这是最简单寻址方式，可以改进							
-							f100=flux[n][1].value[i-1+1][j-1][k-1];      // 但就是改进了寻址方式，用于计算的数量却没有少
+							f000=flux[n][1].value[i-1][j-1][k-1];       						
+							f100=flux[n][1].value[i-1+1][j-1][k-1];     
 							f010=flux[n][1].value[i-1][j-1+1][k-1];
 							f001=flux[n][1].value[i-1][j-1][k-1+1];
 							f110=flux[n][1].value[i-1+1][j-1+1][k-1];
 							f101=flux[n][1].value[i-1+1][j-1][k-1+1];
 							f011=flux[n][1].value[i-1][j-1+1][k-1+1];
 							f111=flux[n][1].value[i-1+1][j-1+1][k-1+1];
-							dtflux_y=dt*(f111-f101 \
+							dtflux_y=-dt*(f111-f101 \
 									    +f110-f100 \
 										+f011-f001 \
 										+f010-f000)/(4*dy);
 
-							f000=flux[n][2].value[i-1][j-1][k-1];        // 这是最简单寻址方式，可以改进							
-							f100=flux[n][2].value[i-1+1][j-1][k-1];      // 但就是改进了寻址方式，用于计算的数量却没有少
+							f000=flux[n][2].value[i-1][j-1][k-1];        						
+							f100=flux[n][2].value[i-1+1][j-1][k-1];     
 							f010=flux[n][2].value[i-1][j-1+1][k-1];
 							f001=flux[n][2].value[i-1][j-1][k-1+1];
 							f110=flux[n][2].value[i-1+1][j-1+1][k-1];
 							f101=flux[n][2].value[i-1+1][j-1][k-1+1];
 							f011=flux[n][2].value[i-1][j-1+1][k-1+1];
 							f111=flux[n][2].value[i-1+1][j-1+1][k-1+1];
-							dtflux_z=dt*(f111-f110 \
+							dtflux_z=-dt*(f111-f110 \
 									    +f011-f010 \
 										+f101-f100 \
 										+f001-f000)/(4*dz);
-							update_var[n].value[i][j][k]=parameter_var[n].value[i][j][k]+dtflux_x+dtflux_y+dtflux_z;						
+							update_var[n].value[i][j][k]=update_var[n].value[i][j][k]+dtflux_x+dtflux_y+dtflux_z;						
 						}
 					}
 				}
@@ -200,6 +208,28 @@ void source_update(VARIABLE *update_var, double time_interv)
 	//cout<<"Source_Update invoked! But there is no source term!"<<endl;
 }
 
+
+
+void copy(VARIABLE *update_var, VARIABLE *mother_var)
+{
+	int i,j,k,n;
+	for (n=0;n<8;n++)
+	{
+		for (i=0;i<Grid_Num_x;i++)
+		{
+			for (j=0;j<Grid_Num_y;j++)
+			{
+				for (k=0;k<Grid_Num_z;k++)
+				{
+					update_var[n].value[i][j][k]=mother_var[n].value[i][j][k];
+				}
+			}
+		}
+	}
+	//cout<<"Copy invoked!"<<endl;
+}
+
+/* changed to member function of Class
 void boudary_set(VARIABLE &variable, Symmetry_Type sign_x, Symmetry_Type sign_z)
 {
 	int i,j,k;
@@ -276,26 +306,6 @@ void boudary_set(VARIABLE &variable, Symmetry_Type sign_x, Symmetry_Type sign_z)
 	}    
 }
 
-void copy(VARIABLE *update_var, VARIABLE *mother_var)
-{
-	int i,j,k,n;
-	for (n=0;n<8;n++)
-	{
-		for (i=0;i<Grid_Num_x;i++)
-		{
-			for (j=0;j<Grid_Num_y;j++)
-			{
-				for (k=0;k<Grid_Num_z;k++)
-				{
-					update_var[n].value[i][j][k]=mother_var[n].value[i][j][k];
-				}
-			}
-		}
-	}
-	//cout<<"Copy invoked!"<<endl;
-}
-
-/* 已经改写成了类的成员函数
 void smooth_xyz(double var[][Grid_Num_x][Grid_Num_y][Grid_Num_z], int times)
 {
 	double temp_var[Grid_Num_x][Grid_Num_y][Grid_Num_z];
@@ -325,9 +335,9 @@ void smooth_xyz(double var[][Grid_Num_x][Grid_Num_y][Grid_Num_z], int times)
 				{
 					for(k=1;k<Grid_Num_z-1;k++)
 					{
-						theta=3.1415926*(i-1)/(Num_Smooth_x-3);              //...........??????没懂这是什么意思
+						theta=3.1415926*(i-1)/(Num_Smooth_x-3);              //...........??????
 						var[n][i][j][k]=var[n][i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
-							temp_var[i][j][k];                               //...........??????没懂这是什么意思						
+							temp_var[i][j][k];                               //...........??????					
 					}
 				}
 			}
@@ -339,9 +349,9 @@ void smooth_xyz(double var[][Grid_Num_x][Grid_Num_y][Grid_Num_z], int times)
 					{
 						for(k=1;k<Grid_Num_z-1;k++)
 						{
-							theta=3.1415926*(Grid_Num_x-i-2)/(Num_Smooth_x-3);              //...........??????没懂这是什么意思
+							theta=3.1415926*(Grid_Num_x-i-2)/(Num_Smooth_x-3);              //...........??????
 							var[n][i][j][k]=var[n][i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
-								temp_var[i][j][k];                               //...........??????没懂这是什么意思						
+								temp_var[i][j][k];                               //...........??????					
 						}
 					}
 				}
@@ -355,9 +365,9 @@ void smooth_xyz(double var[][Grid_Num_x][Grid_Num_y][Grid_Num_z], int times)
 					{
 						for(k=1;k<Grid_Num_z-1;k++)
 						{
-							theta=3.1415926*(j-1)/(Num_Smooth_x-3);              //...........??????没懂这是什么意思
+							theta=3.1415926*(j-1)/(Num_Smooth_x-3);              //...........??????
 							var[n][i][j][k]=var[n][i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
-								temp_var[i][j][k];                               //...........??????没懂这是什么意思						
+								temp_var[i][j][k];                               //...........??????						
 						}
 					}
 				}
@@ -367,9 +377,9 @@ void smooth_xyz(double var[][Grid_Num_x][Grid_Num_y][Grid_Num_z], int times)
 					{
 						for(k=1;k<Grid_Num_z-1;k++)
 						{
-							theta=3.1415926*(Grid_Num_y-j-2)/(Num_Smooth_x-3);              //...........??????没懂这是什么意思
+							theta=3.1415926*(Grid_Num_y-j-2)/(Num_Smooth_x-3);              //...........?????
 							var[n][i][j][k]=var[n][i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
-								temp_var[i][j][k];                               //...........??????没懂这是什么意思						
+								temp_var[i][j][k];                               //...........?????					
 						}
 					}
 				}
@@ -387,9 +397,9 @@ void smooth_xyz(double var[][Grid_Num_x][Grid_Num_y][Grid_Num_z], int times)
 				{
 					for(k=1;k<Grid_Num_z-1;k++)
 					{
-						// theta=2*3.1415926*Z[k]/Z_min;              //...........??????没懂这是什么意思
+						// theta=2*3.1415926*Z[k]/Z_min;              //...........????
 						var[n][i][j][k]=var[n][i][j][k]+(1./48.)* \
-							temp_var[i][j][k];                        //...........??????没懂这是什么意思
+							temp_var[i][j][k];                        //...........?????
 						// (1./48.)* (2.+cos(theta)/3.*temp_var[i][j][k];       
 					}
 				}
@@ -402,9 +412,9 @@ void smooth_xyz(double var[][Grid_Num_x][Grid_Num_y][Grid_Num_z], int times)
 					{
 						for(k=Grid_Num_z-Num_Smooth_z;k<Grid_Num_z-1;k++)
 						{
-							theta=3.1415926*(Grid_Num_z-k-2)/(Num_Smooth_x-3);         //...........??????没懂这是什么意思
+							theta=3.1415926*(Grid_Num_z-k-2)/(Num_Smooth_x-3);         //...........????
 							var[n][i][j][k]=var[n][i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
-								temp_var[i][j][k];                                     //...........??????没懂这是什么意思
+								temp_var[i][j][k];                                     //...........??????
 						}
 					}
 				}
@@ -480,4 +490,4 @@ void average_B(double var[][Grid_Num_x][Grid_Num_y][Grid_Num_z],double aver_coef
 		}
 	}
 }
-已经改写成了类的成员函数*/
+changed to member function of Class*/

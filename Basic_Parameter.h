@@ -1,9 +1,9 @@
 //Basic_Parameter.h
 
 // Grid Number
-const int Grid_Num_x=27;     // VS run, maximum value is 13
-const int Grid_Num_y=27;
-const int Grid_Num_z=27;
+const int Grid_Num_x=41;     // VS run, maximum value is 13
+const int Grid_Num_y=41;
+const int Grid_Num_z=41;
 
 // Controlling and Logical Parameter
 //const Logic lstrt=False;           

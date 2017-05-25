@@ -1,5 +1,6 @@
 // Important_Procedure.cpp
 // 2017/5/22 : 2D output is added
+// 2017/5/25 : In order to spare stack space, change arguments of function from class type to class referrence type, for example, in 'cal_flux' and 'set_dt' and 'step_on'
 
 #include <iostream>
 #include <fstream>
@@ -532,7 +533,7 @@ void set_eta(BASIC_VARIABLE &eta_obj, VARIABLE *pointer, VARIABLE *current, doub
 
 // Calculating flux from variables
 void cal_flux(BASIC_VARIABLE flux[][3], VARIABLE *pointer, VARIABLE *current,\
-	BASIC_VARIABLE pressure_obj, BASIC_VARIABLE eta_obj, Type T)
+	BASIC_VARIABLE &pressure_obj, BASIC_VARIABLE &eta_obj, Type T)
 {
 	double rho, Vx, Vy, Vz;
 	double Bx, By, Bz;
@@ -615,7 +616,7 @@ void cal_flux(BASIC_VARIABLE flux[][3], VARIABLE *pointer, VARIABLE *current,\
 }
 
 // Setting time-interval
-double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BASIC_VARIABLE pressure_obj, double time)
+double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BASIC_VARIABLE &pressure_obj, double time)
 {
 	//set_eta(eta_obj, pointer, current, time);
 	double dt;
@@ -659,8 +660,16 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 // Step on variables
 void step_on(VARIABLE *pointer, BASIC_VARIABLE flux[][3], double time, double time_interv)
 {
-	VARIABLE var_intmedit[8], current[3];
-	BASIC_VARIABLE pressure, eta, Temp_flux[8][3];            // intermediate variable 
+//	VARIABLE var_intmedit[8], current[3];
+//	BASIC_VARIABLE pressure, eta, Temp_flux[8][3];            // intermediate variable.    Changed to following declaration! 
+/*In order to save space of stack, use new to allocate memory on heap: start */
+	VARIABLE *var_intmedit=new VARIABLE[8];
+	VARIABLE *current=new VARIABLE[3];
+	BASIC_VARIABLE *pre_eta_pointer=new BASIC_VARIABLE[2];
+	BASIC_VARIABLE (*Temp_flux)[3]=new BASIC_VARIABLE[8][3];
+	BASIC_VARIABLE &pressure=pre_eta_pointer[0];
+	BASIC_VARIABLE &eta=pre_eta_pointer[1];
+/*In order to save space of stack, use new to allocate memory on heap: end*/
 /*Updating variables: start*/
 	exclude_soucrce_half_update(var_intmedit, flux, time_interv, First);       
 // Last statement do a forward differentiating, so that the value at boundary has not been updated.
@@ -679,12 +688,19 @@ void step_on(VARIABLE *pointer, BASIC_VARIABLE flux[][3], double time, double ti
 	pointer[4].boundary_set(Positive,Negative);pointer[5].boundary_set(Positive,Negative);pointer[6].boundary_set(Negative,Positive);
 	pointer[7].boundary_set(Positive,Positive);
 /*Set bundary: end*/
+/*delete dynamic memory: start */
+	delete []var_intmedit;
+	delete []current;
+	delete []pre_eta_pointer;
+	delete []Temp_flux;
+/*delete dynamic memory: end*/
 	//cout<<"Step_on Step_on!"<<endl;
 }
 
 void smooth(VARIABLE *pointer, double time, int nstep)      // how many times do smooth
 {
-	VARIABLE tempvar[8];
+//	VARIABLE tempvar[8];   changed to dynamic array as followings
+	VARIABLE *tempvar=new VARIABLE[8];
 //	double caf0=1.-0.25*tanh(time/100.);        // caf0 could be changed to caf
 	int i,j,k, n;
 	for (n=0;n<8;n++)
@@ -742,4 +758,6 @@ void smooth(VARIABLE *pointer, double time, int nstep)      // how many times do
 			}
 		}
 	}
+// deleting dynamic memory space
+	delete []tempvar;
 }

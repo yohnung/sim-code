@@ -31,6 +31,7 @@ int main()
 	out[1].open("Vx.dat");out[2].open("Vy.dat");out[3].open("Vz.dat");
 	out[4].open("Bx.dat");out[5].open("By.dat");out[6].open("Bz.dat");
 	out[7].open("E.dat");
+	ofstream timeout("step_to_time.dat");         // file="stepnm"	
 
 	int i;                                         // cycle variable
 
@@ -40,7 +41,6 @@ int main()
 		var[i].record(out[i]);
 
 	/* time step on variables:start */
-	ofstream timeout("step_to_time.dat");         // file="stepnm"	
 	for (nstep=nstart;nstep<nend;nstep++)
 	{
 		cal_current(current, var);                          // Calculating current from Magnetic Field.
@@ -54,7 +54,7 @@ int main()
 //		cout<<setw(4)<<setiosflags(ios::right)<<nstep<<" "<<\
 			"time="<<setw(15)<<setprecision(9)<<setiosflags(ios::fixed)<<system_time<<\
 			" "<<"dt="<<dt<<endl;
-		timeout<<" "<<nstep<<setprecision(9)<<setiosflags(ios::fixed)<<system_time;	
+		timeout<<endl<<nstep<<endl<<setprecision(9)<<setiosflags(ios::fixed)<<system_time;	
 		if (nstep%12==0 && nstep!=0)
 			for (i=0;i<8;i++)				
 				var[i].record(out[i]);

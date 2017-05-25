@@ -17,10 +17,10 @@ void cal_pressure(BASIC_VARIABLE &, VARIABLE *, Type=Complete);
 void set_eta(BASIC_VARIABLE &, VARIABLE *, VARIABLE *, double, Type=Complete);
 
 // Calculating fluxes
-void cal_flux(BASIC_VARIABLE [][3], VARIABLE *, VARIABLE *, BASIC_VARIABLE, BASIC_VARIABLE, Type=Complete);
+void cal_flux(BASIC_VARIABLE [][3], VARIABLE *, VARIABLE *, BASIC_VARIABLE &, BASIC_VARIABLE &, Type=Complete);
 
 // Setting time-interval
-double set_dt(VARIABLE *, BASIC_VARIABLE &, VARIABLE *, BASIC_VARIABLE, double);
+double set_dt(VARIABLE *, BASIC_VARIABLE &, VARIABLE *, BASIC_VARIABLE &, double);
 
 // Step on variables
 void step_on(VARIABLE *, BASIC_VARIABLE [][3], double, double);

@@ -117,6 +117,8 @@ void set_mesh()
 */
 void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 {	
+	VARIABLE *current=new VARIABLE[3];
+	VARIABLE *sub_mag_field=new VARIABLE[3];               //sub_ for subsidary
 	double rm,rs,bm,bs,v0,betam, pressuremtotal;
 // Following used are global variables listed in "Basic_Parameter.h"
 	rm=rho_m_0;	rs=rho_s_0;
@@ -179,24 +181,41 @@ void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				pressure=pressuremtotal-B_Energy;
 				sub_var[7][i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma-1);
 				/*plus half dx: end*/
-
-				/*vyi0=0, no current correction*/
 			}
 		}
-	}	
+	}
+	cal_current(current, pointer);
+	for (i=0;i<Grid_Num_x;i++)
+		for (j=0;j<Grid_Num_y;j++)
+			for (k=0;k<Grid_Num_z;k++)
+			{
+				pointer[2].value[i][j][k]=pointer[2].value[i][j][k]+vyi_0*di*current[1].value[i][j][k];	
+				sub_mag_field[0].value[i][j][k]=sub_var[4][i][j][k];
+				sub_mag_field[1].value[i][j][k]=sub_var[5][i][j][k];
+				sub_mag_field[2].value[i][j][k]=sub_var[6][i][j][k];
+			}
+	
+	cal_current(current,sub_mag_field-4);         // -4 is because that sub_mag_field[i]=pointer[i+4];
+	for (i=0;i<Grid_Num_x;i++)
+		for (j=0;j<Grid_Num_y;j++)
+			for (k=0;k<Grid_Num_z;k++)
+				sub_var[2][i][j][k]=sub_var[2][i][j][k]+vyi_0*di*current[1].value[i][j][k];	
+
 	for (n=0;n<8;n++)
-	{
 		for (i=0;i<Grid_Num_x;i++)
 		{
 			var_x[n][i]=pointer[n].value[i][0][0];
 			var_x_plushalfdx[n][i]=sub_var[n][i][0][0];
 		}
-	}
+
 	for (n=0;n<8;n++)
 		for (i=0;i<Grid_Num_x;i++)
 			for (j=0;j<Grid_Num_y;j++)
 				for (k=0;k<Grid_Num_z;k++)
 					sub_var[n][i][j][k]=0;
+	// delete dynamic variable-array
+	delete []current;
+	delete []sub_mag_field;
 	//cout<<"Initialize invoked! But I really don't know the setup written by Teacher Ma! Waiting to be changed to a symmetric Harris Current Sheet!"<<endl;
 }
 
@@ -584,9 +603,9 @@ void cal_flux(BASIC_VARIABLE flux[][3], VARIABLE *pointer, VARIABLE *current,\
 				flux[3][2].value[i][j][k]=rho*Vz*Vz+pressure+B_Energy-Bz*Bz;
 
 				//Magnetic Induction Eq.
-				V_cross_B_x=(Vy-di*current_y)*Bz-(Vz-di*current_z)*By;                     // don't take di into acount, that is di=0
-				V_cross_B_y=(Vz-di*current_z)*Bx-(Vx-di*current_x)*Bz;
-				V_cross_B_z=(Vx-di*current_x)*By-(Vy-di*current_y)*Bx;
+				V_cross_B_x=(Vy-di/rho*current_y)*Bz-(Vz-di/rho*current_z)*By;                     // don't take di into acount, that is di=0
+				V_cross_B_y=(Vz-di/rho*current_z)*Bx-(Vx-di/rho*current_x)*Bz;
+				V_cross_B_z=(Vx-di/rho*current_x)*By-(Vy-di/rho*current_y)*Bx;
 
 				flux[4][0].value[i][j][k]=0;
 				flux[4][1].value[i][j][k]=-V_cross_B_z+eta*current_z;

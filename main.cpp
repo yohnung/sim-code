@@ -15,7 +15,7 @@ double  X_interval[Grid_Num_x],Y_interval[Grid_Num_y],Z_interval[Grid_Num_z];   
 
 
 /* global parameter: start*/
-	BASIC_VARIABLE p, eta;                         // Define basic variables, eta for conductivity.
+	BASIC_VARIABLE Elec_field[3], p, eta; //                         // Define basic variables, eta for conductivity.
 	VARIABLE var[8];                               // Define main variables, and var_int for variable_intermediate
 	VARIABLE current[3]; // vorticity[3];          // Define more varibles.
 	BASIC_VARIABLE flux[8][3];
@@ -26,11 +26,14 @@ double  X_interval[Grid_Num_x],Y_interval[Grid_Num_y],Z_interval[Grid_Num_z];   
 
 int main()
 {
-	ofstream out[8];
+	ofstream out[11];
 	out[0].open("rho.dat");
 	out[1].open("Vx.dat");out[2].open("Vy.dat");out[3].open("Vz.dat");
 	out[4].open("Bx.dat");out[5].open("By.dat");out[6].open("Bz.dat");
 	out[7].open("E.dat");
+	out[8].open("Electric_Field_x.dat");
+	out[9].open("Electric_Field_y.dat");
+	out[10].open("Electric_Field_z.dat");
 	ofstream timeout("step_to_time.dat");         // file="stepnm"	
 
 	int i;                                         // cycle variable
@@ -47,6 +50,7 @@ int main()
 		set_eta(eta, var, current, system_time);            // Setting space dependent conductivity. (Can make it depend on current)
 		cal_pressure(p, var);                               // Calculating pressure from various kinds of energy.	
 		cal_flux(flux, var, current, p, eta);               // Calculating flux from variables, current and pressure.	 
+		ext_from_flux(Elec_field, flux);                     // extractig electric field from flux
 		dt=set_dt(var, eta, current, p, system_time);       // Settiing appropriate time-interval from main variables, conductivity and pressure. This statement doesn't change pressure.
 		step_on(var, flux, system_time, dt);                // Main procedure to time step on variables from Flux explicitly and from Source implicitly.
 		smooth(var,system_time, nstep);                     // ?????????? Havn't understand yet ???????????
@@ -57,11 +61,15 @@ int main()
 		timeout<<endl<<nstep<<endl<<"time="<<setprecision(19)\
 			<<setiosflags(ios::fixed)<<system_time<<" "<<"dt="<<dt;	
 		if (nstep%12==0 && nstep!=0)
-			for (i=0;i<8;i++)				
+		{
+			for (i=0;i<8;i++)
 				var[i].record(out[i]);
+			for (i=0;i<3;i++)
+				Elec_field[i].record(out[i+8]);
+		}
 	}
 	timeout.close();
-	for(i=0;i<8;i++)
+	for(i=0;i<11;i++)
 		out[i].close();
 	/* time step on variables:end */
 }

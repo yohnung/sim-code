@@ -634,6 +634,20 @@ void cal_flux(BASIC_VARIABLE flux[][3], VARIABLE *pointer, VARIABLE *current,\
 	//cout<<"I'm Calculating flux!"<<endl;
 }
 
+// Extracting electric field from flux of magnetic
+void ext_from_flux( BASIC_VARIABLE *Electric_field, BASIC_VARIABLE flux[][3] )
+{
+	int i,j,k;
+	for (i=0;i<Grid_Num_x;i++)
+		for (j=0;j<Grid_Num_y;j++)
+			for (k=0;k<Grid_Num_z;k++)
+			{
+				Electric_field[0].value[i][j][k]=flux[5][2].value[i][j][k];
+				Electric_field[1].value[i][j][k]=flux[6][0].value[i][j][k];
+				Electric_field[2].value[i][j][k]=flux[4][1].value[i][j][k];
+			}
+}
+
 // Setting time-interval
 double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BASIC_VARIABLE &pressure_obj, double time)
 {

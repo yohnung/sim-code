@@ -19,6 +19,9 @@ void set_eta(BASIC_VARIABLE &, VARIABLE *, VARIABLE *, double, Type=Complete);
 // Calculating fluxes
 void cal_flux(BASIC_VARIABLE [][3], VARIABLE *, VARIABLE *, BASIC_VARIABLE &, BASIC_VARIABLE &, Type=Complete);
 
+// Extracting electric field from flux
+void ext_from_flux(BASIC_VARIABLE *, BASIC_VARIABLE [][3]);
+
 // Setting time-interval
 double set_dt(VARIABLE *, BASIC_VARIABLE &, VARIABLE *, BASIC_VARIABLE &, double);
 

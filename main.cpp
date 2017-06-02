@@ -51,10 +51,11 @@ int main()
 		step_on(var, flux, system_time, dt);                // Main procedure to time step on variables from Flux explicitly and from Source implicitly.
 		smooth(var,system_time, nstep);                     // ?????????? Havn't understand yet ???????????
 		system_time=system_time+dt;		
-//		cout<<setw(4)<<setiosflags(ios::right)<<nstep<<" "<<\
-			"time="<<setw(15)<<setprecision(9)<<setiosflags(ios::fixed)<<system_time<<\
+		cout<<setw(4)<<setiosflags(ios::right)<<nstep<<" "<<\
+			"time="<<setw(15)<<setprecision(19)<<setiosflags(ios::fixed)<<system_time<<\
 			" "<<"dt="<<dt<<endl;
-		timeout<<endl<<nstep<<endl<<setprecision(9)<<setiosflags(ios::fixed)<<system_time;	
+		timeout<<endl<<nstep<<endl<<"time="<<setprecision(19)\
+			<<setiosflags(ios::fixed)<<system_time<<" "<<"dt="<<dt;	
 		if (nstep%12==0 && nstep!=0)
 			for (i=0;i<8;i++)				
 				var[i].record(out[i]);

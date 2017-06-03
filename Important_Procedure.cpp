@@ -23,7 +23,7 @@ void set_mesh()
 	Y[0]=y_min;
 	Z[0]=z_min;
 	nx=Grid_Num_x-1;
-	ny=Grid_Num_x-1;
+	ny=Grid_Num_y-1;
 	nz=Grid_Num_z-1;
 	ofstream out("grid.dat");
 	ofstream out_2D("grid_2D.dat");
@@ -149,7 +149,7 @@ void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				pointer[4].value[i][j][k]=Bx;
 				pointer[5].value[i][j][k]=By;
 				pointer[6].value[i][j][k]=Bz;				
-				rhoVx=0;
+				rhoVx=3.27;
 				rhoVy=0.5*v0*By*(1-tanh(x/width_rho))*rho/bs;
 				rhoVz=0.5*v0*Bz*(1-tanh(x/width_rho))*rho/bs;
 				pointer[1].value[i][j][k]=rhoVx;
@@ -170,7 +170,7 @@ void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				sub_var[4][i][j][k]=Bx;
 				sub_var[5][i][j][k]=By;
 				sub_var[6][i][j][k]=Bz;
-				rhoVx=0;
+				rhoVx=3.27;
 				rhoVy=0.5*v0*By*(1-tanh((x+dx/2.)/width_rho))*rho/bs;
 				rhoVz=0.5*v0*Bz*(1-tanh((x+dx/2.)/width_rho))*rho/bs;
 				sub_var[1][i][j][k]=rhoVx;
@@ -327,14 +327,14 @@ void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 		{
 			for (i=0;i<Grid_Num_x;i++)
 			{
-				for (j=0;j<Grid_Num_z;j++)
+				for (j=0;j<Grid_Num_y;j++)
 				{
 					current[0].value[i][j][0]=current[0].value[i][j][1];
-					current[0].value[i][j][Grid_Num_z-1]=current[0].value[i][j][Grid_Num_y-3];
+					current[0].value[i][j][Grid_Num_z-1]=current[0].value[i][j][Grid_Num_z-3];
 					current[1].value[i][j][0]=current[1].value[i][j][1];
-					current[1].value[i][j][Grid_Num_z-1]=current[2].value[i][j][Grid_Num_y-3];
-					current[2].value[i][j][0]=current[n].value[i][j][1];
-					current[2].value[i][j][Grid_Num_z-1]=-current[2].value[i][j][Grid_Num_y-3];
+					current[1].value[i][j][Grid_Num_z-1]=current[1].value[i][j][Grid_Num_z-3];
+					current[2].value[i][j][0]=current[2].value[i][j][1];
+					current[2].value[i][j][Grid_Num_z-1]=-current[2].value[i][j][Grid_Num_z-3];
 				}
 			}
 		}
@@ -344,10 +344,10 @@ void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 			{
 				for (i=0;i<Grid_Num_x;i++)
 				{
-					for (j=0;j<Grid_Num_z;j++)
+					for (j=0;j<Grid_Num_y;j++)
 					{
 						current[n].value[i][j][0]=current[n].value[i][j][1];
-						current[n].value[i][j][Grid_Num_z-1]=current[n].value[i][j][Grid_Num_y-2];
+						current[n].value[i][j][Grid_Num_z-1]=current[n].value[i][j][Grid_Num_z-2];
 					}
 				}
 			}
@@ -423,14 +423,14 @@ void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 		{
 			for (i=0;i<Grid_Num_x-T;i++)
 			{
-				for (j=0;j<Grid_Num_z-T;j++)
+				for (j=0;j<Grid_Num_y-T;j++)
 				{
 					current[0].value[i][j][0]=current[0].value[i][j][1];
-					current[0].value[i][j][Grid_Num_z-1-T]=current[0].value[i][j][Grid_Num_y-2-T];
+					current[0].value[i][j][Grid_Num_z-1-T]=current[0].value[i][j][Grid_Num_z-2-T];
 					current[1].value[i][j][0]=current[1].value[i][j][1];
-					current[1].value[i][j][Grid_Num_z-1-T]=current[1].value[i][j][Grid_Num_y-2-T];
+					current[1].value[i][j][Grid_Num_z-1-T]=current[1].value[i][j][Grid_Num_z-2-T];
 					current[2].value[i][j][0]=current[2].value[i][j][1];
-					current[2].value[i][j][Grid_Num_z-1-T]=-current[2].value[i][j][Grid_Num_y-2-T];
+					current[2].value[i][j][Grid_Num_z-1-T]=-current[2].value[i][j][Grid_Num_z-2-T];
 				}
 			}
 		}
@@ -440,10 +440,10 @@ void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 			{
 				for (i=0;i<Grid_Num_x-T;i++)
 				{
-					for (j=0;j<Grid_Num_z-T;j++)
+					for (j=0;j<Grid_Num_y-T;j++)
 					{
 						current[n].value[i][j][0]=current[n].value[i][j][1];
-						current[n].value[i][j][Grid_Num_z-1-T]=current[n].value[i][j][Grid_Num_y-2-T];
+						current[n].value[i][j][Grid_Num_z-1-T]=current[n].value[i][j][Grid_Num_z-2-T];
 					}
 				}
 			}

@@ -149,7 +149,7 @@ void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				pointer[4].value[i][j][k]=Bx;
 				pointer[5].value[i][j][k]=By;
 				pointer[6].value[i][j][k]=Bz;				
-				rhoVx=3.27;
+				rhoVx=0.;
 				rhoVy=0.5*v0*By*(1-tanh(x/width_rho))*rho/bs;
 				rhoVz=0.5*v0*Bz*(1-tanh(x/width_rho))*rho/bs;
 				pointer[1].value[i][j][k]=rhoVx;
@@ -170,7 +170,7 @@ void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				sub_var[4][i][j][k]=Bx;
 				sub_var[5][i][j][k]=By;
 				sub_var[6][i][j][k]=Bz;
-				rhoVx=3.27;
+				rhoVx=0.;
 				rhoVy=0.5*v0*By*(1-tanh((x+dx/2.)/width_rho))*rho/bs;
 				rhoVz=0.5*v0*Bz*(1-tanh((x+dx/2.)/width_rho))*rho/bs;
 				sub_var[1][i][j][k]=rhoVx;

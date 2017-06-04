@@ -5,6 +5,9 @@
 #include <iomanip>
 #include <cmath>
 using namespace std;
+#include "Type_and_Macro_Definition.h"
+#include "Basic_Parameter.h"
+#include "Runtime_Diagnostic_Parameter.h"
 #include "Variables_Definition.h"
 #include "Procedure.h"
 

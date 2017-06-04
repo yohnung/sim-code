@@ -7,6 +7,12 @@ void set_mesh();
 // Initialising variables and setting mesh-grid
 void initialize(VARIABLE *, BASIC_VARIABLE &);
 
+// initialize the problem as a harris-current-shet probelm
+void harris_current_initia(VARIABLE *, BASIC_VARIABLE &);
+
+// add a fluctuation at the x-boundary
+void sin_fluc(VARIABLE &, double, double);
+
 // Calculate current
 void cal_current(VARIABLE *, VARIABLE *, Type=Complete); 
 
@@ -14,7 +20,7 @@ void cal_current(VARIABLE *, VARIABLE *, Type=Complete);
 void cal_pressure(BASIC_VARIABLE &, VARIABLE *, Type=Complete);
 
 // Setting eta
-void set_eta(BASIC_VARIABLE &, VARIABLE *, VARIABLE *, double, Type=Complete);
+void set_eta(BASIC_VARIABLE &, VARIABLE *, VARIABLE *, double, Type=Complete, Type=Uniform);
 
 // Calculating fluxes
 void cal_flux(BASIC_VARIABLE [][3], VARIABLE *, VARIABLE *, BASIC_VARIABLE &, BASIC_VARIABLE &, Type=Complete);

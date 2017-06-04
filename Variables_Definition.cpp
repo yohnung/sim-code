@@ -6,8 +6,12 @@
 #include <iomanip>
 #include <cmath>
 using namespace std;
+#include "Type_and_Macro_Definition.h"
+#include "Basic_Parameter.h"
+#include "Runtime_Diagnostic_Parameter.h"
 #include "Variables_Definition.h"
-// Clarification of mesh-grid
+
+// declarification of mesh-grid
 extern double X[], Y[], Z[], X_interval[], Y_interval[], Z_interval[];
 
 // Recording variables' value

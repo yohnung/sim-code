@@ -7,6 +7,9 @@
 #include <iomanip>
 #include <cmath>
 using namespace std;
+#include "Type_and_Macro_Definition.h"
+#include "Basic_Parameter.h"
+#include "Runtime_Diagnostic_Parameter.h"
 #include "Variables_Definition.h"
 #include "Procedure.h"
 
@@ -52,8 +55,8 @@ void set_mesh()
 		}
 	}
 	X_interval[Grid_Num_x-1]=X_interval[Grid_Num_x-2];
-	out<<endl;
-	out_2D<<endl;
+	//out<<endl;
+	//out_2D<<endl;
 
 	out<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<Y[0];
 	if (uniform_y==True)
@@ -75,7 +78,7 @@ void set_mesh()
 		}
 	}
 	Y_interval[Grid_Num_y-1]=Y_interval[Grid_Num_y-2];
-	out<<endl;
+	//out<<endl;
 	
 	out<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<Z[0];
 	out_2D<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<Z[0];
@@ -100,10 +103,11 @@ void set_mesh()
 		}
 	}
 	Z_interval[Grid_Num_z-1]=Z_interval[Grid_Num_z-2];
-	out<<endl;
-	out_2D<<endl;
+	//out<<endl;
+	//out_2D<<endl;
 
 	out.close();
+	out_2D.close();
 	//cout<<"BASIC_VARIABLE::set_mesh invoked!"<<endl;
 	// Set mesh-grid				  
 }
@@ -219,6 +223,103 @@ void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 	//cout<<"Initialize invoked! But I really don't know the setup written by Teacher Ma! Waiting to be changed to a symmetric Harris Current Sheet!"<<endl;
 }
 
+void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
+{	
+	VARIABLE *current=new VARIABLE[3];
+	VARIABLE *sub_mag_field=new VARIABLE[3];               //sub_ for subsidary
+	double rhoinfinity, Bal_coeff, norm_lambda;
+// Following used are global variables listed in "Basic_Parameter.h"
+	rhoinfinity=rho_infinity;
+	Bal_coeff=Balance_coefficient;
+	norm_lambda=normalized_lambda;
+
+	int i,j,k,n;
+	double x,y,z, dx,dy,dz;
+	double rho, Bx, By, Bz, rhoVx, rhoVy, rhoVz;
+	double B_Energy, V_Energy, pressure;
+	for (i=0;i<Grid_Num_x;i++)
+	{
+		for (j=0;j<Grid_Num_y;j++)
+		{
+			for (k=0;k<Grid_Num_z;k++)
+			{
+				x=X[i]; dx=X_interval[i];
+				y=Y[j]; dy=Y_interval[j];
+				z=Z[k]; dz=Z_interval[k];
+				rho=pow(1./cosh(x/norm_lambda),2)+rhoinfinity;
+				Bz=tanh(x/norm_lambda);
+				By=0;
+				Bx=0;
+				pointer[0].value[i][j][k]=rho;
+				pointer[4].value[i][j][k]=Bx;
+				pointer[5].value[i][j][k]=By;
+				pointer[6].value[i][j][k]=Bz;				
+				rhoVx=0.;
+				rhoVy=rho*Bal_coeff*2./norm_lambda;
+				rhoVz=0;
+				pointer[1].value[i][j][k]=rhoVx;
+				pointer[2].value[i][j][k]=rhoVy;
+				pointer[3].value[i][j][k]=rhoVz;				
+				B_Energy=0.5*(pow(Bx,2)+pow(By,2)+pow(Bz,2));
+				V_Energy=0.5*(pow(rhoVx,2)+pow(rhoVy,2)+pow(rhoVz,2))/rho;
+				pressure=Bal_coeff*rho;
+				pointer[7].value[i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma-1);
+				pressure_obj.value[i][j][k]=pressure;
+				/*plus half dx: start*/
+				rho=pow(1./cosh((x+dx/2.)/norm_lambda),2)+rhoinfinity;
+				Bz=tanh((x+dx/2.)/norm_lambda);
+				By=0;
+				Bx=0;
+				sub_var[0][i][j][k]=rho;
+				sub_var[4][i][j][k]=Bx;
+				sub_var[5][i][j][k]=By;
+				sub_var[6][i][j][k]=Bz;				
+				rhoVx=0.;
+				rhoVy=rho*Bal_coeff*2./norm_lambda;
+				rhoVz=0;
+				sub_var[1][i][j][k]=rhoVx;
+				sub_var[2][i][j][k]=rhoVy;
+				sub_var[3][i][j][k]=rhoVz;				
+				B_Energy=0.5*(pow(Bx,2)+pow(By,2)+pow(Bz,2));
+				V_Energy=0.5*(pow(rhoVx,2)+pow(rhoVy,2)+pow(rhoVz,2))/rho;
+				pressure=Bal_coeff*rho;
+				sub_var[7][i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma-1);
+				/*plus half dx: end*/
+			}
+		}
+	}
+	
+	for (n=0;n<8;n++)
+		for (i=0;i<Grid_Num_x;i++)
+		{
+			var_x[n][i]=pointer[n].value[i][0][0];
+			var_x_plushalfdx[n][i]=sub_var[n][i][0][0];
+		}
+
+	for (n=0;n<8;n++)
+		for (i=0;i<Grid_Num_x;i++)
+			for (j=0;j<Grid_Num_y;j++)
+				for (k=0;k<Grid_Num_z;k++)
+					sub_var[n][i][j][k]=0;
+	// delete dynamic variable-array
+	delete []current;
+	delete []sub_mag_field;
+	//cout<<"Initialize invoked! But I really don't know the setup written by Teacher Ma! Waiting to be changed to a symmetric Harris Current Sheet!"<<endl;
+}
+
+// add a sin-function fluctuation
+void sin_fluc(VARIABLE &var, double fluctuation, double kz)
+{
+	double z;
+	int j,k;
+	for (j=0;j<Grid_Num_y;j++)
+		for (k=0; k<Grid_Num_z; k++)
+		{
+			z=Z[k];
+			var.value[0][j][k]=var.value[0][j][k]+fluctuation*sin(kz*z);
+			var.value[Grid_Num_x-1][j][k]=var.value[Grid_Num_x-1][j][k]-fluctuation*sin(kz*z);
+		}
+} 
 
 void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 {
@@ -483,7 +584,7 @@ void cal_pressure(BASIC_VARIABLE &pressure_obj, VARIABLE *pointer, Type T)
 }
 
 // Homogeneous eta, waiting to be amended.
-void set_eta(BASIC_VARIABLE &eta_obj, VARIABLE *pointer, VARIABLE *current, double time, Type T)
+void set_eta(BASIC_VARIABLE &eta_obj, VARIABLE *pointer, VARIABLE *current, double time, Type T, Type TT)   // Type T is for Complete or Incomplete setting; Type TT is for uniform or non-uniform setting
 {
 	double etam[Grid_Num_y];                                                 // in l-m-n coordinates-systme m-direction dependent value, in another way eta_y
 	double etax, etaz, etal=0., etab=0.005, alpha0=2.0;	                     // etab for eta_background
@@ -515,6 +616,8 @@ void set_eta(BASIC_VARIABLE &eta_obj, VARIABLE *pointer, VARIABLE *current, doub
 					else
 						etaz=1.-pow(tanh((abs(z)-ztrig)/widthz),2);
 					eta_obj.value[i][j][k]=etab+etam[j]*etal*etax*etaz;
+					if (TT==Uniform)
+						eta_obj.value[i][j][k]=1./200;
 				}
 			}
 		}
@@ -543,6 +646,8 @@ void set_eta(BASIC_VARIABLE &eta_obj, VARIABLE *pointer, VARIABLE *current, doub
 					else
 						etaz=1.-pow(tanh(((z+dz/2.)-ztrig)/widthz),2);     // ????????? bot tanh((abs(zz(jz)+dz/2.)-ztrig)/aw2)?????
 					eta_obj.value[i][j][k]=etab+etam[j]*etal*etax*etaz;
+					if (TT==Uniform)
+						eta_obj.value[i][j][k]=1./200;
 				}
 			}
 		}

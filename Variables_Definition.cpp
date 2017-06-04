@@ -67,8 +67,8 @@ void VARIABLE::boundary_set(Symmetry_Type sign_x, Symmetry_Type sign_z)
 					{
 						for(k=1;k<Grid_Num_z-1;k++)
 						{
-							value[i][0][k]=value[i][Grid_Num_z-2][k];
-							value[i][Grid_Num_z-1][k]=value[i][1][k];
+							value[i][0][k]=value[i][Grid_Num_y-2][k];
+							value[i][Grid_Num_y-1][k]=value[i][1][k];
 						}
 					}
 				}
@@ -79,7 +79,7 @@ void VARIABLE::boundary_set(Symmetry_Type sign_x, Symmetry_Type sign_z)
 						for(k=1;k<Grid_Num_z-1;k++)
 						{
 							value[i][0][k]=value[i][1][k];
-							value[i][Grid_Num_z-1][k]=value[i][Grid_Num_z-2][k];
+							value[i][Grid_Num_y-1][k]=value[i][Grid_Num_y-2][k];
 						}
 					}
 				}

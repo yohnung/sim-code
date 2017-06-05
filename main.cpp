@@ -45,7 +45,8 @@ int main()
 	set_mesh();
 	//initialize(var, p);	                           // Initializing variables and pressure 
 	harris_current_initia(var,p);
-	sin_fluc(var[6], fluc, k_num);
+	fluc_at_bndry(var, fluc, k_z);               // add fluctuation at x=up and down boundary according to <Hurricane, PoP, 1995> 
+//	fluc_at_neutral_line(var, fluc, k_x, k_z);
 	for (i=0;i<8;i++)                              // and out put
 		var[i].record(out[i]);
 

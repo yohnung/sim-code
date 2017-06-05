@@ -124,6 +124,9 @@ void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 	VARIABLE *current=new VARIABLE[3];
 	VARIABLE *sub_mag_field=new VARIABLE[3];               //sub_ for subsidary
 	double rm,rs,bm,bs,v0,betam, pressuremtotal;
+	double x,y,z, dx,dy,dz, r5;
+	double rho, Bx, By, Bz, rhoVx, rhoVy, rhoVz;
+	double B_Energy, V_Energy, pressure;
 // Following used are global variables listed in "Basic_Parameter.h"
 	rm=rho_m_0;	rs=rho_s_0;
 	bm=B_m_0; bs=B_s_0; 
@@ -132,9 +135,6 @@ void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 	pressuremtotal=betam*0.5*pow(bm,2)+0.5*pow(bm,2);      //betam*0.5*pow(bm,2)=pmsp
 
 	int i,j,k,n;
-	double x,y,z, dx,dy,dz, r5;
-	double rho, Bx, By, Bz, rhoVx, rhoVy, rhoVz;
-	double B_Energy, V_Energy, pressure;
 	for (i=0;i<Grid_Num_x;i++)
 	{
 		for (j=0;j<Grid_Num_y;j++)
@@ -228,15 +228,15 @@ void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 	VARIABLE *current=new VARIABLE[3];
 	VARIABLE *sub_mag_field=new VARIABLE[3];               //sub_ for subsidary
 	double rhoinfinity, Bal_coeff, norm_lambda;
+	double x,y,z, dx,dy,dz;
+	double rho, Bx, By, Bz, rhoVx, rhoVy, rhoVz;
+	double B_Energy, V_Energy, pressure;
 // Following used are global variables listed in "Basic_Parameter.h"
 	rhoinfinity=rho_infinity;
 	Bal_coeff=Balance_coefficient;
 	norm_lambda=normalized_lambda;
 
 	int i,j,k,n;
-	double x,y,z, dx,dy,dz;
-	double rho, Bx, By, Bz, rhoVx, rhoVy, rhoVz;
-	double B_Energy, V_Energy, pressure;
 	for (i=0;i<Grid_Num_x;i++)
 	{
 		for (j=0;j<Grid_Num_y;j++)
@@ -307,8 +307,8 @@ void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 	//cout<<"Initialize invoked! But I really don't know the setup written by Teacher Ma! Waiting to be changed to a symmetric Harris Current Sheet!"<<endl;
 }
 
-// add a sin-function fluctuation
-void sin_fluc(VARIABLE &var, double fluctuation, double kz)
+// add a fluctuatin at boundary
+void fluc_at_bndry(VARIABLE *var, double fluctuation, double kz)
 {
 	double z;
 	int j,k;
@@ -316,9 +316,31 @@ void sin_fluc(VARIABLE &var, double fluctuation, double kz)
 		for (k=0; k<Grid_Num_z; k++)
 		{
 			z=Z[k];
-			var.value[0][j][k]=var.value[0][j][k]+fluctuation*sin(kz*z);
-			var.value[Grid_Num_x-1][j][k]=var.value[Grid_Num_x-1][j][k]-fluctuation*sin(kz*z);
+			var[4].value[0][j][k]=var[4].value[0][j][k]-kz*fluctuation*sin(kz*z);
+			var[4].value[Grid_Num_x-1][j][k]=var[4].value[Grid_Num_x-1][j][k]+kz*fluctuation*sin(kz*z);
+			// Does it need to add an fluctuation on sub_var[[][][]?????
 		}
+}
+
+// add a fluctuation at neutral-line
+void fluc_at_neutral_line(VARIABLE *var, double fluctuation, double kz, double kx)
+{
+	double norm_lambda;
+	double x, z;
+	int i, j, k;
+	norm_lambda=normalized_lambda;
+	for (i=1; i<Grid_Num_x; i++)
+		for (j=0;j<Grid_Num_y;j++)
+			for (k=0; k<Grid_Num_z; k++)
+			{
+				x=X[i]; z=Z[k];
+				if (abs(x)<norm_lambda)
+				{
+					var[4].value[i][j][k]=var[4].value[i][j][k]-kz*fluctuation*cos(kx*x)*sin(kz*z);
+					var[6].value[i][j][k]=var[6].value[i][j][k]+kx*fluctuation*sin(kx*x)*cos(kz*z);
+				}
+			// Does it need to add an fluctuation on sub_var[[][][]?????
+			}
 } 
 
 void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)

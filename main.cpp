@@ -32,7 +32,7 @@ int main()
 {
 	ofstream out[11];
 	out[0].open("rho.dat");
-	out[1].open("Vx.dat");out[2].open("Vy.dat");out[3].open("Vz.dat");
+	out[1].open("rhoVx.dat");out[2].open("rhoVy.dat");out[3].open("rhoVz.dat"); 
 	out[4].open("Bx.dat");out[5].open("By.dat");out[6].open("Bz.dat");
 	out[7].open("E.dat");
 	out[8].open("Electric_Field_x.dat");

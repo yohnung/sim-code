@@ -325,7 +325,7 @@ void fluc_at_bndry(VARIABLE *var, double fluctuation, double kz)
 }
 
 // add a fluctuation at neutral-line
-void fluc_at_neutral_line(VARIABLE *var, double fluctuation, double kz, double kx)
+void fluc_at_neutral_line(VARIABLE *var, double fluctuation, double kx, double kz)
 {
 	double norm_lambda;
 	double x, z;

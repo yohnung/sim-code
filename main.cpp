@@ -45,8 +45,8 @@ int main()
 	set_mesh();
 	//initialize(var, p);	                           // Initializing variables and pressure 
 	harris_current_initia(var,p);
-	fluc_at_bndry(var, fluc, k_z);               // add fluctuation at x=up and down boundary according to <Hurricane, PoP, 1995> 
-//	fluc_at_neutral_line(var, fluc, k_x, k_z);
+//	fluc_at_bndry(var, fluc, k_z);               // add fluctuation at x=up and down boundary according to <Hurricane, PoP, 1995> 
+	fluc_at_neutral_line(var, fluc, k_x, k_z);
 	for (i=0;i<8;i++)                              // and out put
 		var[i].record(out[i]);
 
@@ -62,12 +62,12 @@ int main()
 		step_on(var, flux, system_time, dt);                // Main procedure to time step on variables from Flux explicitly and from Source implicitly.
 		smooth(var,system_time, nstep);                     // ?????????? Havn't understand yet ???????????
 		system_time=system_time+dt;		
-	//	cout<<setw(4)<<setiosflags(ios::right)<<nstep<<" "<<\
+//		cout<<setw(4)<<setiosflags(ios::right)<<nstep<<" "<<\
 			"time="<<setw(15)<<setprecision(19)<<setiosflags(ios::fixed)<<system_time<<\
 			" "<<"dt="<<dt<<endl;
 		timeout<<endl<<nstep<<endl<<"time="<<setprecision(19)\
 			<<setiosflags(ios::fixed)<<system_time<<" "<<"dt="<<dt;	
-		if (nstep%20==0 && nstep!=0)
+		if ((nstep+1)%12==0)
 		{
 			for (i=0;i<8;i++)
 				var[i].record(out[i]);

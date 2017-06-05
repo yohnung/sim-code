@@ -17,7 +17,7 @@ extern double X[], Y[], Z[], X_interval[], Y_interval[], Z_interval[];
 // Recording variables' value
 void BASIC_VARIABLE::record(ofstream &out_obj)       // recrd1
 			   {
-				   out_obj<<setprecision(5)<<setiosflags(ios::fixed);
+				   out_obj<<setprecision(15)<<setiosflags(ios::fixed);
 				   int i,j,k;
 				   j=1;
 				   for (i=0;i<Grid_Num_x;i++)

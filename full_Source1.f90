@@ -1,4 +1,4 @@
-      program main
+     program main
 !             3-D COMPRESSIBLE MHD CODE
 !    ************************************************
 !
@@ -28,91 +28,115 @@
       include 'ma3ds1.for'
       include 'ma3ds2.for'
 !
-      dtime=10.    !???÷????????nst??±í?????°ma3ds3????nend
-      dnstep=1.
-      nstop=100000
-      t0=0.0       !???÷??readin????nst????
-      nst2=5       !??????m3d***????
-      cont=2       !????????1?ò°?continue??????·??ò????m3dnst2??
-                   !??°?continue?????ò??????nst=ceiling(time)/2+1??×?????
-      call input
-!
-      call initia
-!
-!      if(.not.lrstrt)then
-!      call recrd                                  ! a record of variables
-!      call facur
-!      end if
-!
-      if(lrstrt) then                              ! lrstrt is used to judge how to start the programe  
-      	call readin(nst2,cont,dtime)
-      end if
-!
-      if(time.eq.0) then
-      	call recrd                                 ! record
-      	call recrd1                                ! 
-      	call facur                                 ! field-aligned current
-      end if
-!
-  200 continue                                     ! no real meaning
-      call setdt                                   ! set time-step
+      dtime=10.         ! concernd about continuing running
+      dnstep=1.         ! concernd about continuing running
+      nstop=49          ! maximum time-step
+	  t0=0.0    
+	  nst2=5            ! 给nst 或者nst1 赋值的
+	  cont=2    
+	          
+	  call input               ! time=0, nstep=0, nst1=1
+!     call initia
 
-      call stepon                                  ! main cycle procedure
+! cwm add:start
+      call harris_initia
+!     call fluc_at_bndry
+      call fluc_at_neutral_line
+! cwm add:end
+!
+!     if(.not.lrstrt)then
+!     call recrd
+!     call facur
+!     end if
 
-      nstep=nstep+1                                ! from below i guess that nstep is for nth print step
+  	  if(lrstrt) then 
+	  call readin(nst2,cont,dtime)
+	  end if
+
+	  if(time.eq.0) then
+      call recrd
+      call recrd1
+      call facur
+      end if
+
+! cwm add: start
+      open(unit=112,file="rhoVx.dat",status="unknown",form="formatted")
+      open(unit=117,file="Bz.dat",status="unknown",form="formatted")
+      open(unit=120,file="steptotime.dat",status="unknown",form="formatted")
+      write(112,9) (((x(jx,jy,jz,2),jx=1,mx),jy=1,my),jz=1,mz)      
+      write(117,9) (((x(jx,jy,jz,7),jx=1,mx),jy=1,my),jz=1,mz)
+    9 format(11767(1x,e22.15))      ! 11767=mx*my*mz
+! cwm add: end
+
+  200 continue
+      call setdt
+
+      call stepon
+	
+      nstep=nstep+1
       time=time+dt
-!zxg
-      write(*,*)nstep,' ','time=',time,'','dt=',dt 
-!zxg
-      write(*,*)'nst=',nst
-!
-      open(unit=16,file='stepnm',status='unknown',form='formatted')
-      write(16,99)nstep,time
-   99 format(i5,f9.5)
-      close(16)
-!
+      		 
+!	  write(*,*)'nst=',nst
+!     open(unit=16,file='stepnm',status='unknown',form='formatted')
+!     write(16,99) nstep,time
+!  99 format(i5,f9.5)
+!     close(16)
+
 !zxg to continue
-      if(abs(mod(time,2.d0)).le.dt)then
-      	open(unit=17,file='continue',status="unknown",form="unformatted")
-      	write(17)ncase,nstep,time,nst
-      	write(17)x
-      	close(17)
-      else
-      endif
+! 	  if(abs(mod(time,2.d0)).le.dt)then
+!	  open(unit=17,file='continue',status="unknown",form="unformatted")
+!	  write(17)ncase,nstep,time,nst
+!	  write(17)x
+!	  close(17)
+!	  else
+!	  endif
 !zxg continue end
 
-      if(abs(time-nst*dtime).le.dt.and.&
-        (nstep-nstp(nst)).ge.dnstep) then
-      	nst=nst+nint
-      	nstp(nst)=nstep
-      	call recrd
-      	call recrd1
-!    	call facur
+	  if(abs(time-nst*dtime).le.dt.and.&
+	  (nstep-nstp(nst)).ge.dnstep) then
+      nst=nst+nint
+      nstp(nst)=nstep
+      call recrd
+      call recrd1
+!     call facur
       end if
-!yg----------------
-      if ((time.gt.t0).and.((time-t0).le.dt)) then
-      	call incident_plasma(x,xi,time,t0,0)
-!      	call initialSF(x,xi,time,t0)   !??????·??ó????????·?
-      end if 
 
-      if ((time.gt.t0).and.((time-t0).gt.dt)) then
-      	call incident_plasma(x,xi,time,t0,1)
-      end if
-!yg---------------
-!
+!!yg----------------            !!!!!!!!  底下的没有考虑到新程序中
+!     if ((time.gt.t0).and.((time-t0).le.dt)) then
+!	  call incident_plasma(x,xi,time,t0,0)
+!!    call initialSF(x,xi,time,t0)   
+!     end if !
+!     if ((time.gt.t0).and.((time-t0).gt.dt)) then
+!	  call incident_plasma(x,xi,time,t0,1)
+!     end if
+!!yg---------------
+
+! cwm add: start      
+      if( mod(nstep,12) .eq. 0 ) then
+      write(112,9) (((x(jx,jy,jz,2),jx=1,mx),jy=1,my),jz=1,mz)      
+      write(117,9) (((x(jx,jy,jz,7),jx=1,mx),jy=1,my),jz=1,mz)
+      endif
+      write(120,*) nstep,' ','time=',time,'','dt=',dt
+! cwm add: end
+
       if(nstep.gt.nstop) goto 300
       if(nst.lt.nend) goto 200
-!
+
   300 continue
-!
+
+! cwm add: start
+      close(112)
+      close(117)
+! cwm add: end
+
       stop
       end
-!
-!
-!
+
+
+
       subroutine input
 ! --------------------------
-!  This routine inputs parameters and define basic variables
+!   This routine inputs parameters and define basic variables
 !   LRSTRT: =.f., starting from t=0; =.t., continueing from
 !           steps as given by NST.
 !   NEND:   the final steps intended for the current run ,
@@ -136,7 +160,7 @@
 !   ANGS:    bz=b*cos(ang) and by=b*sin(ang), at magnetosheath side.
 !   ANGM:    bz=b*cos(ang) and by=b*sin(ang), at magnetopause side.
 !   TS0:   initia magnetosheath temperature
-!   TM0:   initia magnetopause temperature.
+!   Tm0:   initia magnetopause temperature.
 !   BS0:   initia magnetosheath magnetic field strength
 !   BM0:   initia magnetopause magnetic field strength.
 !   NCASE:  case number of the run.
@@ -169,7 +193,7 @@
       call gridpnt
       open(unit=11,file='grid.dat',status='unknown',form='formatted')
       write(11,99)(xx(jx),jx=1,mx),(zz(jz),jz=1,mz)
-   99 format(5(1x,e10.4))
+   99 format(5(1x,e11.4))
 !
       time=0.
       nstep=0
@@ -199,22 +223,20 @@
 !
 ! assign asymmetric quantities:
       pi     = 3.1415926
-      rhom   = 1.0
-      rhos   = 1.0
+      rhom   = 1.0d0
+      rhos   = 1.0d0
       pp     = 0.
       gaminv = 1./gamma
-      phirad = 2.*pi*phi/360.                                     ! what dose phi mean ?
-                                                                  ! phirad=pi if phi=180
-      delbz  = 0.5*sqrt( bm0**2+bs0**2-2.*bm0*bs0*cos(phirad) )   ! Difference of up Bz and Down Bz
-      by0    = 0.5*bs0*sin(phirad)/delbz                          ! the third (guid) direction 
-      bz0    = 0.25*(bm0**2 - bs0**2)/delbz                      
-      pmsp   = betam*(0.5*bm0**2)                                 ! pmsp is for Pressure of MagnetoPause
-      pmsh   = pmsp + 0.5*(bm0**2 - bs0**2)                       ! pmsh is for Pressure of MagnetoSheath
+      phirad = 2.*pi*phi/360.
+      delbz  = 0.5*sqrt( bm0**2+bs0**2-2.*bm0*bs0*cos(phirad) )
+      by0    = 0.5*bs0*sin(phirad)/delbz
+      bz0    = 0.25*(bm0**2 - bs0**2)/delbz
+      pmsp   = betam*(0.5*bm0**2)             ! pressure at magnetopause
+      pmsh   = pmsp + 0.5*(bm0**2 - bs0**2)    ! magnetopause and magnetosheath pressure balance
       betas  = pmsh/(0.5*bs0**2)
       p0     = pmsp + 0.5*(bm0**2 - bs0**2)
-      bzm    = bz0 + delbz                                        ! Bz at magnetopause  
-                                                                  ! and z is reconnection direction
-      bzs    = bz0 - delbz                                        ! Bz at magnetosheath
+      bzm    = bz0 + delbz
+      bzs    = bz0 - delbz
       ymax   = -yy(1)
 !
       signy=1
@@ -223,72 +245,64 @@
 !cjx  the angle between the X-line(Y-direction) and MR plane
       thita_Xline=0.0
       thita_Xline_rad = 2.*pi*thita_Xline/360.
-      tan_Xline=tan(thita_Xline_rad)                    ! test whether x-line is tangential to MR plane, 
-                                                        ! take it to zero
-!cjx  ccccccccccccccccccccccccccccccccccccccccccccccccc	   
+      tan_Xline=tan(thita_Xline_rad)
+!cjx  -------------------------------------------------	   
       do 3 jz=1,nzp1
       do 3 jy=1,nyp1
       do 3 jx=1,nxp1
-      x(jx,jy,jz,1) = 0.5*(rhom+rhos) +0.5*(rhom-rhos)*&
+     x(jx,jy,jz,1) = 0.5*(rhom+rhos) +0.5*(rhom-rhos)*&          !rhom=rhos
                         tanh((xx(jx)+yy(jy)*tan_Xline)/aw)
-      x(jx,jy,jz,5)  = -bm0*3*xx(jx)*zz(jz)/&
-                        (xx(jx)**2+yy(jy)**2+zz(jz)**2)**(5/2)
+      x(jx,jy,jz,5)  = -bm0*3*xx(jx)*zz(jz)/(xx(jx)**2+yy(jy)**2+zz(jz)**2)**(5/2)       ! 注意这里的 5/2 =2 !!!!!!! 确定要这样子做？
 
-      if  ((xx(jx)**2+yy(jy)**2+zz(jz)**2)==0)  then    ! fear lest r=0 will cause problem, and the same 
-          x(jx,jy,jz,5)=x(jx-1,jy,jz,5)                 ! are the following 2 if-statements
-      end if
+	  if  ((xx(jx)**2+yy(jy)**2+zz(jz)**2)==0)  then
+	  x(jx,jy,jz,5)=x(jx-1,jy,jz,5) 
+	  end if
 
-      x(jx,jy,jz,6)  = -bm0*3*yy(jy)*zz(jz)/&
-                        (xx(jx)**2+yy(jy)**2+zz(jz)**2)**(5/2)
-  
-      if   ((xx(jx)**2+yy(jy)**2+zz(jz)**2)==0)  then
-           x(jx,jy,jz,6)=x(jx-1,jy,jz,6) 
-      end if
+      x(jx,jy,jz,6)  = -bm0*3*yy(jy)*zz(jz)/(xx(jx)**2+yy(jy)**2+zz(jz)**2)**(5/2)
+	  
+	  if   ((xx(jx)**2+yy(jy)**2+zz(jz)**2)==0)  then
+	  x(jx,jy,jz,6)=x(jx-1,jy,jz,6) 
+	  end if
 
-!      x(jx,jy,jz,6)  =0.1
-      x(jx,jy,jz,7)  = -bm0*(2*zz(jz)**2-xx(jx)**2-yy(jy)**2)/&
-                        (xx(jx)**2+yy(jy)**2+zz(jz)**2)**(5/2)
-
-       if   ((xx(jx)**2+yy(jy)**2+zz(jz)**2)==0)  then
-            x(jx,jy,jz,7)=x(jx-1,jy,jz,7) 
-       end if
+!	x(jx,jy,jz,6)  =0.1
+      x(jx,jy,jz,7)  = -bm0*(2*zz(jz)**2-xx(jx)**2-yy(jy)**2)/(xx(jx)**2+yy(jy)**2+zz(jz)**2)**(5/2)
+	  
+	  if   ((xx(jx)**2+yy(jy)**2+zz(jz)**2)==0)  then
+	  x(jx,jy,jz,7)=x(jx-1,jy,jz,7) 
+	  end if
 
       xi(jx,jy,jz,1) = 0.5*(rhom+rhos) &
         +0.5*(rhom-rhos)*tanh(((xx(jx)+yy(jy)*tan_Xline)+dx/2.)/aw)
-      xi(jx,jy,jz,5)  =-bm0*3*xx(jx)*zz(jz)/&
-                        (xx(jx)**2+yy(jy)**2+zz(jz)**2)**(5/2)
-  
-      if   ((xx(jx)**2+yy(jy)**2+zz(jz)**2)==0)  then
-           xi(jx,jy,jz,5)=xi(jx-1,jy,jz,5) 
-      end if
+      xi(jx,jy,jz,5)  =-bm0*3*xx(jx)*zz(jz)/(xx(jx)**2+yy(jy)**2+zz(jz)**2)**(5/2)
+	  
+	  if   ((xx(jx)**2+yy(jy)**2+zz(jz)**2)==0)  then
+	  xi(jx,jy,jz,5)=xi(jx-1,jy,jz,5) 
+	  end if
 
-      xi(jx,jy,jz,6)  = -bm0*3*yy(jy)*zz(jz)/&
-                         (xx(jx)**2+yy(jy)**2+zz(jz)**2)**(5/2)
+      xi(jx,jy,jz,6)  = -bm0*3*yy(jy)*zz(jz)/(xx(jx)**2+yy(jy)**2+zz(jz)**2)**(5/2)
 
-      if   ((xx(jx)**2+yy(jy)**2+zz(jz)**2)==0) then
-           xi(jx,jy,jz,6)=xi(jx-1,jy,jz,6) 
-      end if
+	  	  if   ((xx(jx)**2+yy(jy)**2+zz(jz)**2)==0) then
+	  xi(jx,jy,jz,6)=xi(jx-1,jy,jz,6) 
+	  end if
 !	xi(jx,jy,jz,6)  =0.1
-      xi(jx,jy,jz,7)  = -bm0*(2*zz(jz)**2-xx(jx)**2-yy(jy)**2)/&
-                         (xx(jx)**2+yy(jy)**2+zz(jz)**2)**(5/2)
+      xi(jx,jy,jz,7)  = -bm0*(2*zz(jz)**2-xx(jx)**2-yy(jy)**2)/(xx(jx)**2+yy(jy)**2+zz(jz)**2)**(5/2)
 
-      if   ((xx(jx)**2+yy(jy)**2+zz(jz)**2)==0)  then
-           xi(jx,jy,jz,7)=xi(jx-1,jy,jz,7) 
-      end if
+	  	  if   ((xx(jx)**2+yy(jy)**2+zz(jz)**2)==0)  then
+	  xi(jx,jy,jz,7)=xi(jx-1,jy,jz,7) 
+	  end if
     3 continue
 !
       do 4 jz=1,nzp1
       do 4 jy=1,nyp1
       do 4 jx=1,nxp1
-      x(jx,jy,jz,2)=0.
+      x(jx,jy,jz,2)=  0.d0
       x(jx,jy,jz,3)=0.5*v0*x(jx,jy,jz,6)*(1.-tanh((xx(jx)+yy(jy)*tan_Xline)/aw))*x(jx,jy,jz,1)/bs0
       x(jx,jy,jz,4)=0.5*v0*x(jx,jy,jz,7)*(1.-tanh((xx(jx)+yy(jy)*tan_Xline)/aw))*x(jx,jy,jz,1)/bs0
-      xi(jx,jy,jz,2)=0.
+      xi(jx,jy,jz,2)= 0.d0
       xi(jx,jy,jz,3)=0.5*v0*x(jx,jy,jz,6)*(1.-tanh(((xx(jx)+yy(jy)*tan_Xline)+dx/2.)/aw))*x(jx,jy,jz,1)/bs0
-      xi(jx,jy,jz,4)=0.5*v0*x(jx,jy,jz,7)*(1.-tanh(((xx(jx)+yy(jy)*tan_Xline)+dx/2.)/aw))*x(jx,jy,jz,1)/bs0
+      xi(jx,jy,jz,4)  = 0.5*v0*x(jx,jy,jz,7)*(1.-tanh(((xx(jx)+yy(jy)*tan_Xline)+dx/2.)/aw))*x(jx,jy,jz,1)/bs0
     4 continue
 !cjx----------------------------------------------------------------
-
 !      do 3 jz=1,nzp1
 !      do 3 jy=1,nyp1
 !      do 3 jx=1,nxp1
@@ -321,20 +335,18 @@
 !    4 continue
 !
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      presc=0.5*bm0**2+pmsp                                ! total pressure in magnetopause
+      presc=0.5*bm0**2+pmsp
       do 5 jz=1,nzp1
       do 5 jy=1,nyp1
       do 5 jx=1,nxp1
-      hb2=.5*(x(jx,jy,jz,5)**2+x(jx,jy,jz,6)**2+x(jx,jy,jz,7)**2)       ! h for double precision, b2 for B field 
-                                                                        ! sqare, meaning B Energy
-      hv2=.5*(x(jx,jy,jz,2)**2+x(jx,jy,jz,3)**2+x(jx,jy,jz,4)**2)/x(jx,jy,jz,1)    ! v2 for V square. temporary 
-                                                                                   ! variables
-      pr(jx,jy,jz)=presc-hb2                              ! Thermoal pressure distribution
-      x(jx,jy,jz,8)=hv2+hb2+pr(jx,jy,jz)/(gamma-1)        ! energy spatial distribution
+      hb2=.5*(x(jx,jy,jz,5)**2+x(jx,jy,jz,6)**2+x(jx,jy,jz,7)**2)
+      hv2=.5*(x(jx,jy,jz,2)**2+x(jx,jy,jz,3)**2+x(jx,jy,jz,4)**2)/x(jx,jy,jz,1)
+      pr(jx,jy,jz)=presc-hb2
+      x(jx,jy,jz,8)=hv2+hb2+pr(jx,jy,jz)/(gamma-1)
       hb2=.5*(xi(jx,jy,jz,5)**2+xi(jx,jy,jz,6)**2+xi(jx,jy,jz,7)**2)
       hv2=.5*(xi(jx,jy,jz,2)**2+xi(jx,jy,jz,3)**2+xi(jx,jy,jz,4)**2)/xi(jx,jy,jz,1)
-      pri=presc-hb2                                       ! pri the same with pr
-      xi(jx,jy,jz,8)=hv2+hb2+pri/(gamma-1)                ! energyi-energy
+      pri=presc-hb2
+      xi(jx,jy,jz,8)=hv2+hb2+pri/(gamma-1)
     6 continue
     5 continue
 !
@@ -342,7 +354,7 @@
       do 71 jz=1,nzp1
       do 71 jy=1,nyp1
       do 71 jx=1,nxp1
-      xi(jx,jy,jz,3)=xi(jx,jy,jz,3)+vyi0*di*w0(jx,jy,jz,2)    ! rhoVy
+      xi(jx,jy,jz,3)=xi(jx,jy,jz,3)+vyi0*di*w0(jx,jy,jz,2)    ! vyi0=0
    71 continue
       call current(x,1)
       do 72 jz=1,nzp1
@@ -352,7 +364,7 @@
    72 continue
       do 8 m=1,8
       do 8 jx=1,nxp1
-      fx(jx,m)=x(jx,1,1,m)                              ! for diagnostic jy=jz=1, a line boundary
+      fx(jx,m)=x(jx,1,1,m)
       fxi(jx,m)=xi(jx,1,1,m)
     8 continue
       do 9 m=1,8
@@ -360,13 +372,99 @@
       do 9 jy=1,nyp1
       do 9 jx=1,nxp1
       xm(jx,jy,jz,m)=0.
-      xi(jx,jy,jz,m)=0.                                ! xi is reset to zero? And then, 
-                                                       ! what's the meaning of what has been done before
+      xi(jx,jy,jz,m)=0.
     9 continue
 
       return
       end
 !
+! cwm add: start
+      subroutine harris_initia
+      include 'ma3ds1.for'
+      include 'ma3ds2.for'
+! assign asymmetric quantities:      
+      do 3 jz=1,nzp1
+      do 3 jy=1,nyp1
+      do 3 jx=1,nxp1
+      x(jx,jy,jz,1) = (1./cosh(xx(jx)/normlambda))**2+rhoinfinity
+      x(jx,jy,jz,7) = tanh(xx(jx)/normlambda)
+	  x(jx,jy,jz,6) = 0.
+      x(jx,jy,jz,5) = 0.
+
+      xi(jx,jy,jz,1) = (1./cosh((xx(jx)+dx/2.)/normlambda))**2+rhoinfinity
+      xi(jx,jy,jz,7) = tanh((xx(jx)+dx/2.)/normlambda)
+      xi(jx,jy,jz,6) = 0.
+      xi(jx,jy,jz,5) = 0.
+    3 continue
+!
+      do 4 jz=1,nzp1
+      do 4 jy=1,nyp1
+      do 4 jx=1,nxp1
+      x(jx,jy,jz,2) = 0.
+      x(jx,jy,jz,3) = x(jx,jy,jz,1)*balcoeff*2./normlambda
+      x(jx,jy,jz,4) = 0.
+      xi(jx,jy,jz,2) = 0.
+      xi(jx,jy,jz,3) = xi(jx,jy,jz,1)*balcoeff*2./normlambda
+      xi(jx,jy,jz,4) = 0.
+    4 continue
+
+      do 5 jz=1,nzp1
+      do 5 jy=1,nyp1
+      do 5 jx=1,nxp1
+      hb2=.5*(x(jx,jy,jz,5)**2+x(jx,jy,jz,6)**2+x(jx,jy,jz,7)**2)
+      hv2=.5*(x(jx,jy,jz,2)**2+x(jx,jy,jz,3)**2+x(jx,jy,jz,4)**2)/x(jx,jy,jz,1)
+      pr(jx,jy,jz)=balcoeff*x(jx,jy,jz,1)
+      x(jx,jy,jz,8)=hv2+hb2+pr(jx,jy,jz)/(gamma-1)
+      hb2=.5*(xi(jx,jy,jz,5)**2+xi(jx,jy,jz,6)**2+xi(jx,jy,jz,7)**2)
+      hv2=.5*(xi(jx,jy,jz,2)**2+xi(jx,jy,jz,3)**2+xi(jx,jy,jz,4)**2)/xi(jx,jy,jz,1)
+      pri=balcoeff*xi(jx,jy,jz,1)
+      xi(jx,jy,jz,8)=hv2+hb2+pri/(gamma-1)
+    6 continue
+    5 continue
+
+      do 8 m=1,8
+      do 8 jx=1,nxp1
+      fx(jx,m)=x(jx,1,1,m)
+      fxi(jx,m)=xi(jx,1,1,m)
+    8 continue
+      do 9 m=1,8
+      do 9 jz=1,nzp1
+      do 9 jy=1,nyp1
+      do 9 jx=1,nxp1
+      xm(jx,jy,jz,m)=0.
+      xi(jx,jy,jz,m)=0.
+    9 continue
+
+      return
+      end
+
+      subroutine fluc_at_bndry
+      include 'ma3ds1.for'
+      include 'ma3ds2.for'
+      do 9 jz=1,nzp1
+      do 9 jy=1,nyp1
+      x(1,jy,jz,5) = x(1,jy,jz,5)-kz*fluc*sin(kz*zz(jz))
+      x(2,jy,jz,5) = x(2,jy,jz,5)-kz*fluc*sin(kz*zz(jz))
+      x(nx,jy,jz,5) = x(nx,jy,jz,5)-kz*fluc*sin(kz*zz(jz))
+      x(nxp1,jy,jz,5) = x(nxp1,jy,jz,5)-kz*fluc*sin(kz*zz(jz))
+    9 continue
+      end
+
+      subroutine fluc_at_neutral_line
+      include 'ma3ds1.for'
+      include 'ma3ds2.for'
+      do 9 jz=1,nzp1
+      do 9 jy=1,nyp1
+      do 9 jx=1,nxp1
+      if (abs(xx(jx))<normlambda) then
+      x(jx,jy,jz,5) = x(jx,jy,jz,5)-kz*fluc*cos(kx*xx(jx))*sin(kz*zz(jz))
+      x(jx,jy,jz,7) = x(jx,jy,jz,7)+kx*fluc*sin(kx*xx(jx))*cos(kz*zz(jz))
+      endif
+    9 continue
+      end
+! cwm add: end
+
+
       subroutine stepon
 !
 !     This routine time-advances X's by 2 step Lax-Wendroff scheme
@@ -382,7 +480,7 @@
 ! 1.1 Calculate fluxes
 
 ! 1.2 Advance the first step
- 	     hdt=0.5*dt
+      hdt=0.5*dt                       ! hdt for half_dt
       call current(x,1)
       call foreta(time,1)
       call pressure(x,1)
@@ -441,18 +539,18 @@
       call bndry(x,1)
 !
 !      if(mod(nstep,10).eq.0) call cleanb
-      caf0=1.-0.25*tanh(time/100.)
+      caf0=1.-0.25*tanh(time/100.)            ! concered about smthf(xi,caf0)
       do 250 m=1,8
       do 250 jz=1,mz
       do 250 jy=1,my
       do 250 jx=1,mx
-      xi(jx,jy,jz,m)=x(jx,jy,jz,m)-fx(jx,m)
+      xi(jx,jy,jz,m)=x(jx,jy,jz,m)-fx(jx,m)     !  这里会改 xi 的值   ！注意！注意！注意！
   250 continue
-!      call smthf(xi,caf0)
+!      call smthf(xi,caf0)                                  !   这个是另一种平滑方式没有改写到c++程序中
       if(mod(nstep,3).eq.0) then
-      call smthxyz(xi,0,1)
-      call avrg1(xi,0.996d0)
-      call avrg2(xi,0.996d0)
+      call smthxyz(xi,0,1)    ! Smooth x y z ? and call bndry(x,2)
+      call avrg1(xi,0.996d0)  ! m=12348 6-point average call bndry(x,2)
+      call avrg2(xi,0.996d0)  ! m=5,6,7  call bndry(x,2)
       endif
       do 260 m=1,8
       do 260 jz=1,mz
@@ -460,6 +558,7 @@
       do 260 jx=1,mx
       x(jx,jy,jz,m)=xi(jx,jy,jz,m)+fx(jx,m)
   260 continue
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 从这开始一直到结束的部分没有被改写。
       if(mod(nstep,10).eq.0) then
       call current(x,1)
       do 300 jz=1,mz
@@ -478,12 +577,14 @@
       cmin=10.
       do 310 jy=1,my
       do 310 jx=1,mx-2
+! Find xm(x,y,z,2)==J \dot B / |B|, that is field aligned current, its maximum value and corresponding coordinate point
       if(xm(jx,jy,jz,2).gt.cmax) then
       cmax=xm(jx,jy,jz,2)
       xcmax=xx(jx)
       ycmax=yy(jy)
       zcmax=zz(jz)
       endif
+! Find its minimum value and cooresponding location
       if(xm(jx,jy,jz,2).lt.cmin) then
       cmin=xm(jx,jy,jz,2)
       xcmin=xx(jx)
@@ -503,20 +604,20 @@
 !   17 format(8(1x,e9.3))
 !      endif
       endif
-      if(mod(nstep,20).eq.0) call energy
+!      if(mod(nstep,20).eq.0) call energy  !w0 should be current
 !
       return
       end
-!
+!                       !!!!!!!!!!!!!!!!!!!!!!!!!!!!! facur 这个子程序也没有被改写
       subroutine facur
       include 'ma3ds1.for'
       include 'ma3ds2.for'
       character*8 output
-      character*3 cn
+      character*3 cn     ! count number from readin
       dimension fact(mx,my,mz),facp(mx,my,mz),faci(mx,my,mz)
 !
       call current(x,1)
-      call pressure(x,1)   ! calculate pressure from total energy and kinetic and magnetic energy
+      call pressure(x,1)
       do 1 jz=1,mz
       do 1 jy=1,my
       do 1 jx=1,mx
@@ -554,116 +655,126 @@
       call bndry1(fact,1)
       call bndry1(facp,1)
       call bndry1(faci,1)
-      call vorticity(x)
+      call vorticity(x)       ! Calculate vorticity form velocity variables
 !
       output='fac'//cn(nst)
       open(unit=8,file=output,status="unknown",form="formatted")
       write(8,9)(((fact(jx,jy,jz),facp(jx,jy,jz),faci(jx,jy,jz),&
          pr(jx,jy,jz),(w0(jx,jy,jz,m),m=1,3),jx=1,mx),jy=1,my)&
           ,jz=1,mz)
-    9 format(7(1x,e10.4))
+    9 format(7(1x,e11.4))
       close(8)
       return
       end
 !
-      subroutine energy
-      include 'ma3ds1.for'
-      include 'ma3ds2.for'
-      dimension wyz(my,mz),fyz(my,mz),gyz(my,mz),hyz(my,mz)
-      dimension wz(mz),fz(mz),gz(mz),hz(mz),cr1(mz),cr2(mz)
-      dimension nk1(mz),nk2(mz)
-!
-!  define statement functions
-!  d2fc= d2 f / dx2   with central difference
-!      d2fc(fm,f0,fp,xm1,x0,xp1)=
-!     1 2.*((fp-f0)/(xp1-x0)-(f0-fm)/(x0-xm1))/(xp1-xm1)
-!  d1fc= d f / dx  with  central difference
-      d1fc(fm,f0,fp,xm1,x0,xp1)=((xm1-x0)/(xp1-x0)*(fp-f0)-(xp1-x0)/(xm1-x0)*(fm-f0))/(xm1-xp1)
-!
-      do 1 jz=2,mz-1
-      do 1 jy=2,my-1
-      do 1 jx=2,mx-1
-      fs(jx,jy,jz)=-d1fc(pr(jx-1,jy,jz),pr(jx,jy,jz),pr(jx+1,jy,jz)&
-                       ,xx(jx-1),xx(jx),xx(jx+1))&
-        +w0(jx,jy,jz,2)*x(jx,jy,jz,7)-w0(jx,jy,jz,3)*x(jx,jy,jz,6)
-      gs(jx,jy,jz)=-d1fc(pr(jx,jy-1,jz),pr(jx,jy,jz),pr(jx,jy+1,jz)&
-                              ,yy(jy-1),yy(jy),yy(jy+1))&
-        +w0(jx,jy,jz,3)*x(jx,jy,jz,5)-w0(jx,jy,jz,1)*x(jx,jy,jz,7)
-      hs(jx,jy,jz)=-d1fc(pr(jx,jy,jz-1),pr(jx,jy,jz),pr(jx,jy,jz+1)&
-                              ,zz(jz-1),zz(jz),zz(jz+1))&
-        +w0(jx,jy,jz,1)*x(jx,jy,jz,6)-w0(jx,jy,jz,2)*x(jx,jy,jz,5)
-    1 continue
-      call bndry1(fs,0)
-      call bndry1(gs,0)
-      call bndry1(hs,0)
-      do 2 jz=1,mz
-      do 2 jy=1,my
-      do 2 jx=1,mx
-      xm(jx,jy,jz,1)=fs(jx,jy,jz)**2+gs(jx,jy,jz)**2+hs(jx,jy,jz)**2
-      fs(jx,jy,jz)=0.5*(x(jx,jy,jz,5)**2+x(jx,jy,jz,6)**2&
-                 +x(jx,jy,jz,7)**2)
-      gs(jx,jy,jz)=0.5*(x(jx,jy,jz,2)**2+x(jx,jy,jz,3)**2&
-                  +x(jx,jy,jz,4)**2)/x(jx,jy,jz,1)
-      hs(jx,jy,jz)=pr(jx,jy,jz)/(gamma-1.)
-      xm(jx,jy,jz,2)=(w0(jx,jy,jz,1)*x(jx,jy,jz,5)+&
-          w0(jx,jy,jz,2)*x(jx,jy,jz,6)+w0(jx,jy,jz,3)*&
-           x(jx,jy,jz,7))/sqrt(2.*fs(jx,jy,jz))
-    2 continue
-      do 3 jz=1,mz,mz/10
-      cr1(jz)=0.
-      cr2(jz)=0.
-      nk1(jz)=1
-      nk2(jz)=1
-      do 3 jy=1,my
-      do 3 jx=1,mx
-      crj=xm(jx,jy,jz,2)
-      if(crj.ge.0.) then
-      nk1(jz)=nk1(jz)+1
-      cr1(jz)=cr1(jz)+crj
-      else
-      nk2(jz)=nk2(jz)+1
-      cr2(jz)=cr2(jz)+crj
-      endif
-    3 continue
-      do 4 jz=1,mz
-      do 4 jy=1,my
-      call integ(xm(1,jy,jz,1),aa,xx,mx)
-      call integ(fs(1,jy,jz),bb,xx,mx)
-      call integ(gs(1,jy,jz),cc,xx,mx)
-      call integ(hs(1,jy,jz),dd,xx,mx)
-      wyz(jy,jz)=aa
-      fyz(jy,jz)=bb
-      gyz(jy,jz)=cc
-      hyz(jy,jz)=dd
-    4 continue
-      do 5 jz=1,mz
-      call integ(wyz(1,jz),aa,yy,my)
-      call integ(fyz(1,jz),bb,yy,my)
-      call integ(gyz(1,jz),cc,yy,my)
-      call integ(hyz(1,jz),dd,yy,my)
-      wz(jz)=aa
-      fz(jz)=bb
-      gz(jz)=cc
-      hz(jz)=dd
-    5 continue
-      call integ(wz,wt,zz,mz)
-      call integ(fz,ft,zz,mz)
-      call integ(gz,gt,zz,mz)
-      call integ(hz,ht,zz,mz)
-      open(unit=11,file='energy.dat',status='unknown',form='formatted')
-!      write(11,9)('Force$','ME$','KE$','TE$','Time$')
-      write(11,6)wt,ft,gt,ht,time
-    6 format(5(1x,e13.3))
-      open(unit=12,file='facur.dat',status='unknown',form='formatted')
-      write(12,7)(time)
-      write(12,11)(nk2(jz),nk2(jz),jz=1,mz,mz/10)
-      write(12,8)(cr1(jz),cr2(jz),jz=1,mz,mz/10)
-    7 format(f9.3)
-    8 format(8(1x,e9.3))
-   11 format(8(1x,i8))
-!    9 format(5(1x,a13))
-      return
-      end
+!      subroutine energy
+!      include 'ma3ds1.for'
+!      include 'ma3ds2.for'
+!      dimension wyz(my,mz),fyz(my,mz),gyz(my,mz),hyz(my,mz)
+!      dimension wz(mz),fz(mz),gz(mz),hz(mz),cr1(mz),cr2(mz)
+!      dimension nk1(mz),nk2(mz)
+!!
+!!  define statement functions
+!!  d2fc= d2 f / dx2   with central difference
+!!      d2fc(fm,f0,fp,xm1,x0,xp1)=
+!!     1 2.*((fp-f0)/(xp1-x0)-(f0-fm)/(x0-xm1))/(xp1-xm1)  fp: f plus, fm: f minus
+!!  d1fc= d f / dx  with  central difference
+!!      d1fc(fm,f0,fp,xm1,x0,xp1)=((xm1-x0)/(xp1-x0)*(fp-f0)-(xp1-x0)/(xm1-x0)*(fm-f0))/(xm1-xp1)
+!!
+!      do 1 jz=2,mz-1
+!      do 1 jy=2,my-1
+!      do 1 jx=2,mx-1
+!      fs(jx,jy,jz)=-d1fc(pr(jx-1,jy,jz),pr(jx,jy,jz),pr(jx+1,jy,jz)&
+!                       ,xx(jx-1),xx(jx),xx(jx+1))&
+!        +w0(jx,jy,jz,2)*x(jx,jy,jz,7)-w0(jx,jy,jz,3)*x(jx,jy,jz,6)
+!      gs(jx,jy,jz)=-d1fc(pr(jx,jy-1,jz),pr(jx,jy,jz),pr(jx,jy+1,jz)&
+!                              ,yy(jy-1),yy(jy),yy(jy+1))&
+!        +w0(jx,jy,jz,3)*x(jx,jy,jz,5)-w0(jx,jy,jz,1)*x(jx,jy,jz,7)
+!      hs(jx,jy,jz)=-d1fc(pr(jx,jy,jz-1),pr(jx,jy,jz),pr(jx,jy,jz+1)&
+!                              ,zz(jz-1),zz(jz),zz(jz+1))&
+!        +w0(jx,jy,jz,1)*x(jx,jy,jz,6)-w0(jx,jy,jz,2)*x(jx,jy,jz,5)
+!    1 continue
+!      call bndry1(fs,0)
+!      call bndry1(gs,0)
+!      call bndry1(hs,0)
+!      do 2 jz=1,mz
+!      do 2 jy=1,my
+!      do 2 jx=1,mx
+!      xm(jx,jy,jz,1)=fs(jx,jy,jz)**2+gs(jx,jy,jz)**2+hs(jx,jy,jz)**2
+!      fs(jx,jy,jz)=0.5*(x(jx,jy,jz,5)**2+x(jx,jy,jz,6)**2&
+!                 +x(jx,jy,jz,7)**2)
+!      gs(jx,jy,jz)=0.5*(x(jx,jy,jz,2)**2+x(jx,jy,jz,3)**2&
+!                  +x(jx,jy,jz,4)**2)/x(jx,jy,jz,1)
+!      hs(jx,jy,jz)=pr(jx,jy,jz)/(gamma-1.)
+!      xm(jx,jy,jz,2)=(w0(jx,jy,jz,1)*x(jx,jy,jz,5)+&
+!          w0(jx,jy,jz,2)*x(jx,jy,jz,6)+w0(jx,jy,jz,3)*&
+!           x(jx,jy,jz,7))/sqrt(2.*fs(jx,jy,jz))
+!! w0 should be current, thus xm(2)=J \dot B/|B|
+!    2 continue
+!! Accumulation begins, nk1 is for positive value counting numer; 
+!! cr1 is accumulated result. nk2 and cr2 is for negative
+!      do 3 jz=1,mz,mz/10
+!      cr1(jz)=0.
+!      cr2(jz)=0.
+!      nk1(jz)=1
+!      nk2(jz)=1
+!      do 3 jy=1,my
+!      do 3 jx=1,mx
+!      crj=xm(jx,jy,jz,2)
+!      if(crj.ge.0.) then
+!      nk1(jz)=nk1(jz)+1
+!      cr1(jz)=cr1(jz)+crj
+!      else
+!      nk2(jz)=nk2(jz)+1
+!      cr2(jz)=cr2(jz)+crj
+!      endif
+!    3 continue
+!! 4 for integration in x-direction
+!! 5 for integration in y-direction
+!! 6 for integration in z-direction
+!! integrating xm(1) to wt meaning forces
+!!             fs    to ft for Magnetic energy
+!!             gs    to gt for kinetic energy
+!!             hs    to ht for thermal energy
+!      do 4 jz=1,mz
+!      do 4 jy=1,my
+!      call integ(xm(1,jy,jz,1),aa,xx,mx)
+!      call integ(fs(1,jy,jz),bb,xx,mx)
+!      call integ(gs(1,jy,jz),cc,xx,mx)
+!      call integ(hs(1,jy,jz),dd,xx,mx)
+!      wyz(jy,jz)=aa
+!      fyz(jy,jz)=bb
+!      gyz(jy,jz)=cc
+!      hyz(jy,jz)=dd
+!    4 continue
+!      do 5 jz=1,mz
+!      call integ(wyz(1,jz),aa,yy,my)
+!      call integ(fyz(1,jz),bb,yy,my)
+!      call integ(gyz(1,jz),cc,yy,my)
+!      call integ(hyz(1,jz),dd,yy,my)
+!      wz(jz)=aa
+!      fz(jz)=bb
+!      gz(jz)=cc
+!      hz(jz)=dd
+!    5 continue
+!      call integ(wz,wt,zz,mz)
+!      call integ(fz,ft,zz,mz)
+!      call integ(gz,gt,zz,mz)
+!      call integ(hz,ht,zz,mz)
+!      open(unit=11,file='energy.dat',status='unknown',form='formatted')
+!!      write(11,9)('Force$','ME$','KE$','TE$','Time$')
+!      write(11,6)wt,ft,gt,ht,time
+!    6 format(5(1x,e13.3))
+!      open(unit=12,file='facur.dat',status='unknown',form='formatted')
+!      write(12,7)(time)
+!      write(12,11)(nk2(jz),nk2(jz),jz=1,mz,mz/10)
+!      write(12,8)(cr1(jz),cr2(jz),jz=1,mz,mz/10)
+!    7 format(f9.3)
+!    8 format(8(1x,e9.3))
+!   11 format(8(1x,i8))
+!!    9 format(5(1x,a13))
+!      return
+!      end
 !
       subroutine integ(fin,fout,x,mx)
       double precision fin(mx),x(mx),fout
@@ -680,14 +791,14 @@
 !
       dimension temp(mx)
       call foreta(time,1)
-      call pressure(x,1)                
-      dtmin=1000.
+      call pressure(x,1)
+      dtmin=1000.      ! A new variables
       dxyz=.5*dx*dy*dz/sqrt((dx**2*dy**2+dy**2*dz**2+dx**2*dz**2))
       do 1 jz=1,mz
       do 1 jy=1,my
       do 2 jx=1,mx
 !      x(jx,jy,jz,1)=cvmgm(0.0001,x(jx,jy,jz,1),x(jx,jy,jz,1))
-      temp(jx)=dxyz/(sqrt(x(jx,jy,jz,2)**2+x(jx,jy,jz,3)**2&
+      temp(jx)=dxyz/( sqrt(x(jx,jy,jz,2)**2+x(jx,jy,jz,3)**2&
               +x(jx,jy,jz,4)**2)/x(jx,jy,jz,1)&
               +sqrt((x(jx,jy,jz,5)**2+x(jx,jy,jz,6)**2&
              +x(jx,jy,jz,7)**2&
@@ -697,7 +808,7 @@
       do 3 jx=1,nxp1
       if(temp(jx).lt.test) test=temp(jx)
     3 continue
-      dtmin=dmin1(test,dtmin)
+      dtmin=dmin1(test,dtmin) ! d-min-1 pick minimal value
     1 continue
       dt=0.5*dtmin
       return
@@ -709,6 +820,8 @@
 !------------------------------
 ! Set the boundaries for X's
 !------------------------------
+
+! nlt seems unused!!!
 !
       include 'ma3ds1.for'
 !
@@ -788,7 +901,10 @@
       subroutine bndry1(x,nlt)
 !
 !------------------------------
-! Set the boundaries for X's
+! Set the boundaries for X's, 
+! nlt is for equivalent extrapolation
+! nlt==0 for ositive dot-symmetry
+! nlt.neq.0 for negative dot-symmytry
 !------------------------------
 !
       include 'ma3ds1.for'
@@ -956,7 +1072,7 @@
       do 5 jx=1,nnx
 !
 ! [3] Magnetic induction eq.
-!
+!      vcrb-z: V-J cross B's z component
       vcrbz=((x(jx,jy,jz,2)-di*w0(jx,jy,jz,1))*x(jx,jy,jz,6)&
            -(x(jx,jy,jz,3)-di*w0(jx,jy,jz,2))*x(jx,jy,jz,5))&
              /x(jx,jy,jz,1)
@@ -977,6 +1093,8 @@
       do 6 jx=1,nnx
 !
 ! [3] Magnetic induction eq.
+!
+!      vcrb-z: V-J cross B's z component
 !
       vcrbz=((x(jx,jy,jz,2)-di*w0(jx,jy,jz,1))*x(jx,jy,jz,6)&
            -(x(jx,jy,jz,3)-di*w0(jx,jy,jz,2))*x(jx,jy,jz,5))&
@@ -1056,8 +1174,8 @@
       dimension x(mx,my,mz,8)
 !
 !
-    if(mm.eq.1) then                                     ! mm is a flag for how to set the boundary
-      do 10 jz=2,nz                                      ! jx=1,nxp1(mx)
+      if(mm.eq.1) then
+      do 10 jz=2,nz
       do 10 jy=2,ny
       do 10 jx=2,nx
       w0(jx,jy,jz,1)=.5*(x(jx,jy+1,jz,7)-x(jx,jy-1,jz,7))/dy&
@@ -1067,7 +1185,7 @@
       w0(jx,jy,jz,3)=.5*(x(jx+1,jy,jz,6)-x(jx-1,jy,jz,6))/dx&
                 -.5*(x(jx,jy+1,jz,5)-x(jx,jy-1,jz,5))/dy
    10 continue
-! boundary at jx=1,nxp1      it is linear extrapolation;
+! boundary at jx=1,nxp1
 !
       do 20 m=1,3
       do 20 jz=2,nz
@@ -1076,7 +1194,7 @@
       w0(mx,jy,jz,m)=2.*w0(nx,jy,jz,m)-w0(nx-1,jy,jz,m)
    20 continue
 !
-      if(halfx) then          ! symmetric boundary, means that simulation domain is only a half
+      if(halfx) then
       do 25 jz=2,nz
       do 25 jy=2,ny
       w0(mx,jy,jz,1)=w0(nx-1,my-jy+1,jz,1)
@@ -1090,14 +1208,14 @@
       do 30 m=1,3
       do 30 jz=2,nz
       do 30 jx=1,mx
-      w0(jx,1,jz,m)=w0(jx,ny,jz,m)                    ! periody means that it's periodic in y direction
+      w0(jx,1,jz,m)=w0(jx,ny,jz,m)
       w0(jx,nyp1,jz,m)=w0(jx,2,jz,m)
    30 continue
       else
       do 35 m=1,3
       do 35 jz=2,nz
       do 35 jx=1,mx
-      w0(jx,1,jz,m)=w0(jx,2,jz,m)                     ! if not, equivalent extrapolation
+      w0(jx,1,jz,m)=w0(jx,2,jz,m)
       w0(jx,nyp1,jz,m)=w0(jx,ny,jz,m)
    35 continue
       endif
@@ -1117,9 +1235,8 @@
       w0(jx,jy,nzp1,3)=-w0(jx,jy,nz-1,3)
    50 continue
       endif
-    else                                             ! mm .neq. 1, for x is equivalent extrapolation;
-                                                     !   
-      do 60 jz=2,nz-1                                ! jx=1,nx
+      else
+      do 60 jz=2,nz-1
       do 60 jy=2,ny-1
       do 60 jx=2,nx-1
       w0(jx,jy,jz,1)=.5*(x(jx,jy+1,jz,7)-x(jx,jy-1,jz,7))/dy&
@@ -1134,14 +1251,14 @@
       do 70 m=1,3
       do 70 jz=2,nz-1
       do 70 jy=2,ny-1
-      w0(1,jy,jz,m)=w0(2,jy,jz,m)                   ! equivalent extrapolation
+      w0(1,jy,jz,m)=w0(2,jy,jz,m)
       w0(nx,jy,jz,m)=w0(nx-1,jy,jz,m)
    70 continue
 !
       if(halfx) then
-      do 75 jz=2,nz                                 
+      do 75 jz=2,nz
       do 75 jy=2,ny
-      w0(nx,jy,jz,1)=w0(nx-1,ny-jy+1,jz,1)          ! what's the meaning?
+      w0(nx,jy,jz,1)=w0(nx-1,ny-jy+1,jz,1)
       w0(nx,jy,jz,2)=w0(nx-1,ny-jy+1,jz,2)
       w0(nx,jy,jz,3)=-w0(nx-1,ny-jy+1,jz,3)
    75 continue
@@ -1182,8 +1299,10 @@
 !
       return
       end
-!
-      subroutine vorticity(x)
+!                  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! vorticity 没有被改写
+      subroutine vorticity(x)                    !!! 被 facur 子程序 调用
+! Calculate vorticity form Velocity variables
+! w0=\nabla \times \vec{V}
       include 'ma3ds1.for'
       dimension x(mx,my,mz,8),xm(mx,my,mz,8)
 !
@@ -1191,9 +1310,9 @@
       do 5 jz=1,mz
       do 5 jy=1,my
       do 5 jx=1,mx
-      xm(jx,jy,jz,5)=x(jx,jy,jz,2)/x(jx,jy,jz,1)
-      xm(jx,jy,jz,6)=x(jx,jy,jz,3)/x(jx,jy,jz,1)
-      xm(jx,jy,jz,7)=x(jx,jy,jz,4)/x(jx,jy,jz,1)
+      xm(jx,jy,jz,5)=x(jx,jy,jz,2)/x(jx,jy,jz,1) ! Stands for Vx
+      xm(jx,jy,jz,6)=x(jx,jy,jz,3)/x(jx,jy,jz,1) ! Vy
+      xm(jx,jy,jz,7)=x(jx,jy,jz,4)/x(jx,jy,jz,1) ! Vz
     5 continue
 !
       do 10 jz=2,nz
@@ -1259,7 +1378,7 @@
 !
       return
       end
-!
+!                             !!!!!!!!!!!!!!! readin 没有被改写
 !      subroutine readin
 !      include 'ma3ds1.for'
 !      include 'ma3ds2.for'
@@ -1277,12 +1396,12 @@
 !      end
 !
 !cyg-------------------------------
-      subroutine readin(nst3,cont2,dtime1)
+      subroutine readin(nst3,cont2,dtime1)              !!!!!!!!!  readin  没有被改写
       include 'ma3ds1.for'
       include 'ma3ds2.for'
       character*8 contin
-	character*3 cn
-	nst=nst3
+	  character*3 cn
+	  nst=nst3
 
 	if (cont2.eq.1) then
 	open(unit=8,file='continue',status="unknown",form="unformatted")
@@ -1321,18 +1440,18 @@
       include 'ma3ds1.for'
       include 'ma3ds2.for'
       character*8 output
-      character*3 cn
+      character*3 cn                     ! It's a function!!!!
       output='m3ds'//cn(nst)
       call current(x,1)
       open(unit=8,file=output,status="unknown",form="formatted")
       write(8,9)((((x(jx,jy,jz,m),m=1,8),(w0(jx,jy,jz,m),m=1,3),jx=1,mx),jy=1,my),jz=1,mz)
-    9 format(11(1x,e10.4))
+    9 format(11(1x,e11.4))
       close(8)
       return
       end
 !
 !
-      character*3 function cn(n)
+      character*3 function cn(n)                     ! 把数字变成字母
 !
 !-----assume that n is no greater than 999
 !
@@ -1386,7 +1505,7 @@
       return
       end
 !
-      subroutine smthxyz(x,lsmth,kk)
+      subroutine smthxyz(x,lsmth,kk)     ! lsmth seemed unused!!!
       include 'ma3ds1.for'
       dimension x(mx,my,mz,8)
       do 10 k=1,kk
@@ -1396,41 +1515,41 @@
       do 12 jx=2,nx
       w0(jx,jy,jz,1)=((x(jx+1,jy,jz,m)+x(jx-1,jy,jz,m))&
                     +(x(jx,jy+1,jz,m)+x(jx,jy-1,jz,m))&
-              +(x(jx,jy,jz+1,m)+x(jx,jy,jz-1,m))-6.*x(jx,jy,jz,m))
+              +(x(jx,jy,jz+1,m)+x(jx,jy,jz-1,m))-6.d0*x(jx,jy,jz,m))
    12 continue
       do 13 jz=2,nz
       do 13 jy=2,ny
       do 13 jx=2,nsmthx
-      theta=3.1415926*(jx-2)/(nsmthx-3)
-      x(jx,jy,jz,m)=x(jx,jy,jz,m)+(1./96.0)*(.5*(1.+cos(theta)))*w0(jx,jy,jz,1)
+      theta=3.1415926d0*(jx-2)/(nsmthx-3)
+      x(jx,jy,jz,m)=x(jx,jy,jz,m)+(1.d0/96.0d0)*(.5d0*(1.d0+cos(theta)))*w0(jx,jy,jz,1)
    13 continue
       if(.not.halfx) then
       do 23 jz=2,nz
       do 23 jy=2,ny
       do 23 jx=mx-nsmthx+1,nx
-      theta=3.1415926*(mx-jx-1)/(nsmthx-3)
-      x(jx,jy,jz,m)=x(jx,jy,jz,m)+(1./96.0)*(.5*(1.+cos(theta)))*w0(jx,jy,jz,1)
+      theta=3.1415926d0*(mx-jx-1)/(nsmthx-3)
+      x(jx,jy,jz,m)=x(jx,jy,jz,m)+(1.d0/96.0d0)*(.5d0*(1.d0+cos(theta)))*w0(jx,jy,jz,1)
    23 continue
       endif
       if(.not.periody) then
       do 33 jz=2,nz
       do 33 jy=2,nsmthy
       do 33 jx=2,nx
-      theta=3.1415926*(jy-2)/(nsmthy-3)
-      x(jx,jy,jz,m)=x(jx,jy,jz,m)+(1./96.0)*(.5*(1.+cos(theta)))*w0(jx,jy,jz,1)
+      theta=3.1415926d0*(jy-2)/(nsmthy-3)
+      x(jx,jy,jz,m)=x(jx,jy,jz,m)+(1.d0/96.0d0)*(.5d0*(1.d0+cos(theta)))*w0(jx,jy,jz,1)
    33 continue
       do 35 jz=2,nz 
       do 35 jy=nyp1-nsmthy+1,ny
       do 35 jx=2,nx 
-      theta=3.1415926*(nyp1-jy-1)/(nsmthy-3)
-      x(jx,jy,jz,m)=x(jx,jy,jz,m)+(1./96.0)*(.5*(1.+cos(theta)))*w0(jx,jy,jz,1)
+      theta=3.1415926d0*(nyp1-jy-1)/(nsmthy-3)
+      x(jx,jy,jz,m)=x(jx,jy,jz,m)+(1.d0/96.0d0)*(.5d0*(1.d0+cos(theta)))*w0(jx,jy,jz,1)
    35 continue
       endif
       do 43 jz=2,nz
       do 43 jy=2,ny
       do 43 jx=2,nx
 !      theta=2.*3.1415926*zz(jz)/zmin
-      x(jx,jy,jz,m)=x(jx,jy,jz,m) +(1./48.0)*w0(jx,jy,jz,1)
+      x(jx,jy,jz,m)=x(jx,jy,jz,m) +(1.d0/48.0d0)*w0(jx,jy,jz,1)
 !     1     +(1./48.0)*(2.+cos(theta))/3.*w0(jx,jy,jz,1)
    43 continue
 !      if(.not.halfz) then
@@ -1461,7 +1580,7 @@
       w0(jx,jy,jz,1)=caf1*x(jx,jy,jz,m)+(1-caf1)*&
               ((x(jx+1,jy,jz,m)+x(jx-1,jy,jz,m))&
               +(x(jx,jy+1,jz,m)+x(jx,jy-1,jz,m))&
-              +(x(jx,jy,jz+1,m)+x(jx,jy,jz-1,m)))/6.0
+              +(x(jx,jy,jz+1,m)+x(jx,jy,jz-1,m)))/6.0d0
    12 continue
       do 13 jz=2,nz
       do 13 jy=2,ny
@@ -1484,7 +1603,7 @@
       w0(jx,jy,jz,1)=caf1*x(jx,jy,jz,m)+(1-caf1)*&
               ((x(jx+1,jy,jz,m)+x(jx-1,jy,jz,m))&
               +(x(jx,jy+1,jz,m)+x(jx,jy-1,jz,m))&
-              +(x(jx,jy,jz+1,m)+x(jx,jy,jz-1,m)))/6.0
+              +(x(jx,jy,jz+1,m)+x(jx,jy,jz-1,m)))/6.0d0
    12 continue
       do 13 jz=2,nz
       do 13 jy=2,ny
@@ -1497,7 +1616,7 @@
       return
       end
 !
-      subroutine smthf(x,caf1)
+      subroutine smthf(x,caf1)                  !   这个还没改写！！！！！！
       include 'ma3ds1.for'
       dimension x(mx,my,mz,8), wh(mx,my,mz,3)
 !
@@ -1549,10 +1668,10 @@
       do 1 jz=1,mz
       do 1 jy=1,my
       do 1 jx=1,mx
-      rv2=(x(jx,jy,jz,2)**2+x(jx,jy,jz,3)**2+x(jx,jy,jz,4)**2)&         ! rho*v^2 kinetic energy
+      rv2=(x(jx,jy,jz,2)**2+x(jx,jy,jz,3)**2+x(jx,jy,jz,4)**2)&
           /x(jx,jy,jz,1)
-      b2=x(jx,jy,jz,5)**2+x(jx,jy,jz,6)**2+x(jx,jy,jz,7)**2             ! Magnetic energy
-      pr(jx,jy,jz)=(gamma-1.)*(x(jx,jy,jz,8)-.5*rv2-.5*b2)              ! caculated from total energy and kinetic                                                                         ! and magnetic energy
+      b2=x(jx,jy,jz,5)**2+x(jx,jy,jz,6)**2+x(jx,jy,jz,7)**2
+      pr(jx,jy,jz)=(gamma-1.)*(x(jx,jy,jz,8)-.5*rv2-.5*b2)
     1 continue
       else
       do 2 jz=1,nz
@@ -1564,16 +1683,16 @@
       pr(jx,jy,jz)=(gamma-1.)*(x(jx,jy,jz,8)-.5*rv2-.5*b2)
     2 continue
       endif
-      call positive(pr,1.d-5)                      ! make sure that pr >= 10^-5
+      call positive(pr,1.d-5)
       return
       end
 !
 !
       subroutine positive(fn,c)
       include 'ma3ds1.for'
-!      include 'ma3ds2.for'
+!	include 'ma3ds2.for'
       dimension fn(mx,my,mz)
-      character*15 out
+	character*15 out
       do 1 jz=1,mz
       do 1 jy=1,my
       do 1 jx=1,mx
@@ -1582,7 +1701,7 @@
 	out='finaltime.txt'
 	open(unit=8,file=out,status="unknown",form="formatted")
 	write(8,20)time
-  20	format(9(1x,e10.4))
+  20	format(9(1x,e11.4))
   200	format('finaltime=',i5)
 !	write(*,*)'finaltime=',time
 !	stop
@@ -1597,20 +1716,21 @@
           
 !
       subroutine foreta(t,mm)
+! Set Etaf
       include 'ma3ds1.for'
       dimension etam(my)
 !
-      etac=0.5
-
+      etac=0.5d0
+      
 !cjx  attentiion      
-      etal=0.000
-      etab=0.005
-      alpha0=2.0
+      etal=0.000d0
+      etab=0.005d0
+      alpha0=2.0d0
 !cjx  attentiion      
-      xlen=15.0
-      xtrig=0.0
+      xlen=15.0d0
+      xtrig=0.0d0
 !cjx  attentiion      
-      ztrig=0.0
+      ztrig=0.0d0
 !cjx  attentiion      
       awx=aw
       awz=2.*awx
@@ -1631,21 +1751,21 @@
 !
 ! localized resistivity perturbation
       if(abs(xx(jx)-xtrig).le.0.5) then
-      etax=1.0
+      etax=1.0d0
       else
       etax=1.-tanh((xx(jx)-xtrig)/awx)**2
       endif
       if(abs(abs(zz(jz))-ztrig).le.1.) then
-      etaz=1.0
+      etaz=1.0d0
       else
       etaz=1.-tanh((abs(zz(jz))-ztrig)/awz)**2
       endif
       etaf(jx,jy,jz)=etab+etam(jy)*etal*etax*etaz
     2 continue
-      else
+      else                         ! if mm .neq. 1
       do 3 jy=1,ny
       if(abs(yy(jy)+dy/2.).le.xlen) then
-      etam(jy)=1.
+      etam(jy)=1.d0
       else
       etam(jy)=(1.-tanh(abs(yy(jy)+dy/2.)-xlen)**2)
       endif
@@ -1656,14 +1776,14 @@
       do 4 jx=1,nx
 ! localized resistivity perturbation
       if(abs(xx(jx)+dx/2.-xtrig).le.0.5) then
-      etax=1.0
+      etax=1.0d0
       else
       etax=1.-tanh((xx(jx)+dx/2.-xtrig)/awx)**2
       endif
       if(abs(abs(zz(jz)+dz/2.)-ztrig).le.1.) then
-      etaz=1.0
+      etaz=1.0d0
       else
-      etaz=1.-tanh((zz(jz)+dz/2.-ztrig)/awz)**2
+      etaz=1.-tanh((zz(jz)+dz/2.-ztrig)/awz)**2             !??????? 确定不需要 tanh((abs(zz(jz)+dz/2.)-ztrig)/aw2) 因为ztrig=0， 加不加abs都一样
       endif
       etaf(jx,jy,jz)=etab+etam(jy)*etal*etax*etaz
     4 continue
@@ -1672,7 +1792,7 @@
       return
       end
 
-!cyg---------------------------------------
+!cyg---------------------------------------                    !!!!!!!!!!!!!! 没有改写这个程序
 	subroutine incident_plasma(x,xi,t,t1,Io)  !Io代表是否是初始，初始则为0,
 	                                  !不是则为1
 	include 'ma3ds1.for'
@@ -1759,10 +1879,12 @@
 	ix_temp=mx/2+1
 	if (x(ix_temp,jy,jz,5).lt.(-bm0*3*xx(ix_temp)*zz(jz)/(xx(ix_temp)**2+yy(jy)**2+zz(jz)**2)**(5/2))) then
 
-	 x(ix_temp,jy,jz,5)  =x(ix_temp,jy,jz,5)+tanh((t-40)/tao)*(-bm0*3*xx(ix_temp)*zz(jz)/(xx(1)**2+yy(jy)**2+zz(jz)**2)**(5/2)-x(ix_temp,jy,jz,5))
+	 x(ix_temp,jy,jz,5)  =x(ix_temp,jy,jz,5)+tanh((t-40)/tao)* &
+(-bm0*3*xx(ix_temp)*zz(jz)/(xx(1)**2+yy(jy)**2+zz(jz)**2)**(5/2)-x(ix_temp,jy,jz,5))
 
 	  if  ((xx(1)**2+yy(jy)**2+zz(jz)**2)==0)  then
-	  x(ix_temp,jy,jz,5)  =x(ix_temp,jy,jz,5)+tanh((t-40)/tao)*(-bm0*3*xx(ix_temp)*zz(jz)/(xx(ix_temp)**2+yy(jy-1)**2+zz(jz)**2)**(5/2)-x(ix_temp,jy,jz,5))
+	  x(ix_temp,jy,jz,5)  =x(ix_temp,jy,jz,5)+tanh((t-40)/tao)* &
+(-bm0*3*xx(ix_temp)*zz(jz)/(xx(ix_temp)**2+yy(jy-1)**2+zz(jz)**2)**(5/2)-x(ix_temp,jy,jz,5))
 	  end if
 
 
@@ -1770,11 +1892,13 @@
 
 
 	if (x(ix_temp,jy,jz,6).lt.-bm0*3*yy(jy)*zz(jz)/(xx(ix_temp)**2+yy(jy)**2+zz(jz)**2)**(5/2)) then
-	x(ix_temp,jy,jz,6)=x(ix_temp,jy,jz,6)+tanh((t-40)/tao)*(-bm0*tanh((t-60)/40)*3*yy(jy)*zz(jz)/(xx(ix_temp)**2+yy(jy)**2+zz(jz)**2)**(5/2)-x(ix_temp,jy,jz,6))
+	x(ix_temp,jy,jz,6)=x(ix_temp,jy,jz,6)+tanh((t-40)/tao)* &
+(-bm0*tanh((t-60)/40)*3*yy(jy)*zz(jz)/(xx(ix_temp)**2+yy(jy)**2+zz(jz)**2)**(5/2)-x(ix_temp,jy,jz,6))
 
 	if  ((xx(ix_temp)**2+yy(jy)**2+zz(jz)**2)==0)  then
 
-	x(ix_temp,jy,jz,6)=x(ix_temp,jy,jz,6)+tanh((t-40)/tao)*(-bm0*tanh((t-60)/40)*3*yy(jy-1)*zz(jz)/(xx(ix_temp)**2+yy(jy-1)**2+zz(jz)**2)**(5/2)-x(ix_temp,jy,jz,6))
+	x(ix_temp,jy,jz,6)=x(ix_temp,jy,jz,6)+tanh((t-40)/tao)* &
+(-bm0*tanh((t-60)/40)*3*yy(jy-1)*zz(jz)/(xx(ix_temp)**2+yy(jy-1)**2+zz(jz)**2)**(5/2)-x(ix_temp,jy,jz,6))
 
 	end if
 
@@ -1782,11 +1906,13 @@
 
 
 	if (x(ix_temp,jy,jz,7).lt.(-bm0*(2*zz(jz)**2-xx(ix_temp)**2-yy(jy)**2)/(xx(ix_temp)**2+yy(jy)**2+zz(jz)**2)**(5/2))) then
-	x(ix_temp,jy,jz,7)  =x(ix_temp,jy,jz,7)+tanh((t-40)/tao)*((2*zz(jz)**2-xx(ix_temp)**2-yy(jy)**2)/(xx(ix_temp)**2+yy(jy)**2+zz(jz)**2)**(5/2)-x(ix_temp,jy,jz,7))
+	x(ix_temp,jy,jz,7)  =x(ix_temp,jy,jz,7)+tanh((t-40)/tao)* &
+((2*zz(jz)**2-xx(ix_temp)**2-yy(jy)**2)/(xx(ix_temp)**2+yy(jy)**2+zz(jz)**2)**(5/2)-x(ix_temp,jy,jz,7))
 
 	if  ((xx(ix_temp)**2+yy(jy)**2+zz(jz)**2)==0)  then
 
-	x(ix_temp,jy,jz,7)=x(ix_temp,jy,jz,7)+tanh((t-40)/tao)*((2*zz(jz)**2-xx(1)**2-yy(jy-1)**2)/(xx(ix_temp)**2+yy(jy-1)**2+zz(jz)**2)**(5/2)-x(ix_temp,jy,jz,7))
+	x(ix_temp,jy,jz,7)=x(ix_temp,jy,jz,7)+tanh((t-40)/tao)* &
+((2*zz(jz)**2-xx(1)**2-yy(jy-1)**2)/(xx(ix_temp)**2+yy(jy-1)**2+zz(jz)**2)**(5/2)-x(ix_temp,jy,jz,7))
 
 	end if
 	

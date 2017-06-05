@@ -317,7 +317,9 @@ void fluc_at_bndry(VARIABLE *var, double fluctuation, double kz)
 		{
 			z=Z[k];
 			var[4].value[0][j][k]=var[4].value[0][j][k]-kz*fluctuation*sin(kz*z);
-			var[4].value[Grid_Num_x-1][j][k]=var[4].value[Grid_Num_x-1][j][k]+kz*fluctuation*sin(kz*z);
+			var[4].value[1][j][k]=var[4].value[1][j][k]-kz*fluctuation*sin(kz*z);
+			var[4].value[Grid_Num_x-2][j][k]=var[4].value[Grid_Num_x-2][j][k]-kz*fluctuation*sin(kz*z);
+			var[4].value[Grid_Num_x-1][j][k]=var[4].value[Grid_Num_x-1][j][k]-kz*fluctuation*sin(kz*z);
 			// Does it need to add an fluctuation on sub_var[[][][]?????
 		}
 }

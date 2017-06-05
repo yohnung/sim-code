@@ -216,7 +216,7 @@ void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 		for (i=0;i<Grid_Num_x;i++)
 			for (j=0;j<Grid_Num_y;j++)
 				for (k=0;k<Grid_Num_z;k++)
-					sub_var[n][i][j][k]=0;
+					sub_var[n][i][j][k]=pointer[n].value[i][j][k]-var_x[n][i];
 	// delete dynamic variable-array
 	delete []current;
 	delete []sub_mag_field;
@@ -300,7 +300,7 @@ void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 		for (i=0;i<Grid_Num_x;i++)
 			for (j=0;j<Grid_Num_y;j++)
 				for (k=0;k<Grid_Num_z;k++)
-					sub_var[n][i][j][k]=0;
+					sub_var[n][i][j][k]=pointer[n].value[i][j][k]-var_x[n][i];
 	// delete dynamic variable-array
 	delete []current;
 	delete []sub_mag_field;

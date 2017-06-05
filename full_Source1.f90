@@ -372,7 +372,7 @@
       do 9 jy=1,nyp1
       do 9 jx=1,nxp1
       xm(jx,jy,jz,m)=0.
-      xi(jx,jy,jz,m)=0.
+      xi(jx,jy,jz,m)=x(jx,jy,jz,m)-fx(jx,m)  !0.
     9 continue
 
       return
@@ -432,7 +432,7 @@
       do 9 jy=1,nyp1
       do 9 jx=1,nxp1
       xm(jx,jy,jz,m)=0.
-      xi(jx,jy,jz,m)=0.
+      xi(jx,jy,jz,m)=x(jx,jy,jz,m)-fx(jx,m)    !0
     9 continue
 
       return

@@ -255,7 +255,8 @@ void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				pointer[5].value[i][j][k]=By;
 				pointer[6].value[i][j][k]=Bz;				
 				rhoVx=0.;
-				rhoVy=rho*Bal_coeff*2./norm_lambda;
+				rhoVy=0;       // rho*Bal_coeff*2./norm_lambda should be present in PIC simulation, not in fluid  
+							   // when fluid equation does not take collision into consideration
 				rhoVz=0;
 				pointer[1].value[i][j][k]=rhoVx;
 				pointer[2].value[i][j][k]=rhoVy;
@@ -275,7 +276,8 @@ void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				sub_var[5][i][j][k]=By;
 				sub_var[6][i][j][k]=Bz;				
 				rhoVx=0.;
-				rhoVy=rho*Bal_coeff*2./norm_lambda;
+				rhoVy=0;       // rho*Bal_coeff*2./norm_lambda should be present in PIC simulation, not in fluid  
+							   // when fluid equation does not take collision into consideration
 				rhoVz=0;
 				sub_var[1][i][j][k]=rhoVx;
 				sub_var[2][i][j][k]=rhoVy;

@@ -401,10 +401,10 @@
       do 4 jy=1,nyp1
       do 4 jx=1,nxp1
       x(jx,jy,jz,2) = 0.
-      x(jx,jy,jz,3) = x(jx,jy,jz,1)*balcoeff*2./normlambda
+      x(jx,jy,jz,3) = 0.
       x(jx,jy,jz,4) = 0.
       xi(jx,jy,jz,2) = 0.
-      xi(jx,jy,jz,3) = xi(jx,jy,jz,1)*balcoeff*2./normlambda
+      xi(jx,jy,jz,3) = 0.
       xi(jx,jy,jz,4) = 0.
     4 continue
 

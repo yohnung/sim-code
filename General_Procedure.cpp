@@ -17,16 +17,16 @@ extern double X[], Y[], Z[], X_interval[], Y_interval[], Z_interval[];
 extern double var_x[][Grid_Num_x], var_x_plushalfdx[][Grid_Num_x];          // Declaration of external variables
 extern double sub_var[8][Grid_Num_x][Grid_Num_y][Grid_Num_z];
 
-void make_pressure_positive(BASIC_VARIABLE & pressure_obj, double positive_value)
+void make_pressure_positive(BASIC_VARIABLE & pressure_obj, double positive_value, Type T)
 {
 	//char * file_name;
 	ofstream out("pressure_is_negative.txt");
 	int i,j,k;
-	for(i=0;i<Grid_Num_x;i++)
+	for(i=0;i<Grid_Num_x-T;i++)
 	{
-		for(j=0;j<Grid_Num_y;j++)
+		for(j=0;j<Grid_Num_y-T;j++)
 		{
-			for(k=0;k<Grid_Num_z;k++)
+			for(k=0;k<Grid_Num_z-T;k++)
 			{
 				if(pressure_obj.value[i][j][k]<0.)
 					out<<"Oops, pressure is negative, and program can be stropped!!!"<<endl;

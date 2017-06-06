@@ -30,7 +30,7 @@
 !
       dtime=10.         ! concernd about continuing running
       dnstep=1.         ! concernd about continuing running
-      nstop=49          ! maximum time-step
+      nstop=100          ! maximum time-step
 	  t0=0.0    
 	  nst2=5            ! 给nst 或者nst1 赋值的
 	  cont=2    
@@ -40,8 +40,8 @@
 
 ! cwm add:start
       call harris_initia
-!     call fluc_at_bndry
-      call fluc_at_neutral_line
+      call fluc_at_bndry
+!     call fluc_at_neutral_line
 ! cwm add:end
 !
 !     if(.not.lrstrt)then
@@ -69,6 +69,9 @@
 ! cwm add: end
 
   200 continue
+      call current(x,1)                          ! located in stepon subroutine before
+      call foreta(time,1)                        ! located in stepon subroutine before
+      call pressure(x,1)                         ! located in stepon subroutine before
       call setdt
 
       call stepon
@@ -481,9 +484,9 @@
 
 ! 1.2 Advance the first step
       hdt=0.5*dt                       ! hdt for half_dt
-      call current(x,1)
-      call foreta(time,1)
-      call pressure(x,1)
+!     call current(x,1)                ! replaced to the front of setdt
+!     call foreta(time,1)              ! replaced to the front of setdt
+!     call pressure(x,1)               ! replaced to the front of setdt
       do 1000 m=1,8
       call flux(x,fs,gs,hs,mx,my,mz,m,1)
       do 100 jz=1,nz
@@ -1692,20 +1695,20 @@
       include 'ma3ds1.for'
 !	include 'ma3ds2.for'
       dimension fn(mx,my,mz)
-	character*15 out
+	  character*15 out
       do 1 jz=1,mz
       do 1 jy=1,my
       do 1 jx=1,mx
 
-	if (fn(jx,jy,jz).lt.0.0)then
-	out='finaltime.txt'
-	open(unit=8,file=out,status="unknown",form="formatted")
-	write(8,20)time
-  20	format(9(1x,e11.4))
-  200	format('finaltime=',i5)
-!	write(*,*)'finaltime=',time
-!	stop
-	endif
+	  if (fn(jx,jy,jz).lt.0.0)then
+	  out='finaltime.txt'
+	  open(unit=8,file=out,status="unknown",form="formatted")
+	  write(8,20)time
+    20	format(9(1x,e11.4))
+    200	format('finaltime=',i5)
+!     write(*,*)'finaltime=',time
+!	  stop
+	  endif
 
       if(fn(jx,jy,jz).lt.c) then
       fn(jx,jy,jz)=c

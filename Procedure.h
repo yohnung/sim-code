@@ -43,7 +43,7 @@ void smooth(VARIABLE *, double, int);
 
 // General_Procedure.h
 
-void make_pressure_positive(BASIC_VARIABLE &, double);
+void make_pressure_positive(BASIC_VARIABLE &, double, Type);
 
 // Update variables using 2-order Lax-Wendroff method
 void exclude_soucrce_half_update(VARIABLE *, BASIC_VARIABLE [][3], double, Order);

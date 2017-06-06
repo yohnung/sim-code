@@ -388,24 +388,24 @@
       do 3 jx=1,nxp1
       x(jx,jy,jz,1) = (1./cosh(xx(jx)/normlambda))**2+rhoinfinity
       x(jx,jy,jz,7) = tanh(xx(jx)/normlambda)
-	  x(jx,jy,jz,6) = 0.
-      x(jx,jy,jz,5) = 0.
+	  x(jx,jy,jz,6) = 0.d0
+      x(jx,jy,jz,5) = 0.d0
 
       xi(jx,jy,jz,1) = (1./cosh((xx(jx)+dx/2.)/normlambda))**2+rhoinfinity
       xi(jx,jy,jz,7) = tanh((xx(jx)+dx/2.)/normlambda)
-      xi(jx,jy,jz,6) = 0.
-      xi(jx,jy,jz,5) = 0.
+      xi(jx,jy,jz,6) = 0.d0
+      xi(jx,jy,jz,5) = 0.d0
     3 continue
 !
       do 4 jz=1,nzp1
       do 4 jy=1,nyp1
       do 4 jx=1,nxp1
-      x(jx,jy,jz,2) = 0.
-      x(jx,jy,jz,3) = 0.
-      x(jx,jy,jz,4) = 0.
-      xi(jx,jy,jz,2) = 0.
-      xi(jx,jy,jz,3) = 0.
-      xi(jx,jy,jz,4) = 0.
+      x(jx,jy,jz,2) = 0.d0
+      x(jx,jy,jz,3) = 0
+      x(jx,jy,jz,4) = 0
+      xi(jx,jy,jz,2) = 0.d0
+      xi(jx,jy,jz,3) = 0
+      xi(jx,jy,jz,4) = 0
     4 continue
 
       do 5 jz=1,nzp1

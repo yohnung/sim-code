@@ -40,8 +40,6 @@
 
 ! cwm add:start
       call harris_initia
-      call fluc_at_bndry
-!     call fluc_at_neutral_line
 ! cwm add:end
 !
 !     if(.not.lrstrt)then
@@ -477,6 +475,13 @@
       include 'ma3ds1.for'
       include 'ma3ds2.for'
       dimension xhelp(216,12)
+!
+! cwm add: start to add fluctuation 
+      if(nstep==10) then
+      call fluc_at_bndry
+!     call fluc_at_neutral_line
+      endif
+! cwm add: end to add fluctuation 
 !
 ! 1. first step
 !

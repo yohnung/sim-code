@@ -128,6 +128,7 @@
 ! cwm add: start
       close(112)
       close(117)
+      close(120)
 ! cwm add: end
 
       stop
@@ -1073,8 +1074,8 @@
     4 continue
       else
       if(m.eq.5) then
-      call current(x,mm)
-      call foreta(time,mm)
+!     call current(x,mm)               ! because before 'call flux', 'current' and 'foreta' have benn called already,
+!     call foreta(time,mm)             ! if here call current again, will bring fluctuation we add on B to influence current also
       do 5 jz=1,nnz
       do 5 jy=1,nny
       do 5 jx=1,nnx
@@ -1094,8 +1095,8 @@
     5 continue
       else
       if(m.eq.6) then
-      call current(x,mm)
-      call foreta(time,mm)
+!     call current(x,mm)               ! because before 'call flux', 'current' and 'foreta' have benn called already,
+!     call foreta(time,mm)             ! if here call current again, will bring fluctuation we add on B to influence current also
       do 6 jz=1,nnz
       do 6 jy=1,nny
       do 6 jx=1,nnx
@@ -1117,8 +1118,8 @@
     6 continue
       else
       if(m.eq.7) then
-      call current(x,mm)
-      call foreta(time,mm)
+!     call current(x,mm)               ! because before 'call flux', 'current' and 'foreta' have benn called already,
+!     call foreta(time,mm)             ! if here call current again, will bring fluctuation we add on B to influence current also
       do 7 jz=1,nnz
       do 7 jy=1,nny
       do 7 jx=1,nnx
@@ -1701,13 +1702,13 @@
 !	include 'ma3ds2.for'
       dimension fn(mx,my,mz)
 	  character*15 out
+      out='finaltime.txt'
+	  open(unit=8,file=out,status="unknown",form="formatted",position="append")    ! attention to 'append', remember to delete finaltime
       do 1 jz=1,mz
       do 1 jy=1,my
       do 1 jx=1,mx
 
-	  if (fn(jx,jy,jz).lt.0.0)then
-	  out='finaltime.txt'
-	  open(unit=8,file=out,status="unknown",form="formatted")
+	  if (fn(jx,jy,jz).lt.0.0)then	  
 	  write(8,20)time
     20	format(9(1x,e11.4))
     200	format('finaltime=',i5)
@@ -1719,6 +1720,7 @@
       fn(jx,jy,jz)=c
       end if
     1 continue
+      close(8)
       return
       end  
           

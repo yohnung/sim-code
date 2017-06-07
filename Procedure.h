@@ -32,7 +32,7 @@ void cal_flux(BASIC_VARIABLE [][3], VARIABLE *, VARIABLE *, BASIC_VARIABLE &, BA
 void ext_from_flux(BASIC_VARIABLE *, BASIC_VARIABLE [][3]);
 
 // Setting time-interval
-double set_dt(VARIABLE *, BASIC_VARIABLE &, VARIABLE *, BASIC_VARIABLE &, double);
+double set_dt(VARIABLE *, BASIC_VARIABLE &, VARIABLE *, BASIC_VARIABLE &, double, double);
 
 // Step on variables
 void step_on(VARIABLE *, BASIC_VARIABLE [][3], double, double);

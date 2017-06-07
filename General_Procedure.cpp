@@ -16,11 +16,13 @@ using namespace std;
 extern double X[], Y[], Z[], X_interval[], Y_interval[], Z_interval[];
 extern double var_x[][Grid_Num_x], var_x_plushalfdx[][Grid_Num_x];          // Declaration of external variables
 extern double sub_var[8][Grid_Num_x][Grid_Num_y][Grid_Num_z];
+extern int nstep;
+//char * file_name, open a file
+ofstream pre_out("pressure_is_negative.txt");
 
 void make_pressure_positive(BASIC_VARIABLE & pressure_obj, double positive_value, Type T)
 {
-	//char * file_name;
-	ofstream out("pressure_is_negative.txt");
+	int times=0;
 	int i,j,k;
 	for(i=0;i<Grid_Num_x-T;i++)
 	{
@@ -29,7 +31,18 @@ void make_pressure_positive(BASIC_VARIABLE & pressure_obj, double positive_value
 			for(k=0;k<Grid_Num_z-T;k++)
 			{
 				if(pressure_obj.value[i][j][k]<0.)
-					out<<"Oops, pressure is negative, and program can be stropped!!!"<<endl;
+				{
+					if (times==0)
+					{
+						pre_out<<"  Oops, pressure is negative, and program can be stopped!!!"<<endl;
+						pre_out<<"Located in (xi="<<i<<", yj="<<j<<", zk="<<k<<")" \
+							<<"when time step is nt="<<nstep<<"."<<endl;
+					}
+					else
+					{
+						pre_out<<"And        (xi="<<i<<", yj="<<j<<", zk="<<k<<")";
+					}
+				}
 				if(pressure_obj.value[i][j][k]<positive_value)
 					pressure_obj.value[i][j][k]=positive_value;
 			}

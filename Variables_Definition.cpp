@@ -17,7 +17,7 @@ extern double X[], Y[], Z[], X_interval[], Y_interval[], Z_interval[];
 // Recording variables' value
 void BASIC_VARIABLE::record(ofstream &out_obj)       // recrd1
 			   {
-				   out_obj<<setprecision(15)<<setiosflags(ios::fixed);
+				   out_obj<<setiosflags(ios::scientific)<<setprecision(15);
 				   int i,j,k;
 				   j=1;
 				   for (i=0;i<Grid_Num_x;i++)
@@ -115,9 +115,9 @@ void VARIABLE::boundary_set(Symmetry_Type sign_x, Symmetry_Type sign_z)
 
 void VARIABLE::smooth_xyz(int times)
 {
-	double temp_var[Grid_Num_x][Grid_Num_y][Grid_Num_z];
 	int i,j,k, m;
 	double theta;
+	double (*temp_var)[Grid_Num_y][Grid_Num_z]= new double[Grid_Num_x][Grid_Num_y][Grid_Num_z];
 	for (m=0;m<times;m++)
 	{		
 		for(i=1;i<Grid_Num_x-1;i++)
@@ -226,14 +226,14 @@ void VARIABLE::smooth_xyz(int times)
 			}
 		}		
 */
-	}	
+	}
+	delete []temp_var;
 }
 
 void VARIABLE::average(double aver_coeff)
 {
-	double temp_var[Grid_Num_x][Grid_Num_y][Grid_Num_z];
 	int i,j,k;
-	
+	double (*temp_var)[Grid_Num_y][Grid_Num_z]= new double[Grid_Num_x][Grid_Num_y][Grid_Num_z];	
 	for(i=1;i<Grid_Num_x-1;i++)
 	{
 		for(j=1;j<Grid_Num_y-1;j++)
@@ -257,4 +257,5 @@ void VARIABLE::average(double aver_coeff)
 			}
 		}
 	}
+	delete []temp_var;
 }	

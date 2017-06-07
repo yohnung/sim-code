@@ -15,9 +15,12 @@ using namespace std;
 
 // Clarification of mesh-grid
 extern double X[], Y[], Z[], X_interval[], Y_interval[], Z_interval[];
+extern int nstep;
 double sub_var[8][Grid_Num_x][Grid_Num_y][Grid_Num_z];  //subsidiary_variable
 double var_x[8][Grid_Num_x], var_x_plushalfdx[8][Grid_Num_x];          // fx, fxi, used in 2-Lax_Wendroff stepon
 // For following procedures
+ofstream max_dt_out("max_dt.txt");
+ofstream min_dt_out("min_dt.txt");
 
 void set_mesh()
 {
@@ -31,8 +34,8 @@ void set_mesh()
 	ofstream out("grid.dat");
 	ofstream out_2D("grid_2D.dat");
 
-	out<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<X[0];
-	out_2D<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<X[0];
+	out<<" "<<setiosflags(ios::scientific)<<setprecision(6)<<X[0];
+	out_2D<<" "<<setiosflags(ios::scientific)<<setprecision(6)<<X[0];
 	int i,j,k;
 	if (uniform_x==True)
 	{
@@ -40,8 +43,8 @@ void set_mesh()
 		{			
 			X_interval[i]=(x_max-x_min)/nx;	
 			X[i+1]=X[i]+X_interval[i];
-			out<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<X[i+1];
-			out_2D<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<X[i+1];
+			out<<" "<<X[i+1];
+			out_2D<<" "<<X[i+1];
 		}
 	}
 	else
@@ -50,22 +53,22 @@ void set_mesh()
 		{
 			X_interval[i]=0.01;
 			X[i+1]=X[i]+X_interval[i];
-			out<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<X[i+1];
-			out_2D<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<X[i+1];
+			out<<" "<<X[i+1];
+			out_2D<<" "<<X[i+1];
 		}
 	}
 	X_interval[Grid_Num_x-1]=X_interval[Grid_Num_x-2];
 	//out<<endl;
 	//out_2D<<endl;
 
-	out<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<Y[0];
+	out<<" "<<Y[0];
 	if (uniform_y==True)
 	{
 		for (j=0;j<ny;j++)
 		{			
 			Y_interval[j]=(y_max-y_min)/ny;	
 			Y[j+1]=Y[j]+Y_interval[j];
-			out<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<Y[j+1];
+			out<<" "<<Y[j+1];
 		}
 	}
 	else
@@ -74,22 +77,22 @@ void set_mesh()
 		{			
 			Y_interval[j]=0.01;
 			Y[j+1]=Y[j]+Y_interval[j];
-			out<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<Y[j+1];
+			out<<" "<<Y[j+1];
 		}
 	}
 	Y_interval[Grid_Num_y-1]=Y_interval[Grid_Num_y-2];
 	//out<<endl;
 	
-	out<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<Z[0];
-	out_2D<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<Z[0];
+	out<<" "<<Z[0];
+	out_2D<<" "<<Z[0];
 	if (uniform_z==True)
 	{
 		for (k=0;k<nz;k++)
 		{			
 			Z_interval[k]=(z_max-z_min)/nz;	
 			Z[k+1]=Z[k]+Z_interval[k];
-			out<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<Z[k+1];
-			out_2D<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<Z[k+1];
+			out<<" "<<Z[k+1];
+			out_2D<<" "<<Z[k+1];
 		}
 	}
 	else
@@ -98,8 +101,8 @@ void set_mesh()
 		{			
 			Z_interval[k]=0.01;
 			Z[k+1]=Z[k]+Z_interval[k];
-			out<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<Z[k+1];
-			out_2D<<" "<<setprecision(3)<<setiosflags(ios::fixed)<<Z[k+1];
+			out<<" "<<Z[k+1];
+			out_2D<<" "<<Z[k+1];
 		}
 	}
 	Z_interval[Grid_Num_z-1]=Z_interval[Grid_Num_z-2];
@@ -121,8 +124,6 @@ void set_mesh()
 */
 void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 {	
-	VARIABLE *current=new VARIABLE[3];
-	VARIABLE *sub_mag_field=new VARIABLE[3];               //sub_ for subsidary
 	double rm,rs,bm,bs,v0,betam, pressuremtotal;
 	double x,y,z, dx,dy,dz, r5;
 	double rho, Bx, By, Bz, rhoVx, rhoVy, rhoVz;
@@ -133,6 +134,9 @@ void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 	v0=v_0;
 	betam=beta_m; 
 	pressuremtotal=betam*0.5*pow(bm,2)+0.5*pow(bm,2);      //betam*0.5*pow(bm,2)=pmsp
+	
+	VARIABLE *current=new VARIABLE[3];
+	VARIABLE *sub_mag_field=new VARIABLE[3];               //sub_ for subsidary
 
 	int i,j,k,n;
 	for (i=0;i<Grid_Num_x;i++)
@@ -225,8 +229,6 @@ void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 
 void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 {	
-	VARIABLE *current=new VARIABLE[3];
-	VARIABLE *sub_mag_field=new VARIABLE[3];               //sub_ for subsidary
 	double rhoinfinity, Bal_coeff, norm_lambda;
 	double x,y,z, dx,dy,dz;
 	double rho, Bx, By, Bz, rhoVx, rhoVy, rhoVz;
@@ -235,6 +237,9 @@ void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 	rhoinfinity=rho_infinity;
 	Bal_coeff=Balance_coefficient;
 	norm_lambda=normalized_lambda;
+	
+	VARIABLE *current=new VARIABLE[3];
+	VARIABLE *sub_mag_field=new VARIABLE[3];               //sub_ for subsidary
 
 	int i,j,k,n;
 	for (i=0;i<Grid_Num_x;i++)
@@ -333,7 +338,7 @@ void fluc_at_neutral_line(VARIABLE *var, double fluctuation, double kx, double k
 	double x, z;
 	int i, j, k;
 	norm_lambda=normalized_lambda;
-	for (i=1; i<Grid_Num_x; i++)
+	for (i=0; i<Grid_Num_x; i++)
 		for (j=0;j<Grid_Num_y;j++)
 			for (k=0; k<Grid_Num_z; k++)
 			{
@@ -780,14 +785,16 @@ void ext_from_flux( BASIC_VARIABLE *Electric_field, BASIC_VARIABLE flux[][3] )
 }
 
 // Setting time-interval
-double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BASIC_VARIABLE &pressure_obj, double time)
+double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BASIC_VARIABLE &pressure_obj, double time, double last_dt)
 {
 	//set_eta(eta_obj, pointer, current, time);
 	double dt;
 	double dx,dy,dz,dxyz;	
-	double Temp_dt, dtmin=1000., test_dt=1000.;
+	double Temp_dt, dt_min=1000., test_dt=1000.;
 	double rho, rhoVx, rhoVy, rhoVz, Bx, By, Bz, pressure;
-	int i,j,k;
+	int max_dt_i, max_dt_j, max_dt_k;                   // for diagnostic
+
+	int i,j,k, times=0;
 	for (i=0;i<Grid_Num_x;i++)
 	{
 		for (j=0;j<Grid_Num_y;j++)
@@ -809,14 +816,44 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 				pressure=pressure_obj.value[i][j][k];
 				Temp_dt=dxyz/( sqrt( pow(rhoVx,2)+pow(rhoVy,2)+pow(rhoVz,2) )/rho+ \
 					sqrt( ( Bx*Bx+By*By+Bz*Bz+phy_gamma*pressure )/rho ) );
+				if (Temp_dt > dt_min)
+				{
+					if (times==0)
+					{
+						max_dt_out<<"  Time step is"<<nstep<<" when dt>="<<int(dt_min)<<endl\
+							      <<"where location is (i="<<i<<", j="<<j<<", k="<<k<<")"<<endl;
+						max_dt_out<<setiosflags(ios::scientific)<<setprecision(3);
+					}
+					else
+						max_dt_out<<"And               (  "<<i<<",   "<<j<<",   "<<k<<")"<<endl;
+					max_dt_out<<"    rho         Vx          Vy          Vz          B\
+								x          By         Bz          P"<<endl;
+					max_dt_out<<setw(13)<<rho<<setw(12)<<rhoVx/rho<<setw(12)<<rhoVy/rho<<setw(12)<<rhoVz/rho\
+						<<setw(12)<<Bx<<setw(12)<<By<<setw(12)<<Bz<<setw(11)<<pressure<<endl\
+						<<"pressure="<<pressure<<endl;
+					times=1;
+				}
 				if (Temp_dt < test_dt)
 				{
 					test_dt=Temp_dt;
+					max_dt_i=i; max_dt_j=j; max_dt_k=k;
 				}
 			}
 		}
 	}
-	dt=0.5*min(dtmin,test_dt);
+	dt=0.5*min(dt_min,test_dt);
+	if (time>0 && dt<.5*last_dt)
+	{
+		min_dt_out<<setiosflags(ios::scientific)<<setprecision(3);
+		min_dt_out<<"  There maybe a problem! Should know that:"<<endl;
+		min_dt_out<<"Location is (i="<<i<<", j="<<j<<", k="<<k<<")."<<endl;
+		min_dt_out<<"And time step is "<<nstep<<", with variables are:"<<endl;
+		min_dt_out<<"    rho         Vx          Vy          Vz          B\
+					x          By         Bz          P"<<endl;
+		min_dt_out<<setw(13)<<rho<<setw(12)<<rhoVx/rho<<setw(12)<<rhoVy/rho<<setw(12)<<rhoVz/rho\
+			<<setw(12)<<Bx<<setw(12)<<By<<setw(12)<<Bz<<setw(11)<<pressure<<endl\
+			<<"pressure="<<pressure<<endl<<endl;
+	}
 	//cout<<"Set_dt invoked! And dt="<<dt<<endl;
 	return dt;
 }

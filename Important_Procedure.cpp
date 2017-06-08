@@ -823,13 +823,14 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 				{
 					if (times==0)
 					{
-						max_dt_out<<" When dt>="<<int(dt_min)<<" , time step is "<<nstep<<endl\
-							      <<"where location is ( i="<<setw(3)<<i<<", j="<<setw(3)<<j<<", k="<<setw(3)<<k<<" )"<<endl;
+						max_dt_out<<endl;
+						max_dt_out<<" When dt >= "<<int(dt_min)<<" , time step is "<<nstep<<endl\
+							      <<"where location is ( i = "<<setw(3)<<i<<", j = "<<setw(3)<<j<<", k = "<<setw(3)<<k<<" )"<<endl;
 						max_dt_out<<setiosflags(ios::scientific)<<setprecision(3);
 						times+=1;
 					}
 					else
-						max_dt_out<<"And               (   "<<i<<",   "<<j<<",   "<<k<<" )"<<endl;
+						max_dt_out<<"And               (     "<<setw(3)<<i<<",     "<<setw(3)<<j<<",     "<<setw(3)<<k<<" )"<<endl;
 					max_dt_out<<"     rho          Vx          Vy          Vz          Bx     "\
 						      <<"     By          Bz          P"<<endl;
 					max_dt_out<<setw(13)<<rho<<setw(12)<<rhoVx/rho<<setw(12)<<rhoVy/rho<<setw(12)<<rhoVz/rho\
@@ -850,12 +851,12 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 	{
 		min_dt_out<<setiosflags(ios::scientific)<<setprecision(3);
 		min_dt_out<<"  Noth that dt changes a lot. This dt is calculated on "\
-		          <<"location ( i="<<setw(3)<<i<<", j="<<setw(3)<<j<<", k="<<setw(3)<<k<<" )"<<endl;
-		min_dt_out<<"And time step is "<<nstep<<", with variables are:"<<endl;
+		          <<"location ( i = "<<setw(3)<<max_dt_i<<", j = "<<setw(3)<<max_dt_j<<", k = "<<setw(3)<<max_dt_k<<" )"<<endl;
+		min_dt_out<<"And time step is "<<nstep<<" , with variables are:"<<endl;
 		min_dt_out<<"     rho          Vx          Vy          Vz          Bx     "\
 				  <<"     By          Bz          P"<<endl;
 		min_dt_out<<setw(13)<<rho<<setw(12)<<rhoVx/rho<<setw(12)<<rhoVy/rho<<setw(12)<<rhoVz/rho\
-			<<setw(12)<<Bx<<setw(12)<<By<<setw(12)<<Bz<<setw(11)<<pressure<<endl;
+			<<setw(12)<<Bx<<setw(12)<<By<<setw(12)<<Bz<<setw(11)<<pressure<<endl<<endl;
 	}
 	//cout<<"Set_dt invoked! And dt="<<dt<<endl;
 	return dt;

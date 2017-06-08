@@ -64,7 +64,7 @@ int main()
 		cout<<setw(8)<<nstep<<setw(15)<<\
 			"time = "<<setiosflags(ios::scientific)<<setprecision(15)<<system_time\
 			<<setw(14)<<"dt = "<<dt<<endl;
-		timeout<<"nstep = "<<nstep<<endl<<" ,"<<setw(20)<<"and time = "<<setiosflags(ios::scientific)\
+		timeout<<"nstep = "<<nstep<<endl<<" "<<setw(20)<<"and time = "<<setiosflags(ios::scientific)\
 			<<setprecision(15)<<system_time<<" ,"<<setw(14)<<"dt = "<<dt<<endl;	
 		if ((nstep+1)%12==0)
 		{

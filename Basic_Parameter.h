@@ -20,7 +20,7 @@
 #define Negative -1
 // Position value
 #define Boundary 'b'
-#define Neutral_Line 'nl'
+#define Neutral_Line 'n'
 // variable-type definition
 typedef int Logic;        //Logic=True or False
 typedef int Type;         // Type=Complete or Incomplete

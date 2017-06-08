@@ -33,13 +33,14 @@ void make_pressure_positive(BASIC_VARIABLE & pressure_obj, double positive_value
 					if (times==0)
 					{
 						pre_out<<"  Oops, pressure is negative, and program can be stopped!!!"<<endl;
-						pre_out<<"Located in ( xi="<<setw(3)<<i<<", yj="<<setw(3)<<j<<", zk="<<setw(3)<<k<<" )" \
-							<<"when time step is nt = "<<nstep<<"."<<endl;
+						pre_out<<"Located in ( xi = "<<setw(3)<<i<<", yj = "<<setw(3)<<j<<", zk = "<<setw(3)<<k<<" ) " \
+							<<" when time step is nt = "<<nstep<<"."<<endl;
 						times+=1;
 					}
 					else
 					{
-						pre_out<<"And        ( xi="<<setw(3)<<i<<", yj="<<setw(3)<<j<<", zk="<<setw(3)<<k<<" )";
+						pre_out<<"And        ( xi = "<<setw(3)<<i<<", yj = "<<setw(3)<<j<<", zk = "<<setw(3)<<k<<" ) ";
+						pre_out<<endl;
 					}
 				}
 				if(pressure_obj.value[i][j][k]<positive_value)

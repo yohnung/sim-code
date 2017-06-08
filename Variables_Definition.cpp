@@ -1,14 +1,12 @@
 // Variables_Definition.cpp
-// output is changed to 2D output
+// 2D output is addedto output file  
 
 #include <iostream>
 #include <fstream>
 #include <iomanip>
 #include <cmath>
 using namespace std;
-#include "Type_and_Macro_Definition.h"
 #include "Basic_Parameter.h"
-#include "Runtime_Diagnostic_Parameter.h"
 #include "Variables_Definition.h"
 
 // declarification of mesh-grid
@@ -17,16 +15,19 @@ extern double X[], Y[], Z[], X_interval[], Y_interval[], Z_interval[];
 // Recording variables' value
 void BASIC_VARIABLE::record(ofstream &out_obj)       // recrd1
 			   {
-				   out_obj<<setiosflags(ios::scientific)<<setprecision(15);
+				   int out_Grid_x, out_Grid_y, out_Grid_z, num=40;
 				   int i,j,k;
-				   j=1;
-				   for (i=0;i<Grid_Num_x;i++)
+				   out_Grid_x=(Grid_Num_x-1)/num;
+				   out_Grid_y=(Grid_Num_y-1)/num;
+				   out_Grid_z=(Grid_Num_z-1)/num;
+				   out_obj<<setiosflags(ios::scientific)<<setprecision(15);
+				   for (i=0;i<=num;i++)
 				   {
-					   for (j=0;j<Grid_Num_y;j++)
+					   for (j=0;j<=num;j++)
 					   {
-						   for (k=0;k<Grid_Num_z;k++)
+						   for (k=0;k<=num;k++)
 						   {
-							   out_obj<<" "<<value[i][j][k];
+							   out_obj<<" "<<value[i*out_Grid_x][j*out_Grid_y][k*out_Grid_z];
 						   }
 					   out_obj<<endl;
 					   }

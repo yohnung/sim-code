@@ -7,9 +7,8 @@
 #include <iomanip>
 #include <cmath>
 using namespace std;
-#include "Type_and_Macro_Definition.h"
 #include "Basic_Parameter.h"
-#include "Runtime_Diagnostic_Parameter.h"
+#include "Physics_Parameter.h"
 #include "Variables_Definition.h"
 #include "Procedure.h"
 
@@ -314,43 +313,47 @@ void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 	//cout<<"Initialize invoked! But I really don't know the setup written by Teacher Ma! Waiting to be changed to a symmetric Harris Current Sheet!"<<endl;
 }
 
-// add a fluctuatin at boundary
-void fluc_at_bndry(VARIABLE *var, double fluctuation, double kz)
-{
-	double z;
-	int j,k;
-	for (j=0;j<Grid_Num_y;j++)
-		for (k=0; k<Grid_Num_z; k++)
-		{
-			z=Z[k];
-			var[4].value[0][j][k]=var[4].value[0][j][k]-kz*fluctuation*sin(kz*z);
-			var[4].value[1][j][k]=var[4].value[1][j][k]-kz*fluctuation*sin(kz*z);
-			var[4].value[Grid_Num_x-2][j][k]=var[4].value[Grid_Num_x-2][j][k]-kz*fluctuation*sin(kz*z);
-			var[4].value[Grid_Num_x-1][j][k]=var[4].value[Grid_Num_x-1][j][k]-kz*fluctuation*sin(kz*z);
-			// Does it need to add an fluctuation on sub_var[[][][]?????
-		}
-}
-
-// add a fluctuation at neutral-line
-void fluc_at_neutral_line(VARIABLE *var, double fluctuation, double kx, double kz)
+// add fluctuation to B variable
+void add_fluc(VARIABLE *var)
 {
 	double norm_lambda;
-	double x, z;
+	double x, z, kx, kz, fluc;
 	int i, j, k;
+	fluc=fluctuation;
+	kx=fluc_kx; kz=fluc_kz;
 	norm_lambda=normalized_lambda;
-	for (i=0; i<Grid_Num_x; i++)
+	// add fluctuation at z=up and down boundary according to <Hurricane, PoP, 1995>, \delta\psi=fluctuation*cos(k_z*z) 
+	if (position_fluc==Boundary)
+	{
 		for (j=0;j<Grid_Num_y;j++)
 			for (k=0; k<Grid_Num_z; k++)
 			{
-				x=X[i]; z=Z[k];
-				if (abs(x)<norm_lambda)
-				{
-					var[4].value[i][j][k]=var[4].value[i][j][k]-kz*fluctuation*cos(kx*x)*sin(kz*z);
-					var[6].value[i][j][k]=var[6].value[i][j][k]+kx*fluctuation*sin(kx*x)*cos(kz*z);
-				}
+				z=Z[k];
+				var[4].value[0][j][k]=var[4].value[0][j][k]-kz*fluc*sin(kz*z);
+				var[4].value[1][j][k]=var[4].value[1][j][k]-kz*fluc*sin(kz*z);
+				var[4].value[Grid_Num_x-2][j][k]=var[4].value[Grid_Num_x-2][j][k]-kz*fluc*sin(kz*z);
+				var[4].value[Grid_Num_x-1][j][k]=var[4].value[Grid_Num_x-1][j][k]-kz*fluc*sin(kz*z);
 			// Does it need to add an fluctuation on sub_var[[][][]?????
 			}
-} 
+	}
+	// add fluctuation at neutral-line according to <karimabadi, JGR, 2004>, 
+	else if (position_fluc==Neutral_Line)
+	{
+		for (i=0; i<Grid_Num_x; i++)
+			for (j=0;j<Grid_Num_y;j++)
+				for (k=0; k<Grid_Num_z; k++)
+				{
+					x=X[i]; z=Z[k];
+					if (abs(x)<norm_lambda)
+					{
+						var[4].value[i][j][k]=var[4].value[i][j][k]-kz*fluc*cos(kx*x)*sin(kz*z);
+						var[6].value[i][j][k]=var[6].value[i][j][k]+kx*fluc*sin(kx*x)*cos(kz*z);
+					}
+					// Does it need to add an fluctuation on sub_var[[][][]?????
+				}
+	}
+	
+}
 
 void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 {
@@ -648,7 +651,7 @@ void set_eta(BASIC_VARIABLE &eta_obj, VARIABLE *pointer, VARIABLE *current, doub
 						etaz=1.-pow(tanh((abs(z)-ztrig)/widthz),2);
 					eta_obj.value[i][j][k]=etab+etam[j]*etal*etax*etaz;
 					if (TT==Uniform)
-						eta_obj.value[i][j][k]=1./200;
+						eta_obj.value[i][j][k]=magnetic_Renolds_Number;
 				}
 			}
 		}
@@ -678,7 +681,7 @@ void set_eta(BASIC_VARIABLE &eta_obj, VARIABLE *pointer, VARIABLE *current, doub
 						etaz=1.-pow(tanh(((z+dz/2.)-ztrig)/widthz),2);     // ????????? bot tanh((abs(zz(jz)+dz/2.)-ztrig)/aw2)?????
 					eta_obj.value[i][j][k]=etab+etam[j]*etal*etax*etaz;
 					if (TT==Uniform)
-						eta_obj.value[i][j][k]=1./200;
+						eta_obj.value[i][j][k]=magnetic_Renolds_Number;
 				}
 			}
 		}
@@ -820,18 +823,17 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 				{
 					if (times==0)
 					{
-						max_dt_out<<"  Time step is"<<nstep<<" when dt>="<<int(dt_min)<<endl\
-							      <<"where location is (i="<<i<<", j="<<j<<", k="<<k<<")"<<endl;
+						max_dt_out<<" When dt>="<<int(dt_min)<<" , time step is "<<nstep<<endl\
+							      <<"where location is ( i="<<setw(3)<<i<<", j="<<setw(3)<<j<<", k="<<setw(3)<<k<<" )"<<endl;
 						max_dt_out<<setiosflags(ios::scientific)<<setprecision(3);
+						times+=1;
 					}
 					else
-						max_dt_out<<"And               (  "<<i<<",   "<<j<<",   "<<k<<")"<<endl;
-					max_dt_out<<"    rho         Vx          Vy          Vz          B\
-								x          By         Bz          P"<<endl;
+						max_dt_out<<"And               (   "<<i<<",   "<<j<<",   "<<k<<" )"<<endl;
+					max_dt_out<<"     rho          Vx          Vy          Vz          Bx     "\
+						      <<"     By          Bz          P"<<endl;
 					max_dt_out<<setw(13)<<rho<<setw(12)<<rhoVx/rho<<setw(12)<<rhoVy/rho<<setw(12)<<rhoVz/rho\
-						<<setw(12)<<Bx<<setw(12)<<By<<setw(12)<<Bz<<setw(11)<<pressure<<endl\
-						<<"pressure="<<pressure<<endl;
-					times=1;
+						<<setw(12)<<Bx<<setw(12)<<By<<setw(12)<<Bz<<setw(11)<<pressure<<endl;
 				}
 				if (Temp_dt < test_dt)
 				{
@@ -841,18 +843,19 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 			}
 		}
 	}
+
 	dt=0.5*min(dt_min,test_dt);
+
 	if (time>0 && dt<.5*last_dt)
 	{
 		min_dt_out<<setiosflags(ios::scientific)<<setprecision(3);
-		min_dt_out<<"  There maybe a problem! Should know that:"<<endl;
-		min_dt_out<<"Location is (i="<<i<<", j="<<j<<", k="<<k<<")."<<endl;
+		min_dt_out<<"  Noth that dt changes a lot. This dt is calculated on "\
+		          <<"location ( i="<<setw(3)<<i<<", j="<<setw(3)<<j<<", k="<<setw(3)<<k<<" )"<<endl;
 		min_dt_out<<"And time step is "<<nstep<<", with variables are:"<<endl;
-		min_dt_out<<"    rho         Vx          Vy          Vz          B\
-					x          By         Bz          P"<<endl;
+		min_dt_out<<"     rho          Vx          Vy          Vz          Bx     "\
+				  <<"     By          Bz          P"<<endl;
 		min_dt_out<<setw(13)<<rho<<setw(12)<<rhoVx/rho<<setw(12)<<rhoVy/rho<<setw(12)<<rhoVz/rho\
-			<<setw(12)<<Bx<<setw(12)<<By<<setw(12)<<Bz<<setw(11)<<pressure<<endl\
-			<<"pressure="<<pressure<<endl<<endl;
+			<<setw(12)<<Bx<<setw(12)<<By<<setw(12)<<Bz<<setw(11)<<pressure<<endl;
 	}
 	//cout<<"Set_dt invoked! And dt="<<dt<<endl;
 	return dt;

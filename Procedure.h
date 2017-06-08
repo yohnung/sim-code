@@ -10,11 +10,8 @@ void initialize(VARIABLE *, BASIC_VARIABLE &);
 // initialize the problem as a harris-current-shet probelm
 void harris_current_initia(VARIABLE *, BASIC_VARIABLE &);
 
-// add fluctuation at z=up and down boundary according to <Hurricane, PoP, 1995>, \delta\psi=fluctuation*cos(k_z*z) 
-void fluc_at_bndry(VARIABLE *, double, double);
-
-// add fluctuation at neutral-line according to <karimabadi, JGR, 2004>, 
-void fluc_at_neutral_line(VARIABLE *, double, double, double);
+// add fluctuation mainly to B variables, specificly refer to fluc_at_bndry/neutral_line
+void add_fluc(VARIABLE *);
 
 // Calculate current
 void cal_current(VARIABLE *, VARIABLE *, Type=Complete); 

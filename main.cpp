@@ -5,12 +5,11 @@
 #include <iomanip>
 #include <cmath>
 using namespace std;
-#include "Type_and_Macro_Definition.h"
 #include "Basic_Parameter.h"
 #include "Runtime_Diagnostic_Parameter.h"
 #include "Variables_Definition.h"
 #include "Procedure.h"
-#include "Fluctuation.h"
+
 
 /*global mesh   X[0]_____X_interval[0]_____X[1]: start*/ 
 double  X[Grid_Num_x],Y[Grid_Num_y],Z[Grid_Num_z];
@@ -56,20 +55,17 @@ int main()
 		cal_pressure(p, var);                               // Calculating pressure from various kinds of energy.	
 		dt=set_dt(var, eta, current, p, system_time, dt);       // Settiing appropriate time-interval from main variables, conductivity and pressure and so on. This statement change dt only.
 		if (nstep==10)
-		{
-			fluc_at_bndry(var, fluc, k_z);               // add fluctuation at x=up and down boundary according to <Hurricane, PoP, 1995> 
-//			fluc_at_neutral_line(var, fluc, k_x, k_z);
-		}
+			add_fluc(var);
 		cal_flux(flux, var, current, p, eta);               // Calculating flux from variables, current and pressure.	 
 		ext_from_flux(Elec_field, flux);                     // extractig electric field from flux
 		step_on(var, flux, system_time, dt);                // Main procedure to time step on variables from Flux explicitly and from Source implicitly.
 		smooth(var,system_time, nstep);                     // ?????????? Havn't understand yet ???????????
 		system_time=system_time+dt;		
-		cout<<setw(4)<<setiosflags(ios::right)<<nstep<<" "<<\
-			"time="<<setw(22)<<setiosflags(ios::scientific)<<setprecision(15)<<system_time<<\
-			" "<<"dt="<<dt<<endl;
-		timeout<<"time step is "<<nstep<<endl<<" and time="<<setiosflags(ios::scientific)\
-			<<setprecision(15)<<system_time<<" "<<"dt="<<dt<<endl;	
+		cout<<setw(8)<<nstep<<setw(15)<<\
+			"time = "<<setiosflags(ios::scientific)<<setprecision(15)<<system_time\
+			<<setw(14)<<"dt = "<<dt<<endl;
+		timeout<<"nstep = "<<nstep<<endl<<" ,"<<setw(20)<<"and time = "<<setiosflags(ios::scientific)\
+			<<setprecision(15)<<system_time<<" ,"<<setw(14)<<"dt = "<<dt<<endl;	
 		if ((nstep+1)%12==0)
 		{
 			for (i=0;i<8;i++)

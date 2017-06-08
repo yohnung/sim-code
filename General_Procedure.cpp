@@ -5,9 +5,7 @@
 #include <iomanip>
 #include <cmath>
 using namespace std;
-#include "Type_and_Macro_Definition.h"
 #include "Basic_Parameter.h"
-#include "Runtime_Diagnostic_Parameter.h"
 #include "Variables_Definition.h"
 #include "Procedure.h"
 
@@ -35,12 +33,13 @@ void make_pressure_positive(BASIC_VARIABLE & pressure_obj, double positive_value
 					if (times==0)
 					{
 						pre_out<<"  Oops, pressure is negative, and program can be stopped!!!"<<endl;
-						pre_out<<"Located in (xi="<<i<<", yj="<<j<<", zk="<<k<<")" \
-							<<"when time step is nt="<<nstep<<"."<<endl;
+						pre_out<<"Located in ( xi="<<setw(3)<<i<<", yj="<<setw(3)<<j<<", zk="<<setw(3)<<k<<" )" \
+							<<"when time step is nt = "<<nstep<<"."<<endl;
+						times+=1;
 					}
 					else
 					{
-						pre_out<<"And        (xi="<<i<<", yj="<<j<<", zk="<<k<<")";
+						pre_out<<"And        ( xi="<<setw(3)<<i<<", yj="<<setw(3)<<j<<", zk="<<setw(3)<<k<<" )";
 					}
 				}
 				if(pressure_obj.value[i][j][k]<positive_value)
@@ -223,8 +222,6 @@ void source_update(VARIABLE *update_var, double time_interv)
 {
 	//cout<<"Source_Update invoked! But there is no source term!"<<endl;
 }
-
-
 
 void copy(VARIABLE *update_var, VARIABLE *mother_var)
 {

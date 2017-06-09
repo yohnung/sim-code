@@ -15,21 +15,28 @@ extern double X[], Y[], Z[], X_interval[], Y_interval[], Z_interval[];
 // Recording variables' value
 void BASIC_VARIABLE::record(ofstream &out_obj)       // recrd1
 			   {
-				   int out_Grid_x, out_Grid_y, out_Grid_z, num=40;
+				   int out_Grid_x, out_Grid_y, out_Grid_z;
 				   int i,j,k;
-				   out_Grid_x=(Grid_Num_x-1)/num;
-				   out_Grid_y=(Grid_Num_y-1)/num;
-				   out_Grid_z=(Grid_Num_z-1)/num;
+				   out_Grid_x=(Grid_Num_x-1)/num_out;
+				   out_Grid_y=(Grid_Num_y-1)/num_out;
+				   out_Grid_z=(Grid_Num_z-1)/num_out;
 				   out_obj<<setiosflags(ios::scientific)<<setprecision(15);
-				   for (i=0;i<=num;i++)
+				   for (i=0;i<=num_out;i++)
 				   {
-					   for (j=0;j<=num;j++)
+					   if (out_Grid_y==0)
 					   {
-						   for (k=0;k<=num;k++)
+						   for (k=0;k<=num_out;k++)
+							   out_obj<<" "<<value[i*out_Grid_x][0][k*out_Grid_z];
+						   out_obj<<endl;
+					   }
+					   else
+					   {
+						   for (j=0;j<=num_out;j++)
 						   {
-							   out_obj<<" "<<value[i*out_Grid_x][j*out_Grid_y][k*out_Grid_z];
+							   for (k=0;k<=num_out;k++)
+								   out_obj<<" "<<value[i*out_Grid_x][j*out_Grid_y][k*out_Grid_z];
+							   out_obj<<endl;
 						   }
-					   out_obj<<endl;
 					   }
 				   }
 				   //cout<<"BASIC_VARIABLE::record invoked! But I don't write anything, just to show up!"<<endl;

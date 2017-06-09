@@ -16,13 +16,13 @@ const double v_0=1.;               // 0.    initialize rhoVy
 const double vyi_0=1.;             // 0.    amend rhoVy in magtopause problem
 // Harris current parameter, mainly used in 'harris_initia()'
 const double rho_infinity=0.2;
-const double Balance_coefficient=1.;
+const double Balance_coefficient=.5;
 const double normalized_lambda=0.5;
 /* Physical Parameter: end */
 
 /* fluctuation parameter: start */
 const Position position_fluc=Boundary;
-const double fluctuation=0.2;
-const double fluc_kx=4*3.1415926/x_max;
-const double fluc_kz=2*3.1415926/z_max;
+const double fluctuation=0.1;
+const double fluc_kx=2*Pi/(x_max-x_min);
+const double fluc_kz=Pi/(z_max-z_min);
 /* fluctuation parameter: end */

@@ -24,17 +24,12 @@ ofstream min_dt_out("min_dt.txt");
 void set_mesh()
 {
 	int nx,ny,nz;
-	X[0]=x_min;
-	Y[0]=y_min;
-	Z[0]=z_min;
-	nx=Grid_Num_x-1;
-	ny=Grid_Num_y-1;
-	nz=Grid_Num_z-1;
+	int out_Grid_x, out_Grid_y, out_Grid_z;
 	ofstream out("grid.dat");
-	ofstream out_2D("grid_2D.dat");
+	X[0]=x_min;	Y[0]=y_min;	Z[0]=z_min;
+	nx=Grid_Num_x-1;	ny=Grid_Num_y-1;	nz=Grid_Num_z-1;
+	out_Grid_x=(Grid_Num_x-1)/num_out;	out_Grid_y=(Grid_Num_y-1)/num_out;	out_Grid_z=(Grid_Num_z-1)/num_out;
 
-	out<<" "<<setiosflags(ios::scientific)<<setprecision(6)<<X[0];
-	out_2D<<" "<<setiosflags(ios::scientific)<<setprecision(6)<<X[0];
 	int i,j,k;
 	if (uniform_x==True)
 	{
@@ -42,8 +37,6 @@ void set_mesh()
 		{			
 			X_interval[i]=(x_max-x_min)/nx;	
 			X[i+1]=X[i]+X_interval[i];
-			out<<" "<<X[i+1];
-			out_2D<<" "<<X[i+1];
 		}
 	}
 	else
@@ -52,22 +45,16 @@ void set_mesh()
 		{
 			X_interval[i]=0.01;
 			X[i+1]=X[i]+X_interval[i];
-			out<<" "<<X[i+1];
-			out_2D<<" "<<X[i+1];
 		}
 	}
 	X_interval[Grid_Num_x-1]=X_interval[Grid_Num_x-2];
-	//out<<endl;
-	//out_2D<<endl;
 
-	out<<" "<<Y[0];
 	if (uniform_y==True)
 	{
 		for (j=0;j<ny;j++)
 		{			
 			Y_interval[j]=(y_max-y_min)/ny;	
 			Y[j+1]=Y[j]+Y_interval[j];
-			out<<" "<<Y[j+1];
 		}
 	}
 	else
@@ -76,22 +63,16 @@ void set_mesh()
 		{			
 			Y_interval[j]=0.01;
 			Y[j+1]=Y[j]+Y_interval[j];
-			out<<" "<<Y[j+1];
 		}
 	}
 	Y_interval[Grid_Num_y-1]=Y_interval[Grid_Num_y-2];
-	//out<<endl;
 	
-	out<<" "<<Z[0];
-	out_2D<<" "<<Z[0];
 	if (uniform_z==True)
 	{
 		for (k=0;k<nz;k++)
 		{			
 			Z_interval[k]=(z_max-z_min)/nz;	
 			Z[k+1]=Z[k]+Z_interval[k];
-			out<<" "<<Z[k+1];
-			out_2D<<" "<<Z[k+1];
 		}
 	}
 	else
@@ -100,16 +81,21 @@ void set_mesh()
 		{			
 			Z_interval[k]=0.01;
 			Z[k+1]=Z[k]+Z_interval[k];
-			out<<" "<<Z[k+1];
-			out_2D<<" "<<Z[k+1];
 		}
 	}
 	Z_interval[Grid_Num_z-1]=Z_interval[Grid_Num_z-2];
-	//out<<endl;
-	//out_2D<<endl;
+	
+	for (i=0;i<=num_out;i++)
+		out<<" "<<X[i*out_Grid_x];
+	out<<endl;
+	for (j=0;j<=num_out;j++)
+		out<<" "<<Y[j*out_Grid_y];
+	out<<endl;
+	for (k=0;k<=num_out;k++)
+		out<<" "<<Z[k*out_Grid_z];
+	out<<endl;
 
 	out.close();
-	out_2D.close();
 	//cout<<"BASIC_VARIABLE::set_mesh invoked!"<<endl;
 	// Set mesh-grid				  
 }
@@ -318,6 +304,7 @@ void add_fluc(VARIABLE *var)
 {
 	double norm_lambda;
 	double x, z, kx, kz, fluc;
+	double Bx, Bz, Eng, fluc_Bx, fluc_Bz;
 	int i, j, k;
 	fluc=fluctuation;
 	kx=fluc_kx; kz=fluc_kz;
@@ -329,11 +316,31 @@ void add_fluc(VARIABLE *var)
 			for (k=0; k<Grid_Num_z; k++)
 			{
 				z=Z[k];
-				var[4].value[0][j][k]=var[4].value[0][j][k]-kz*fluc*sin(kz*z);
-				var[4].value[1][j][k]=var[4].value[1][j][k]-kz*fluc*sin(kz*z);
-				var[4].value[Grid_Num_x-2][j][k]=var[4].value[Grid_Num_x-2][j][k]-kz*fluc*sin(kz*z);
-				var[4].value[Grid_Num_x-1][j][k]=var[4].value[Grid_Num_x-1][j][k]-kz*fluc*sin(kz*z);
-			// Does it need to add an fluctuation on sub_var[[][][]?????
+				// at i=0
+				Bx=var[4].value[0][j][k]; Eng=var[7].value[0][j][k];
+				fluc_Bx=-kz*fluc*sin(kz*z);
+				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
+				Bx=Bx+fluc_Bx;
+				var[4].value[0][j][k]=Bx; var[7].value[0][j][k]=Eng;
+				// at i=1
+				Bx=var[4].value[1][j][k]; Eng=var[7].value[1][j][k];
+				fluc_Bx=-kz*fluc*sin(kz*z);
+				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
+				Bx=Bx+fluc_Bx;
+				var[4].value[1][j][k]=Bx; var[7].value[1][j][k]=Eng;
+				// at i=Grid_Num_x-2
+				Bx=var[4].value[Grid_Num_x-2][j][k]; Eng=var[7].value[Grid_Num_x-2][j][k];
+				fluc_Bx=-kz*fluc*sin(kz*z);
+				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
+				Bx=Bx+fluc_Bx;
+				var[4].value[Grid_Num_x-2][j][k]=Bx; var[7].value[Grid_Num_x-2][j][k]=Eng;
+				// at i=Grid_Num_x-1
+				Bx=var[4].value[Grid_Num_x-1][j][k]; Eng=var[7].value[Grid_Num_x-1][j][k];
+				fluc_Bx=-kz*fluc*sin(kz*z);
+				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
+				Bx=Bx+fluc_Bx;
+				var[4].value[Grid_Num_x-1][j][k]=Bx; var[7].value[Grid_Num_x-1][j][k]=Eng;
+			    // Does it need to add an fluctuation on sub_var[[][][]?????
 			}
 	}
 	// add fluctuation at neutral-line according to <karimabadi, JGR, 2004>, 
@@ -344,10 +351,13 @@ void add_fluc(VARIABLE *var)
 				for (k=0; k<Grid_Num_z; k++)
 				{
 					x=X[i]; z=Z[k];
-					if (abs(x)<norm_lambda)
+					//if (abs(x)<norm_lambda)
 					{
-						var[4].value[i][j][k]=var[4].value[i][j][k]-kz*fluc*cos(kx*x)*sin(kz*z);
-						var[6].value[i][j][k]=var[6].value[i][j][k]+kx*fluc*sin(kx*x)*cos(kz*z);
+						Bx=var[4].value[i][j][k]; Bz=var[6].value[i][j][k]; Eng=var[7].value[i][j][k];
+						fluc_Bx=-kz*fluc*cos(kx*x)*sin(kz*z); fluc_Bz=kx*fluc*sin(kx*x)*cos(kz*z);
+						Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx)+1./2*(2*Bz*fluc_Bz+fluc_Bz*fluc_Bz);
+						Bx=Bx+fluc_Bx; Bz=Bz+fluc_Bz;
+						var[4].value[i][j][k]=Bx; var[6].value[i][j][k]=Bz; var[7].value[i][j][k]=Eng;
 					}
 					// Does it need to add an fluctuation on sub_var[[][][]?????
 				}
@@ -795,7 +805,8 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 	double dx,dy,dz,dxyz;	
 	double Temp_dt, dt_min=1000., test_dt=1000.;
 	double rho, rhoVx, rhoVy, rhoVz, Bx, By, Bz, pressure;
-	int max_dt_i, max_dt_j, max_dt_k;                   // for diagnostic
+	int max_dt_i, max_dt_j, max_dt_k;                                       // for diagnostic
+	double max_rho, max_Vx, max_Vy, max_Vz, max_Bx, max_By, max_Bz, max_P;  // for diagnostic
 
 	int i,j,k, times=0;
 	for (i=0;i<Grid_Num_x;i++)
@@ -840,6 +851,8 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 				{
 					test_dt=Temp_dt;
 					max_dt_i=i; max_dt_j=j; max_dt_k=k;
+					max_rho=rho; max_Vx=rhoVx/rho; max_Vy=rhoVy/rho; max_Vz=rhoVz/rho;
+					max_Bx=Bx; max_By=By; max_Bz=Bz; max_P=pressure;
 				}
 			}
 		}
@@ -855,8 +868,8 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 		min_dt_out<<"And time step is "<<nstep<<" , with variables are:"<<endl;
 		min_dt_out<<"     rho          Vx          Vy          Vz          Bx     "\
 				  <<"     By          Bz          P"<<endl;
-		min_dt_out<<setw(13)<<rho<<setw(12)<<rhoVx/rho<<setw(12)<<rhoVy/rho<<setw(12)<<rhoVz/rho\
-			<<setw(12)<<Bx<<setw(12)<<By<<setw(12)<<Bz<<setw(11)<<pressure<<endl<<endl;
+		min_dt_out<<setw(13)<<max_rho<<setw(12)<<max_Vx<<setw(12)<<max_Vy<<setw(12)<<max_Vz\
+			<<setw(12)<<max_Bx<<setw(12)<<max_By<<setw(12)<<max_Bz<<setw(11)<<max_P<<endl<<endl;
 	}
 	//cout<<"Set_dt invoked! And dt="<<dt<<endl;
 	return dt;

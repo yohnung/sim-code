@@ -3,6 +3,7 @@
 
 /* Macro and Variable-Type definition: start */
 // Macro definition
+#define Pi 3.1415926
 // Logic value
 #define True 1
 #define False 0
@@ -38,6 +39,7 @@ typedef char Position;
 const int Grid_Num_x=41; 
 const int Grid_Num_y=7;
 const int Grid_Num_z=41; 
+const int num_out=40;
 /* Grid Number: end */			    
 
 /* Controlling and Logical Parameter:start */
@@ -53,12 +55,12 @@ const Logic half_z=False;
 /* Controlling and Logical Parameter: end */
 
 /* Spatial Range: start */
-const double x_min=-5.;       //1.;
-const double x_max=5.;        //11.;
+const double x_min=-6.4;       //1.;
+const double x_max=6.4;        //11.;
 const double y_min=1.;
 const double y_max=7.;
-const double z_min=-5;
-const double z_max=5.;
+const double z_min=-12.8;
+const double z_max=12.8;
 /* Spatial Range: end */
 
 /* smooth parameter: start */

@@ -54,7 +54,7 @@ int main()
 		set_eta(eta, var, current, system_time);            // Setting space dependent conductivity. (Can make it depend on current)
 		cal_pressure(p, var);                               // Calculating pressure from various kinds of energy.	
 		dt=set_dt(var, eta, current, p, system_time, dt);       // Settiing appropriate time-interval from main variables, conductivity and pressure and so on. This statement change dt only.
-		if (nstep==10)
+		if (nstep==2)
 			add_fluc(var);
 		cal_flux(flux, var, current, p, eta);               // Calculating flux from variables, current and pressure.	 
 		ext_from_flux(Elec_field, flux);                     // extractig electric field from flux

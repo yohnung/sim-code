@@ -21,8 +21,8 @@ const double normalized_lambda=0.5;
 /* Physical Parameter: end */
 
 /* fluctuation parameter: start */
-const Position position_fluc=Boundary;
+const Position position_fluc=Neutral_Line;
 const double fluctuation=0.1;
-const double fluc_kx=2*Pi/(x_max-x_min);
-const double fluc_kz=Pi/(z_max-z_min);
+const double fluc_kx=Pi/(x_max-x_min);
+const double fluc_kz=2*Pi/(z_max-z_min);
 /* fluctuation parameter: end */

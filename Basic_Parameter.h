@@ -36,9 +36,9 @@ typedef char Position;
    In 2D simulation Grid_Num_y=7 is best, with others 4n+1.   
    4n+1 is for the sake of 'record()', defined in Variables_Definition.cpp
    7 is for the consideration of 'smooth_xyz()' function.                    */
-const int Grid_Num_x=41; 
+const int Grid_Num_x=801; 
 const int Grid_Num_y=7;
-const int Grid_Num_z=41; 
+const int Grid_Num_z=401; 
 const int num_out=40;
 /* Grid Number: end */			    
 

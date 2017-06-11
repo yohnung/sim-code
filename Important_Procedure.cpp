@@ -623,7 +623,8 @@ void cal_pressure(BASIC_VARIABLE &pressure_obj, VARIABLE *pointer, Type T)
 			}
 		}
 	}
-	make_pressure_positive(pressure_obj, 1e-5, T);
+	if (T==Complete)
+		make_pressure_positive(pressure_obj, 1e-5);
 	//cout<<"Pressure is calculated from various kinds of energy, and doesn't explicitly step on according to equation!"<<endl;
 }
 

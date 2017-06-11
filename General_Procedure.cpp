@@ -18,15 +18,15 @@ extern int nstep;
 //char * file_name, open a file
 ofstream pre_out("pressure_is_negative.txt");
 
-void make_pressure_positive(BASIC_VARIABLE & pressure_obj, double positive_value, Type T)
+void make_pressure_positive(BASIC_VARIABLE & pressure_obj, double positive_value)
 {
 	int times=0;
 	int i,j,k;
-	for(i=0;i<Grid_Num_x-T;i++)
+	for(i=0;i<Grid_Num_x;i++)
 	{
-		for(j=0;j<Grid_Num_y-T;j++)
+		for(j=0;j<Grid_Num_y;j++)
 		{
-			for(k=0;k<Grid_Num_z-T;k++)
+			for(k=0;k<Grid_Num_z;k++)
 			{
 				if(pressure_obj.value[i][j][k]<0.)
 				{
@@ -47,7 +47,7 @@ void make_pressure_positive(BASIC_VARIABLE & pressure_obj, double positive_value
 					pressure_obj.value[i][j][k]=positive_value;
 			}
 		}
-	}
+	}	
 }
 
 // Integarting variables for half dt from Fluxes using 2-order Lax-Wendroff method

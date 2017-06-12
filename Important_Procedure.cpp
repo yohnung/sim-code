@@ -299,6 +299,47 @@ void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 	//cout<<"Initialize invoked! But I really don't know the setup written by Teacher Ma! Waiting to be changed to a symmetric Harris Current Sheet!"<<endl;
 }
 
+// Extracting electric field from flux of magnetic
+void ext_from_var( BASIC_VARIABLE *Electric_field, BASIC_VARIABLE *var, VARIABLE *current, BASIC_VARIABLE &eta_obj)
+{
+	double rho, Vx, Vy, Vz;
+	double Bx, By, Bz;
+	double eta;
+	double current_x, current_y, current_z;
+	double V_cross_B_x, V_cross_B_y, V_cross_B_z;
+	// Assignment
+	int i,j,k;
+	for (i=0;i<Grid_Num_x;i++)
+	{
+		for (j=0;j<Grid_Num_y;j++)
+		{
+			for (k=0;k<Grid_Num_z;k++)
+			{
+				rho=var[0].value[i][j][k];
+				Vx=var[1].value[i][j][k]/rho;
+				Vy=var[2].value[i][j][k]/rho;
+				Vz=var[3].value[i][j][k]/rho;
+				Bx=var[4].value[i][j][k];
+				By=var[5].value[i][j][k];
+				Bz=var[6].value[i][j][k];
+				current_x=current[0].value[i][j][k];
+				current_y=current[1].value[i][j][k];
+				current_z=current[2].value[i][j][k];
+				eta=eta_obj.value[i][j][k];
+
+				//Magnetic Induction Eq.
+				V_cross_B_x=(Vy-di/rho*current_y)*Bz-(Vz-di/rho*current_z)*By;                     // don't take di into acount, that is di=0
+				V_cross_B_y=(Vz-di/rho*current_z)*Bx-(Vx-di/rho*current_x)*Bz;
+				V_cross_B_z=(Vx-di/rho*current_x)*By-(Vy-di/rho*current_y)*Bx;
+
+				Electric_field[2].value[i][j][k]=-V_cross_B_z+eta*current_z;
+				Electric_field[0].value[i][j][k]=-V_cross_B_x+eta*current_x;
+				Electric_field[1].value[i][j][k]=-V_cross_B_y+eta*current_y;
+			}
+		}
+	}	
+}
+
 // add fluctuation to B variable
 void add_fluc(VARIABLE *var)
 {
@@ -700,16 +741,41 @@ void set_eta(BASIC_VARIABLE &eta_obj, VARIABLE *pointer, VARIABLE *current, doub
 	//cout<<"Set_eta invoked! But for now eta is simply setted to 0.1! And I'm sorry to inform you that you should change it!"<<endl;
 }
 
+// accumulate energy from V, B and P
+void accumulate_eng(double (*Eng_array)[Grid_Num_y][Grid_Num_z], VARIABLE *pointer, BASIC_VARIABLE &pressure_obj, Type T)
+{
+	double rho, Bx, By, Bz, rhoVx, rhoVy, rhoVz;
+	double B_Energy, V_Energy, pressure;
+
+	int i,j,k;
+	for (i=0;i<Grid_Num_x-T;i++)
+		for (j=0;j<Grid_Num_y-T;j++)
+			for (k=0;k<Grid_Num_z-T;k++)
+			{
+				rho=pointer[0].value[i][j][k];
+				rhoVx=pointer[1].value[i][j][k];
+				rhoVy=pointer[2].value[i][j][k];
+				rhoVz=pointer[3].value[i][j][k];
+				Bx=pointer[4].value[i][j][k];
+				By=pointer[5].value[i][j][k];
+				Bz=pointer[6].value[i][j][k];
+				pressure=pressure_obj.value[i][j][k];
+				B_Energy=0.5*(pow(Bx,2)+pow(By,2)+pow(Bz,2));
+				V_Energy=0.5*(pow(rhoVx,2)+pow(rhoVy,2)+pow(rhoVz,2))/rho;
+				Eng_array[i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma-1);
+			}
+}
+
 // Calculating flux from variables
-void cal_flux(BASIC_VARIABLE flux[][3], VARIABLE *pointer, VARIABLE *current,\
+void cal_7flux(BASIC_VARIABLE flux[][3], VARIABLE *pointer, VARIABLE *current,\
 	BASIC_VARIABLE &pressure_obj, BASIC_VARIABLE &eta_obj, Type T)
 {
 	double rho, Vx, Vy, Vz;
 	double Bx, By, Bz;
-	double Energy, B_Energy, V_Energy;  // V_Energy is not used !
+	double B_Energy;  // V_Energy is not used !
 	double pressure, eta;
 	double current_x, current_y, current_z;
-	double V_dot_B, V_cross_B_x, V_cross_B_y, V_cross_B_z;
+	double V_cross_B_x, V_cross_B_y, V_cross_B_z;
 	// Assignment
 	int i,j,k;
 	for (i=0;i<Grid_Num_x-T;i++)
@@ -725,13 +791,11 @@ void cal_flux(BASIC_VARIABLE flux[][3], VARIABLE *pointer, VARIABLE *current,\
 				Bx=pointer[4].value[i][j][k];
 				By=pointer[5].value[i][j][k];
 				Bz=pointer[6].value[i][j][k];
-				Energy=pointer[7].value[i][j][k];
 				pressure=pressure_obj.value[i][j][k];
 				current_x=current[0].value[i][j][k];
 				current_y=current[1].value[i][j][k];
 				current_z=current[2].value[i][j][k];
 				B_Energy=0.5*(pow(Bx,2)+pow(By,2)+pow(Bz,2));
-				V_Energy=0.5*rho*(pow(Vx,2)+pow(Vy,2)+pow(Vz,2));
 				eta=eta_obj.value[i][j][k];
 
 				// rho_flux assignment
@@ -768,34 +832,63 @@ void cal_flux(BASIC_VARIABLE flux[][3], VARIABLE *pointer, VARIABLE *current,\
 				flux[6][0].value[i][j][k]=-V_cross_B_y+eta*current_y;
 				flux[6][1].value[i][j][k]=V_cross_B_x-eta*current_x;
 				flux[6][2].value[i][j][k]=0;
-
-				// Energy_fulx
-				V_dot_B=Vx*Bx+Vy*By+Vz*Bz;
-				Energy=Energy+pressure+B_Energy;       // Energy flux brought by V
-				flux[7][0].value[i][j][k]=Vx*Energy-Bx*V_dot_B+eta* \
-					(current_y*Bz-current_z*By);
-				flux[7][1].value[i][j][k]=Vy*Energy-By*V_dot_B+eta* \
-					(current_z*Bx-current_x*Bz);
-				flux[7][2].value[i][j][k]=Vz*Energy-Bz*V_dot_B+eta* \
-					(current_x*By-current_y*Bx);
 			}
 		}
 	}
 	//cout<<"I'm Calculating flux!"<<endl;
 }
 
-// Extracting electric field from flux of magnetic
-void ext_from_flux( BASIC_VARIABLE *Electric_field, BASIC_VARIABLE flux[][3] )
+// calculate engergy flux
+void cal_eng_flux(BASIC_VARIABLE *eng_flux, VARIABLE *pointer, VARIABLE *current,\
+	BASIC_VARIABLE &pressure_obj, BASIC_VARIABLE &eta_obj, Type T)
 {
+	double rho, Vx, Vy, Vz;
+	double Bx, By, Bz;
+	double Energy, B_Energy, V_Energy;  // V_Energy is not used !	
+	double pressure, eta;
+	double current_x, current_y, current_z;
+	double V_dot_B;
+
+	double (*Eng_array)[Grid_Num_y][Grid_Num_z]=new double[Grid_Num_x][Grid_Num_y][Grid_Num_z];
+	accumulate_eng(Eng_array, pointer, pressure_obj, T);    // accumulate energy from new V, new B and old P
+	// Assignment
 	int i,j,k;
-	for (i=0;i<Grid_Num_x;i++)
-		for (j=0;j<Grid_Num_y;j++)
-			for (k=0;k<Grid_Num_z;k++)
+	for (i=0;i<Grid_Num_x-T;i++)
+	{
+		for (j=0;j<Grid_Num_y-T;j++)
+		{
+			for (k=0;k<Grid_Num_z-T;k++)
 			{
-				Electric_field[0].value[i][j][k]=flux[5][2].value[i][j][k];
-				Electric_field[1].value[i][j][k]=flux[6][0].value[i][j][k];
-				Electric_field[2].value[i][j][k]=flux[4][1].value[i][j][k];
+				rho=pointer[0].value[i][j][k];
+				Vx=pointer[1].value[i][j][k]/rho;
+				Vy=pointer[2].value[i][j][k]/rho;
+				Vz=pointer[3].value[i][j][k]/rho;
+				Bx=pointer[4].value[i][j][k];
+				By=pointer[5].value[i][j][k];
+				Bz=pointer[6].value[i][j][k];
+				Energy=Eng_array[i][j][k];
+				pressure=pressure_obj.value[i][j][k];
+				current_x=current[0].value[i][j][k];
+				current_y=current[1].value[i][j][k];
+				current_z=current[2].value[i][j][k];
+				B_Energy=0.5*(pow(Bx,2)+pow(By,2)+pow(Bz,2));
+				V_Energy=0.5*rho*(pow(Vx,2)+pow(Vy,2)+pow(Vz,2));
+				eta=eta_obj.value[i][j][k];
+
+				// Energy_fulx
+				V_dot_B=Vx*Bx+Vy*By+Vz*Bz;
+				Energy=Energy+pressure+B_Energy;       // Energy flux brought by V
+				eng_flux[0].value[i][j][k]=Vx*Energy-Bx*V_dot_B+eta* \
+					(current_y*Bz-current_z*By);
+				eng_flux[1].value[i][j][k]=Vy*Energy-By*V_dot_B+eta* \
+					(current_z*Bx-current_x*Bz);
+				eng_flux[2].value[i][j][k]=Vz*Energy-Bz*V_dot_B+eta* \
+					(current_x*By-current_y*Bx);
 			}
+		}
+	}
+	delete []Eng_array;
+	//cout<<"I'm Calculating flux!"<<endl;
 }
 
 // Setting time-interval
@@ -877,27 +970,53 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 }
 
 // Step on variables
-void step_on(VARIABLE *pointer, BASIC_VARIABLE flux[][3], double time, double time_interv)
+void step_on(VARIABLE *pointer, VARIABLE *current, BASIC_VARIABLE &pressure, BASIC_VARIABLE &eta, double time, double time_interv)
 {
-//	VARIABLE var_intmedit[8], current[3];
-//	BASIC_VARIABLE pressure, eta, Temp_flux[8][3];            // intermediate variable.    Changed to following declaration! 
 /*In order to save space of stack, use new to allocate memory on heap: start */
 	VARIABLE *var_intmedit=new VARIABLE[8];
-	VARIABLE *current=new VARIABLE[3];
-	BASIC_VARIABLE *pre_eta_pointer=new BASIC_VARIABLE[2];
-	BASIC_VARIABLE (*Temp_flux)[3]=new BASIC_VARIABLE[8][3];
-	BASIC_VARIABLE &pressure=pre_eta_pointer[0];
-	BASIC_VARIABLE &eta=pre_eta_pointer[1];
+	VARIABLE *temp_current=new VARIABLE[3];
+	BASIC_VARIABLE *temp_pre_eta_pointer=new BASIC_VARIABLE[2];
+	BASIC_VARIABLE (*flux7)[3]=new BASIC_VARIABLE[7][3];
+	BASIC_VARIABLE *eng_flux=new BASIC_VARIABLE[3];
+	BASIC_VARIABLE &temp_pressure=temp_pre_eta_pointer[0];
+	BASIC_VARIABLE &temp_eta=temp_pre_eta_pointer[1];
 /*In order to save space of stack, use new to allocate memory on heap: end*/
 /*Updating variables: start*/
-	exclude_soucrce_half_update(var_intmedit, flux, time_interv, First);       
+	cal_7flux(flux7, pointer, current, pressure, eta);
+	exclude_soucrce_half_7update(var_intmedit, flux7, time_interv, First);
+
+	var_intmedit[0].right_boundary_set(Positive,Positive);
+	var_intmedit[1].right_boundary_set(Negative,Positive);var_intmedit[2].right_boundary_set(Negative,Positive);var_intmedit[3].right_boundary_set(Positive,Negative);
+	var_intmedit[4].right_boundary_set(Positive,Negative);var_intmedit[5].right_boundary_set(Positive,Negative);var_intmedit[6].right_boundary_set(Negative,Positive);
+
+	cal_current(temp_current, var_intmedit); 
+	set_eta(temp_eta, var_intmedit, temp_current, time);
+
+	cal_eng_flux(eng_flux, var_intmedit, temp_current, pressure, temp_eta);     // ues old P and new V, new B, new current and new eta to accumulate energy flux
+	exclude_source_hlaf_update_eng(var_intmedit[7], eng_flux, time_interv, First);  // incomplete time-backward-difference concerning about V and B
+
+	var_intmedit[7].right_boundary_set(Positive,Positive);                  // there is no need
+
 // Last statement do a forward differentiating, so that the value at boundary has not been updated.
-//   And current calculating must be done excluding boundary value. The same with pressure, eta, flux.
-	cal_current(current, var_intmedit, Incomplete);       
-	set_eta(eta, var_intmedit, current, time, Incomplete);
-	cal_pressure(pressure, var_intmedit, Incomplete);
-	cal_flux(Temp_flux, var_intmedit, current, pressure, eta, Incomplete);
-	exclude_soucrce_half_update(pointer, Temp_flux, time_interv, Second);
+//   And current calculating must be done excluding boundary value. The same with pressure, eta, flux. 
+	cal_current(temp_current, var_intmedit, Incomplete); 
+	set_eta(temp_eta, var_intmedit, temp_current, time, Incomplete);
+	cal_pressure(temp_pressure, var_intmedit, Incomplete);
+
+	cal_7flux(flux7, var_intmedit, temp_current, temp_pressure, temp_eta, Incomplete);
+	exclude_soucrce_half_7update(pointer, flux7, time_interv, Second);
+
+	pointer[0].left_boundary_set();
+	pointer[1].left_boundary_set();pointer[2].left_boundary_set();pointer[3].left_boundary_set();
+	pointer[4].left_boundary_set();pointer[5].left_boundary_set();pointer[6].left_boundary_set();
+
+	cal_current(temp_current, pointer, Incomplete); 
+	set_eta(temp_eta, pointer, temp_current, time, Incomplete); 
+
+	cal_eng_flux(eng_flux, pointer, temp_current, temp_pressure, temp_eta, Incomplete );     // ues old P and new V, new B, new current and new eta to accumulate energy flux
+	exclude_source_hlaf_update_eng(pointer[7], eng_flux, time_interv, Second);              // incomplete time-backward-difference concerning about V and B
+
+	pointer[7].left_boundary_set();
 	//source_update(pointer, time_interv);
 /*Updating variables: end*/
 
@@ -909,9 +1028,10 @@ void step_on(VARIABLE *pointer, BASIC_VARIABLE flux[][3], double time, double ti
 /*Set bundary: end*/
 /*delete dynamic memory: start */
 	delete []var_intmedit;
-	delete []current;
-	delete []pre_eta_pointer;
-	delete []Temp_flux;
+	delete []temp_current;
+	delete []temp_pre_eta_pointer;
+	delete []flux7;
+	delete []eng_flux;
 /*delete dynamic memory: end*/
 	//cout<<"Step_on Step_on!"<<endl;
 }

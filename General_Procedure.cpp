@@ -52,7 +52,7 @@ void make_pressure_positive(BASIC_VARIABLE & pressure_obj, double positive_value
 
 // Integarting variables for half dt from Fluxes using 2-order Lax-Wendroff method
 // First time (Order o=1) forward difference; Second time (Order o=2) backward difference
-void exclude_soucrce_half_update(VARIABLE *update_var, BASIC_VARIABLE flux[][3], \
+void exclude_soucrce_half_7update(VARIABLE *update_var, BASIC_VARIABLE flux[][3], \
 	double time_interv, Order o)
 {	
 	double Temp_var;
@@ -67,7 +67,7 @@ void exclude_soucrce_half_update(VARIABLE *update_var, BASIC_VARIABLE flux[][3],
 	case First:
 		{
 			dt=0.5*time_interv;
-			for (n=0;n<8;n++)
+			for (n=0;n<7;n++)
 			{				
 				for (i=0;i<Grid_Num_x-1;i++)
 				{
@@ -140,7 +140,7 @@ void exclude_soucrce_half_update(VARIABLE *update_var, BASIC_VARIABLE flux[][3],
 	case Second:
 		{
 			dt=time_interv;
-			for (n=0;n<8;n++)
+			for (n=0;n<7;n++)
 			{				
 				for (i=1;i<Grid_Num_x-1;i++)
 				{
@@ -215,6 +215,154 @@ void exclude_soucrce_half_update(VARIABLE *update_var, BASIC_VARIABLE flux[][3],
 		{
 			//cout<<"But it's default call! And I will do nothing until you tell me what is the default method to calculate divergence of the flux in 3D situation? "<<endl;
 		}	
+	}
+}
+
+// update energy
+void exclude_source_hlaf_update_eng(VARIABLE &eng_obj, BASIC_VARIABLE *eng_flux, double time_interv, Order o)
+{
+	double Temp_var;
+	double dtflux_x, dtflux_y, dtflux_z;                    // for fdx, gdy, hdz
+	double dt;
+	double f000, f100, f010, f001, f110, f101, f011, f111;   // eight point of value
+	double v000, v100, v010, v001, v110, v101, v011, v111;
+	double dx, dy, dz;                                       // spatial interval
+	int i,j,k;
+	switch (o)
+	{
+	case First:
+		{
+			dt=0.5*time_interv;							
+			for (i=0;i<Grid_Num_x-1;i++)
+			{
+				for (j=0;j<Grid_Num_y-1;j++)
+				{
+					for (k=0;k<Grid_Num_z-1;k++)
+					{
+						dx=X_interval[i];                      
+						dy=Y_interval[j];
+						dz=Z_interval[k];
+// following used is the most simple addressing method, which could be improved
+						f000=eng_flux[0].value[i][j][k];        // simple addressing method, be able to improve						
+						f100=eng_flux[0].value[i+1][j][k];      // but times of computing remains the same
+						f010=eng_flux[0].value[i][j+1][k];
+						f001=eng_flux[0].value[i][j][k+1];
+						f110=eng_flux[0].value[i+1][j+1][k];
+						f101=eng_flux[0].value[i+1][j][k+1];
+						f011=eng_flux[0].value[i][j+1][k+1];
+						f111=eng_flux[0].value[i+1][j+1][k+1];
+
+						dtflux_x=-dt*(f111-f011 \
+									+f101-f001 \
+									+f110-f010 \
+									+f100-f000)/(4.*dx);      // attention to the mius sign  "-" in front of dt
+
+						f000=eng_flux[1].value[i][j][k];       						
+						f100=eng_flux[1].value[i+1][j][k];      
+						f010=eng_flux[1].value[i][j+1][k];
+						f001=eng_flux[1].value[i][j][k+1];
+						f110=eng_flux[1].value[i+1][j+1][k];
+						f101=eng_flux[1].value[i+1][j][k+1];
+						f011=eng_flux[1].value[i][j+1][k+1];
+						f111=eng_flux[1].value[i+1][j+1][k+1];
+						dtflux_y=-dt*(f111-f101 \
+									+f110-f100 \
+									+f011-f001 \
+									+f010-f000)/(4*dy);
+
+						f000=eng_flux[2].value[i][j][k];      				
+						f100=eng_flux[2].value[i+1][j][k];   
+						f010=eng_flux[2].value[i][j+1][k];
+						f001=eng_flux[2].value[i][j][k+1];
+						f110=eng_flux[2].value[i+1][j+1][k];
+						f101=eng_flux[2].value[i+1][j][k+1];
+						f011=eng_flux[2].value[i][j+1][k+1];
+						f111=eng_flux[2].value[i+1][j+1][k+1];
+						dtflux_z=-dt*(f111-f110 \
+									+f011-f010 \
+									+f101-f100 \
+									+f001-f000)/(4*dz);
+
+						v000=sub_var[7][i][j][k];      					
+						v100=sub_var[7][i+1][j][k];      
+						v010=sub_var[7][i][j+1][k];
+						v001=sub_var[7][i][j][k+1];
+						v110=sub_var[7][i+1][j+1][k];
+						v101=sub_var[7][i+1][j][k+1];
+						v011=sub_var[7][i][j+1][k+1];
+						v111=sub_var[7][i+1][j+1][k+1];
+
+						Temp_var=(v000+v100+v010+v001+v110+v101+v011+v111)/8.;
+
+						eng_obj.value[i][j][k]=var_x_plushalfdx[7][i]+Temp_var+dtflux_x+dtflux_y+dtflux_z;						
+					}
+				}
+			}			
+			break;
+		}
+	case Second:
+		{
+			dt=time_interv;				
+			for (i=1;i<Grid_Num_x-1;i++)
+			{
+				for (j=1;j<Grid_Num_y-1;j++)
+				{
+					for (k=1;k<Grid_Num_z-1;k++)
+					{
+						dx=X_interval[i-1];
+						dy=Y_interval[j-1];
+						dz=Z_interval[k-1];
+// following used is the most simple addressing method, which could be improved
+						f000=eng_flux[0].value[i-1][j-1][k-1];       							
+						f100=eng_flux[0].value[i-1+1][j-1][k-1];      
+						f010=eng_flux[0].value[i-1][j-1+1][k-1];
+						f001=eng_flux[0].value[i-1][j-1][k-1+1];
+						f110=eng_flux[0].value[i-1+1][j-1+1][k-1];
+						f101=eng_flux[0].value[i-1+1][j-1][k-1+1];
+						f011=eng_flux[0].value[i-1][j-1+1][k-1+1];
+						f111=eng_flux[0].value[i-1+1][j-1+1][k-1+1];
+
+						dtflux_x=-dt*(f111-f011 \
+									+f101-f001 \
+									+f110-f010 \
+									+f100-f000)/(4*dx);
+
+						f000=eng_flux[1].value[i-1][j-1][k-1];       						
+						f100=eng_flux[1].value[i-1+1][j-1][k-1];     
+						f010=eng_flux[1].value[i-1][j-1+1][k-1];
+						f001=eng_flux[1].value[i-1][j-1][k-1+1];
+						f110=eng_flux[1].value[i-1+1][j-1+1][k-1];
+						f101=eng_flux[1].value[i-1+1][j-1][k-1+1];
+						f011=eng_flux[1].value[i-1][j-1+1][k-1+1];
+						f111=eng_flux[1].value[i-1+1][j-1+1][k-1+1];
+						dtflux_y=-dt*(f111-f101 \
+									+f110-f100 \
+									+f011-f001 \
+									+f010-f000)/(4*dy);
+
+						f000=eng_flux[2].value[i-1][j-1][k-1];        						
+						f100=eng_flux[2].value[i-1+1][j-1][k-1];     
+						f010=eng_flux[2].value[i-1][j-1+1][k-1];
+						f001=eng_flux[2].value[i-1][j-1][k-1+1];
+						f110=eng_flux[2].value[i-1+1][j-1+1][k-1];
+						f101=eng_flux[2].value[i-1+1][j-1][k-1+1];
+						f011=eng_flux[2].value[i-1][j-1+1][k-1+1];
+						f111=eng_flux[2].value[i-1+1][j-1+1][k-1+1];
+						dtflux_z=-dt*(f111-f110 \
+									+f011-f010 \
+									+f101-f100 \
+									+f001-f000)/(4*dz);
+						eng_obj.value[i][j][k]=eng_obj.value[i][j][k]+dtflux_x+dtflux_y+dtflux_z;						
+					}
+				}
+			}			
+			break;
+		}
+	default:
+		{
+			//cout<<"Do you know what is the default method to calculate divergence of the flux in 3D situation? "<<endl;
+			//cout<<"I will do nothing if you call default case!"<<endl;
+		}
 	}
 }
 

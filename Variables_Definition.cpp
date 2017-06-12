@@ -121,6 +121,150 @@ void VARIABLE::boundary_set(Symmetry_Type sign_x, Symmetry_Type sign_z)
 				//cout<<"VARIABLE::basic_boundary_set invoked! Have set the boundary for you!  for you!!!"<<endl;
 			}
 
+// set right boundary 
+void VARIABLE::right_boundary_set(Symmetry_Type sign_x, Symmetry_Type sign_z)
+				{
+				int i,j,k;
+				// Magnet0sheath and -pause boundary
+				// Inflow boundary ,    equivalent extrapolation!!!!????????
+				if (half_x==True)
+				{
+					for (j=0;j<Grid_Num_y-1;j++)
+					{
+						for (k=0;k<Grid_Num_z-1;k++)
+						{
+							value[Grid_Num_x-1][j][k]=sign_x*value[Grid_Num_x-3][Grid_Num_y-1-j][k];    // minus axial symmetry
+						}
+					}
+				}
+				else
+				{
+					for (j=0;j<Grid_Num_y-1;j++)
+					{
+						for (k=0;k<Grid_Num_z-1;k++)
+						{
+							value[Grid_Num_x-1][j][k]=value[Grid_Num_x-2][j][k];
+						}
+					}
+				}		
+		
+				// outflow boundary,     equiv. extrap.
+				if (period_y==True)
+				{		
+					for(i=0;i<Grid_Num_x;i++)
+					{
+						for(k=0;k<Grid_Num_z-1;k++)
+						{
+							value[i][Grid_Num_y-1][k]=value[i][1][k];
+						}
+					}
+				}
+				else
+				{
+					for(i=0;i<Grid_Num_x;i++)
+					{
+						for(k=0;k<Grid_Num_z-1;k++)
+						{
+							value[i][Grid_Num_y-1][k]=value[i][Grid_Num_y-2][k];
+						}
+					}
+				}
+
+				if (half_z==True)
+				{
+					for (i=0;i<Grid_Num_x;i++)
+					{
+						for (j=0;j<Grid_Num_y;j++)
+						{
+							value[i][j][Grid_Num_z-1]=sign_z*value[i][j][Grid_Num_z-3];
+						}
+					}
+				}
+				else
+				{
+					for (i=0;i<Grid_Num_x;i++)
+					{
+						for (j=0;j<Grid_Num_y;j++)
+						{
+							value[i][j][Grid_Num_z-1]=value[i][j][Grid_Num_z-2];
+						}
+					}
+				}   
+				//cout<<"VARIABLE::basic_boundary_set invoked! Have set the boundary for you!  for you!!!"<<endl;
+			}
+
+// set left boundary 
+void VARIABLE::left_boundary_set()		
+			{
+				int i,j,k;
+				// Magnet0sheath and -pause boundary
+				// Inflow boundary ,    equivalent extrapolation!!!!????????
+				if (half_x==True)
+				{
+					for (j=1;j<Grid_Num_y-1;j++)
+					{
+						for (k=1;k<Grid_Num_z-1;k++)
+						{
+							value[0][j][k]=value[1][j][k];
+						}
+					}
+				}
+				else
+				{
+					for (j=1;j<Grid_Num_y-1;j++)
+					{
+						for (k=1;k<Grid_Num_z-1;k++)
+						{
+							value[0][j][k]=value[1][j][k];
+						}
+					}
+				}		
+		
+				// outflow boundary,     equiv. extrap.
+				if (period_y==True)
+				{		
+					for(i=0;i<Grid_Num_x-1;i++)
+					{
+						for(k=1;k<Grid_Num_z-1;k++)
+						{
+							value[i][0][k]=value[i][Grid_Num_y-2][k];
+						}
+					}
+				}
+				else
+				{
+					for(i=0;i<Grid_Num_x-1;i++)
+					{
+						for(k=1;k<Grid_Num_z-1;k++)
+						{
+							value[i][0][k]=value[i][1][k];
+						}
+					}
+				}
+
+				if (half_z==True)
+				{
+					for (i=0;i<Grid_Num_x-1;i++)
+					{
+						for (j=0;j<Grid_Num_y-1;j++)
+						{
+							value[i][j][0]=value[i][j][1];
+						}
+					}
+				}
+				else
+				{
+					for (i=0;i<Grid_Num_x-1;i++)
+					{
+						for (j=0;j<Grid_Num_y-1;j++)
+						{
+							value[i][j][0]=value[i][j][1];
+						}
+					}
+				}   
+				//cout<<"VARIABLE::basic_boundary_set invoked! Have set the boundary for you!  for you!!!"<<endl;
+			}
+
 void VARIABLE::smooth_xyz(int times)
 {
 	int i,j,k, m;

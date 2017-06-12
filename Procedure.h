@@ -53,18 +53,6 @@ void exclude_soucrce_half_7update(VARIABLE *, BASIC_VARIABLE [][3], double, Orde
 
 // update energy
 void exclude_source_hlaf_update_eng(VARIABLE &, BASIC_VARIABLE *, double, Order);
+
 // Update variables from source term
 void source_update(VARIABLE *, double);
-
-void boudary_set(VARIABLE &, Symmetry_Type, Symmetry_Type);
-
-// Copying action
-void copy(VARIABLE *, VARIABLE *);
-
-void smooth_xyz(double [][Grid_Num_x][Grid_Num_y][Grid_Num_z], int);
-
-void average(double [][Grid_Num_x][Grid_Num_y][Grid_Num_z],double);
-
-void average_B(double [][Grid_Num_x][Grid_Num_y][Grid_Num_z],double);
-
-

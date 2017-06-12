@@ -18,38 +18,6 @@ extern int nstep;
 //char * file_name, open a file
 ofstream pre_out("pressure_is_negative.txt");
 
-void make_pressure_positive(BASIC_VARIABLE & pressure_obj, double positive_value)
-{
-	int times=0;
-	int i,j,k;
-	for(i=0;i<Grid_Num_x;i++)
-	{
-		for(j=0;j<Grid_Num_y;j++)
-		{
-			for(k=0;k<Grid_Num_z;k++)
-			{
-				if(pressure_obj.value[i][j][k]<0.)
-				{
-					if (times==0)
-					{
-						pre_out<<"  Oops, pressure is negative, and program can be stopped!!!"<<endl;
-						pre_out<<"Located in ( xi = "<<setw(3)<<i<<", yj = "<<setw(3)<<j<<", zk = "<<setw(3)<<k<<" ) " \
-							<<" when time step is nt = "<<nstep<<"."<<endl;
-						times+=1;
-					}
-					else
-					{
-						pre_out<<"And        ( xi = "<<setw(3)<<i<<", yj = "<<setw(3)<<j<<", zk = "<<setw(3)<<k<<" ) ";
-						pre_out<<endl;
-					}
-				}
-				if(pressure_obj.value[i][j][k]<positive_value)
-					pressure_obj.value[i][j][k]=positive_value;
-			}
-		}
-	}	
-}
-
 // Integarting variables for half dt from Fluxes using 2-order Lax-Wendroff method
 // First time (Order o=1) forward difference; Second time (Order o=2) backward difference
 void exclude_soucrce_half_7update(VARIABLE *update_var, BASIC_VARIABLE flux[][3], \
@@ -370,6 +338,38 @@ void exclude_source_hlaf_update_eng(VARIABLE &eng_obj, BASIC_VARIABLE *eng_flux,
 void source_update(VARIABLE *update_var, double time_interv)
 {
 	//cout<<"Source_Update invoked! But there is no source term!"<<endl;
+}
+
+void make_pressure_positive(BASIC_VARIABLE & pressure_obj, double positive_value)
+{
+	int times=0;
+	int i,j,k;
+	for(i=0;i<Grid_Num_x;i++)
+	{
+		for(j=0;j<Grid_Num_y;j++)
+		{
+			for(k=0;k<Grid_Num_z;k++)
+			{
+				if(pressure_obj.value[i][j][k]<0.)
+				{
+					if (times==0)
+					{
+						pre_out<<"  Oops, pressure is negative, and program can be stopped!!!"<<endl;
+						pre_out<<"Located in ( xi = "<<setw(3)<<i<<", yj = "<<setw(3)<<j<<", zk = "<<setw(3)<<k<<" ) " \
+							<<" when time step is nt = "<<nstep<<"."<<endl;
+						times+=1;
+					}
+					else
+					{
+						pre_out<<"And        ( xi = "<<setw(3)<<i<<", yj = "<<setw(3)<<j<<", zk = "<<setw(3)<<k<<" ) ";
+						pre_out<<endl;
+					}
+				}
+				if(pressure_obj.value[i][j][k]<positive_value)
+					pressure_obj.value[i][j][k]=positive_value;
+			}
+		}
+	}	
 }
 
 void copy(VARIABLE *update_var, VARIABLE *mother_var)

@@ -40,13 +40,11 @@ double set_dt(VARIABLE *, BASIC_VARIABLE &, VARIABLE *, BASIC_VARIABLE &, double
 // Step on variables
 void step_on(VARIABLE *, VARIABLE *, BASIC_VARIABLE &, BASIC_VARIABLE &, double time, double time_interv);
 
-void smooth(VARIABLE *, double, int);
+void smooth(VARIABLE *, double);
 
 
 
 // General_Procedure.h
-
-void make_pressure_positive(BASIC_VARIABLE &, double);
 
 // Update variables using 2-order Lax-Wendroff method
 void exclude_soucrce_half_7update(VARIABLE *, BASIC_VARIABLE [][3], double, Order);

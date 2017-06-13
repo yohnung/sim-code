@@ -20,6 +20,7 @@ double var_x[8][Grid_Num_x], var_x_plushalfdx[8][Grid_Num_x];          // fx, fx
 // For following procedures
 ofstream max_dt_out("max_dt.txt");
 ofstream min_dt_out("min_dt.txt");
+ofstream pre_out("pressure_is_negative.txt");
 
 void set_mesh()
 {
@@ -127,7 +128,6 @@ void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 	for (i=0;i<Grid_Num_x;i++)
 	{
 		for (j=0;j<Grid_Num_y;j++)
-		{
 			for (k=0;k<Grid_Num_z;k++)
 			{
 				x=X[i]; dx=X_interval[i];
@@ -175,7 +175,6 @@ void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				sub_var[7][i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma-1);
 				/*plus half dx: end*/
 			}
-		}
 	}
 	cal_current(current, pointer);
 	for (i=0;i<Grid_Num_x;i++)
@@ -206,6 +205,7 @@ void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 			for (j=0;j<Grid_Num_y;j++)
 				for (k=0;k<Grid_Num_z;k++)
 					sub_var[n][i][j][k]=pointer[n].value[i][j][k]-var_x[n][i];
+
 	// delete dynamic variable-array
 	delete []current;
 	delete []sub_mag_field;
@@ -230,7 +230,6 @@ void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 	for (i=0;i<Grid_Num_x;i++)
 	{
 		for (j=0;j<Grid_Num_y;j++)
-		{
 			for (k=0;k<Grid_Num_z;k++)
 			{
 				x=X[i]; dx=X_interval[i];
@@ -278,7 +277,6 @@ void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				sub_var[7][i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma-1);
 				/*plus half dx: end*/
 			}
-		}
 	}
 	
 	for (n=0;n<8;n++)
@@ -293,6 +291,7 @@ void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 			for (j=0;j<Grid_Num_y;j++)
 				for (k=0;k<Grid_Num_z;k++)
 					sub_var[n][i][j][k]=pointer[n].value[i][j][k]-var_x[n][i];
+
 	// delete dynamic variable-array
 	delete []current;
 	delete []sub_mag_field;
@@ -308,7 +307,6 @@ void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 	for (i=1;i<Grid_Num_x-1-T;i++)
 	{
 		for (j=1;j<Grid_Num_y-1-T;j++)
-		{
 			for (k=1;k<Grid_Num_z-1-T;k++)
 			{
 				Bx_ym=pointer[4].value[i][j-1][k]; Bx_yp=pointer[4].value[i][j+1][k];
@@ -331,7 +329,6 @@ void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 				current[2].value[i][j][k]=(By_xp-By_xm)/dx- \
 					(Bx_yp-Bx_ym)/dy;
 			}
-		}
 	}
 	// (can write a switch statement to include different extrapolation method
 	// x-linear extrapolation yz-equivalent
@@ -342,70 +339,54 @@ void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 		if (half_x==True)
 		{
 			for (j=1;j<Grid_Num_y-1;j++)
-			{
 				for(k=1;k<Grid_Num_z-1;k++)
 				{
 					current[0].value[0][j][k]=2*current[0].value[1][j][k]-current[0].value[2][j][k];
-					current[0].value[Grid_Num_x-1][j][k]=current[0].value[Grid_Num_x-3][Grid_Num_y-1-j][k];
+					current[0].value[Grid_Num_x-1][j][k]=current[0].value[Grid_Num_x-3][Grid_Num_y-1-j][k];           // it's meaning?
 					current[1].value[0][j][k]=2*current[1].value[1][j][k]-current[1].value[2][j][k];
 					current[1].value[Grid_Num_x-1][j][k]=current[1].value[Grid_Num_x-3][Grid_Num_y-1-j][k];
 					current[2].value[0][j][k]=2*current[2].value[1][j][k]-current[2].value[2][j][k];
-					current[2].value[Grid_Num_x-1][j][k]=-current[2].value[Grid_Num_x-3][Grid_Num_y-1-j][k];
-					
+					current[2].value[Grid_Num_x-1][j][k]=-current[2].value[Grid_Num_x-3][Grid_Num_y-1-j][k];					
 				}
-			}
 		}
 		else
 		{
 			for (n=0;n<3;n++)
-			{
 				for (j=1;j<Grid_Num_y-1;j++)
-				{
 					for(k=1;k<Grid_Num_z-1;k++)
 					{
 						current[n].value[0][j][k]=2*current[n].value[1][j][k]-current[n].value[2][j][k];
 						current[n].value[Grid_Num_x-1][j][k]=2*current[n].value[Grid_Num_x-2][j][k]- \
 									current[n].value[Grid_Num_x-3][j][k];						
-					}
-				}
-			}			
+					}		
 		}	
 
 		// boundary at j=0,Grid_Num_y-1
 		if (period_y==True)
 		{
 			for (n=0;n<3;n++)
-			{
 				for (i=0;i<Grid_Num_x;i++)
-				{
 					for(k=1;k<Grid_Num_z-1;k++)
 					{
 						current[n].value[i][0][k]=current[n].value[i][Grid_Num_y-2][k];
 						current[n].value[i][Grid_Num_y-1][k]=current[n].value[i][1][k];
 					}
-				}
-			}
 		}
 		else
 		{
 			for (n=0;n<3;n++)
-			{
 				for (i=0;i<Grid_Num_x;i++)
-				{
 					for(k=1;k<Grid_Num_z-1;k++)
 					{
 						current[n].value[i][0][k]=current[n].value[i][1][k];
 						current[n].value[i][Grid_Num_y-1][k]=current[n].value[i][Grid_Num_y-2][k];
 					}
-				}
-			}
 		}
 
 		// boundary at k=0,Grid_Num_z-1
 		if (half_z==True)
 		{
 			for (i=0;i<Grid_Num_x;i++)
-			{
 				for (j=0;j<Grid_Num_y;j++)
 				{
 					current[0].value[i][j][0]=current[0].value[i][j][1];
@@ -415,21 +396,16 @@ void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 					current[2].value[i][j][0]=current[2].value[i][j][1];
 					current[2].value[i][j][Grid_Num_z-1]=-current[2].value[i][j][Grid_Num_z-3];
 				}
-			}
 		}
 		else
 		{
 			for (n=0;n<3;n++)
-			{
 				for (i=0;i<Grid_Num_x;i++)
-				{
 					for (j=0;j<Grid_Num_y;j++)
 					{
 						current[n].value[i][j][0]=current[n].value[i][j][1];
 						current[n].value[i][j][Grid_Num_z-1]=current[n].value[i][j][Grid_Num_z-2];
 					}
-				}
-			}
 		}
 	}
 
@@ -440,7 +416,6 @@ void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 		if (half_x==True)
 		{
 			for (j=1;j<Grid_Num_y-1-T;j++)
-			{
 				for(k=1;k<Grid_Num_z-1-T;k++)
 				{
 					current[0].value[0][j][k]=current[0].value[1][j][k];
@@ -450,58 +425,44 @@ void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 					current[2].value[0][j][k]=current[2].value[1][j][k];
 					current[2].value[Grid_Num_x-1-T][j][k]=-current[2].value[Grid_Num_x-2-T][Grid_Num_y-2-j][k];					
 				}
-			}
 		}
 		else
 		{
 			for (n=0;n<3;n++)
-			{
 				for (j=1;j<Grid_Num_y-1-T;j++)
-				{
 					for(k=1;k<Grid_Num_z-1-T;k++)
 					{
 						current[n].value[0][j][k]=current[n].value[1][j][k];
 						current[n].value[Grid_Num_x-1-T][j][k]=current[n].value[Grid_Num_x-2-T][j][k];	
 					}
-				}
-			}
 		}	
 
 		// boundary at j=0,Grid_Num_y-1-T
 		if (period_y==True)
 		{
 			for (n=0;n<3;n++)
-			{
 				for (i=0;i<Grid_Num_x-T;i++)
-				{
 					for(k=1;k<Grid_Num_z-1-T;k++)
 					{
 						current[n].value[i][0][k]=current[n].value[i][Grid_Num_y-2-T][k];
 						current[n].value[i][Grid_Num_y-1-T][k]=current[n].value[i][1][k];
 					}
-				}
-			}
 		}
 		else
 		{
 			for (n=0;n<3;n++)
-			{
 				for (i=0;i<Grid_Num_x-T;i++)
-				{
 					for(k=1;k<Grid_Num_z-1-T;k++)
 					{
 						current[n].value[i][0][k]=current[n].value[i][1][k];
 						current[n].value[i][Grid_Num_y-1-T][k]=current[n].value[i][Grid_Num_y-2-T][k];
 					}
-				}
-			}
 		}
 
 		// boundary at k=0,Grid_Num_z-1-T
 		if (half_z==True)
 		{
 			for (i=0;i<Grid_Num_x-T;i++)
-			{
 				for (j=0;j<Grid_Num_y-T;j++)
 				{
 					current[0].value[i][j][0]=current[0].value[i][j][1];
@@ -511,21 +472,16 @@ void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 					current[2].value[i][j][0]=current[2].value[i][j][1];
 					current[2].value[i][j][Grid_Num_z-1-T]=-current[2].value[i][j][Grid_Num_z-2-T];
 				}
-			}
 		}
 		else
 		{
 			for (n=0;n<3;n++)
-			{
 				for (i=0;i<Grid_Num_x-T;i++)
-				{
 					for (j=0;j<Grid_Num_y-T;j++)
 					{
 						current[n].value[i][j][0]=current[n].value[i][j][1];
 						current[n].value[i][j][Grid_Num_z-1-T]=current[n].value[i][j][Grid_Num_z-2-T];
 					}
-				}
-			}
 		}
 	}					
 	//cout<<"Current is calculated form Curl B! It's simple, I know!!!"<<endl;	
@@ -605,13 +561,13 @@ void set_eta(BASIC_VARIABLE &eta_obj, VARIABLE *pointer, VARIABLE *current, doub
 
 void cal_pressure(BASIC_VARIABLE &pressure_obj, VARIABLE *pointer, Type T)
 {	
-	double rho,rhoVx, rhoVy, rhoVz, Bx, By, Bz, E;
+	double rho,rhoVx, rhoVy, rhoVz, Bx, By, Bz, Eng, pressure;
 	double B_Energy, V_Energy;
-	int i,j,k;
+	double positive_value=1e-5;
+	int i,j,k, times=0;
 	for (i=0;i<Grid_Num_x-T;i++)
 	{
 		for (j=0;j<Grid_Num_y-T;j++)
-		{
 			for (k=0;k<Grid_Num_z-T;k++)
 			{
 				rho=pointer[0].value[i][j][k];
@@ -621,16 +577,36 @@ void cal_pressure(BASIC_VARIABLE &pressure_obj, VARIABLE *pointer, Type T)
 				Bx=pointer[4].value[i][j][k];
 				By=pointer[5].value[i][j][k];
 				Bz=pointer[6].value[i][j][k];
-				E=pointer[7].value[i][j][k];
+				Eng=pointer[7].value[i][j][k];
 				B_Energy=0.5*(pow(Bx,2)+pow(By,2)+pow(Bz,2));
 				V_Energy=0.5*(pow(rhoVx,2)+pow(rhoVy,2)+pow(rhoVz,2))/rho;
-				pressure_obj.value[i][j][k]=(phy_gamma-1)* \
-					(E-B_Energy-V_Energy);
+				pressure=(phy_gamma-1)*(Eng-B_Energy-V_Energy);
+				pressure_obj.value[i][j][k]=pressure;
+				if(pressure<0.)
+				{
+					if (times==0)
+					{
+						pre_out<<endl<<"  Oops, pressure is negative, and program can be stopped!!!"<<endl;
+						pre_out<<"When Type T = "<<T<<" , and time step is nt = "<<nstep<<endl;
+						pre_out<<"Located in ( xi = "<<setw(3)<<i<<", yj = "<<setw(3)<<j<<", zk = "<<setw(3)<<k<<" ) ";
+						pre_out<<endl;
+						pre_out<<setiosflags(ios::scientific)<<setprecision(3);
+						times+=1;
+					}
+					else
+					{
+						pre_out<<"           ( xi = "<<setw(3)<<i<<", yj = "<<setw(3)<<j<<", zk = "<<setw(3)<<k<<" ) ";
+						pre_out<<endl;
+					}
+					pre_out<<"     rho          Vx          Vy          Vz          Bx     "\
+						      <<"     By          Bz          Eng          P"<<endl;
+					pre_out<<setw(13)<<rho<<setw(12)<<rhoVx/rho<<setw(12)<<rhoVy/rho<<setw(12)<<rhoVz/rho\
+						<<setw(12)<<Bx<<setw(12)<<By<<setw(12)<<Bz<<setw(13)<<Eng<<setw(11)<<pressure<<endl;
+				}
+				if(T==Complete && pressure<positive_value)
+					pressure_obj.value[i][j][k]=positive_value;
 			}
-		}
 	}
-	if (T==Complete)
-		make_pressure_positive(pressure_obj, 1e-5);
 	//cout<<"Pressure is calculated from various kinds of energy, and doesn't explicitly step on according to equation!"<<endl;
 }
 
@@ -645,9 +621,7 @@ void ext_from_var( BASIC_VARIABLE *Electric_field, BASIC_VARIABLE *var, VARIABLE
 	// Assignment
 	int i,j,k;
 	for (i=0;i<Grid_Num_x;i++)
-	{
 		for (j=0;j<Grid_Num_y;j++)
-		{
 			for (k=0;k<Grid_Num_z;k++)
 			{
 				rho=var[0].value[i][j][k];
@@ -671,8 +645,6 @@ void ext_from_var( BASIC_VARIABLE *Electric_field, BASIC_VARIABLE *var, VARIABLE
 				Electric_field[0].value[i][j][k]=-V_cross_B_x+eta*current_x;
 				Electric_field[1].value[i][j][k]=-V_cross_B_y+eta*current_y;
 			}
-		}
-	}	
 }
 
 // Setting time-interval
@@ -682,15 +654,14 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 	double dt;
 	double dx,dy,dz,dxyz;	
 	double Temp_dt, dt_min=1000., test_dt=1000.;
-	double rho, rhoVx, rhoVy, rhoVz, Bx, By, Bz, pressure;
+	double rho, rhoVx, rhoVy, rhoVz, Bx, By, Bz, Eng, pressure;
 	int max_dt_i, max_dt_j, max_dt_k;                                       // for diagnostic
-	double max_rho, max_Vx, max_Vy, max_Vz, max_Bx, max_By, max_Bz, max_P;  // for diagnostic
+	double max_rho, max_Vx, max_Vy, max_Vz, max_Bx, max_By, max_Bz, max_Eng, max_P;  // for diagnostic
 
 	int i,j,k, times=0;
 	for (i=0;i<Grid_Num_x;i++)
 	{
 		for (j=0;j<Grid_Num_y;j++)
-		{
 			for (k=0;k<Grid_Num_z;k++)
 			{
 				dx=X_interval[i];
@@ -705,6 +676,7 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 				Bx=pointer[4].value[i][j][k];
 				By=pointer[5].value[i][j][k];
 				Bz=pointer[6].value[i][j][k];
+				Eng=pointer[7].value[i][j][k];
 				pressure=pressure_obj.value[i][j][k];
 				Temp_dt=dxyz/( sqrt( pow(rhoVx,2)+pow(rhoVy,2)+pow(rhoVz,2) )/rho+ \
 					sqrt( ( Bx*Bx+By*By+Bz*Bz+phy_gamma*pressure )/rho ) );
@@ -721,19 +693,18 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 					else
 						max_dt_out<<"And               (     "<<setw(3)<<i<<",     "<<setw(3)<<j<<",     "<<setw(3)<<k<<" )"<<endl;
 					max_dt_out<<"     rho          Vx          Vy          Vz          Bx     "\
-						      <<"     By          Bz          P"<<endl;
+						      <<"     By          Bz          Eng          P"<<endl;
 					max_dt_out<<setw(13)<<rho<<setw(12)<<rhoVx/rho<<setw(12)<<rhoVy/rho<<setw(12)<<rhoVz/rho\
-						<<setw(12)<<Bx<<setw(12)<<By<<setw(12)<<Bz<<setw(11)<<pressure<<endl;
+						<<setw(12)<<Bx<<setw(12)<<By<<setw(12)<<Bz<<setw(13)<<Eng<<setw(11)<<pressure<<endl;
 				}
 				if (Temp_dt < test_dt)
 				{
 					test_dt=Temp_dt;
 					max_dt_i=i; max_dt_j=j; max_dt_k=k;
 					max_rho=rho; max_Vx=rhoVx/rho; max_Vy=rhoVy/rho; max_Vz=rhoVz/rho;
-					max_Bx=Bx; max_By=By; max_Bz=Bz; max_P=pressure;
+					max_Bx=Bx; max_By=By; max_Bz=Bz; max_Eng=Eng, max_P=pressure;
 				}
 			}
-		}
 	}
 
 	dt=0.5*min(dt_min,test_dt);
@@ -745,9 +716,9 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 		          <<"location ( i = "<<setw(3)<<max_dt_i<<", j = "<<setw(3)<<max_dt_j<<", k = "<<setw(3)<<max_dt_k<<" )"<<endl;
 		min_dt_out<<"And time step is "<<nstep<<" , with variables are:"<<endl;
 		min_dt_out<<"     rho          Vx          Vy          Vz          Bx     "\
-				  <<"     By          Bz          P"<<endl;
+				  <<"     By          Bz          Eng          P"<<endl;
 		min_dt_out<<setw(13)<<max_rho<<setw(12)<<max_Vx<<setw(12)<<max_Vy<<setw(12)<<max_Vz\
-			<<setw(12)<<max_Bx<<setw(12)<<max_By<<setw(12)<<max_Bz<<setw(11)<<max_P<<endl<<endl;
+			<<setw(12)<<max_Bx<<setw(12)<<max_By<<setw(12)<<max_Bz<<setw(13)<<max_Eng<<setw(11)<<max_P<<endl<<endl;
 	}
 	//cout<<"Set_dt invoked! And dt="<<dt<<endl;
 	return dt;
@@ -892,16 +863,14 @@ void cal_7flux(BASIC_VARIABLE flux[][3], VARIABLE *pointer, VARIABLE *current,\
 {
 	double rho, Vx, Vy, Vz;
 	double Bx, By, Bz;
-	double B_Energy;  // V_Energy is not used !
+	double B_Energy;
 	double pressure, eta;
 	double current_x, current_y, current_z;
 	double V_cross_B_x, V_cross_B_y, V_cross_B_z;
 	// Assignment
 	int i,j,k;
 	for (i=0;i<Grid_Num_x-T;i++)
-	{
 		for (j=0;j<Grid_Num_y-T;j++)
-		{
 			for (k=0;k<Grid_Num_z-T;k++)
 			{
 				rho=pointer[0].value[i][j][k];
@@ -923,7 +892,7 @@ void cal_7flux(BASIC_VARIABLE flux[][3], VARIABLE *pointer, VARIABLE *current,\
 				flux[0][1].value[i][j][k]=rho*Vy;
 				flux[0][2].value[i][j][k]=rho*Vz;
 				
-				//Bx_flux
+				//V_flux
 				flux[1][0].value[i][j][k]=rho*Vx*Vx+pressure+B_Energy-Bx*Bx;
 				flux[1][1].value[i][j][k]=rho*Vx*Vy-By*Bx;
 				flux[1][2].value[i][j][k]=rho*Vx*Vz-Bz*Bx;
@@ -953,8 +922,7 @@ void cal_7flux(BASIC_VARIABLE flux[][3], VARIABLE *pointer, VARIABLE *current,\
 				flux[6][1].value[i][j][k]=V_cross_B_x-eta*current_x;
 				flux[6][2].value[i][j][k]=0;
 			}
-		}
-	}
+
 	//cout<<"I'm Calculating flux!"<<endl;
 }
 
@@ -964,19 +932,19 @@ void cal_eng_flux(BASIC_VARIABLE *eng_flux, VARIABLE *pointer, VARIABLE *current
 {
 	double rho, Vx, Vy, Vz;
 	double Bx, By, Bz;
-	double Energy, B_Energy, V_Energy;  // V_Energy is not used !	
+	double Energy, B_Energy;
 	double pressure, eta;
 	double current_x, current_y, current_z;
 	double V_dot_B;
 
 	double (*Eng_array)[Grid_Num_y][Grid_Num_z]=new double[Grid_Num_x][Grid_Num_y][Grid_Num_z];
+
 	accumulate_eng(Eng_array, pointer, pressure_obj, T);    // accumulate energy from new V, new B and old P
+
 	// Assignment
 	int i,j,k;
 	for (i=0;i<Grid_Num_x-T;i++)
-	{
 		for (j=0;j<Grid_Num_y-T;j++)
-		{
 			for (k=0;k<Grid_Num_z-T;k++)
 			{
 				rho=pointer[0].value[i][j][k];
@@ -992,7 +960,6 @@ void cal_eng_flux(BASIC_VARIABLE *eng_flux, VARIABLE *pointer, VARIABLE *current
 				current_y=current[1].value[i][j][k];
 				current_z=current[2].value[i][j][k];
 				B_Energy=0.5*(pow(Bx,2)+pow(By,2)+pow(Bz,2));
-				V_Energy=0.5*rho*(pow(Vx,2)+pow(Vy,2)+pow(Vz,2));
 				eta=eta_obj.value[i][j][k];
 
 				// Energy_fulx
@@ -1005,8 +972,7 @@ void cal_eng_flux(BASIC_VARIABLE *eng_flux, VARIABLE *pointer, VARIABLE *current
 				eng_flux[2].value[i][j][k]=Vz*Energy-Bz*V_dot_B+eta* \
 					(current_x*By-current_y*Bx);
 			}
-		}
-	}
+
 	delete []Eng_array;
 	//cout<<"I'm Calculating flux!"<<endl;
 }
@@ -1036,25 +1002,20 @@ void accumulate_eng(double (*Eng_array)[Grid_Num_y][Grid_Num_z], VARIABLE *point
 			}
 }
 
-void smooth(VARIABLE *pointer, double time, int nstep)      // how many times do smooth
+void smooth(VARIABLE *pointer, double time)      // how many times do smooth
 {
 //	VARIABLE tempvar[8];   changed to dynamic array as followings
 	VARIABLE *tempvar=new VARIABLE[8];
 //	double caf0=1.-0.25*tanh(time/100.);        // caf0 could be changed to caf
 	int i,j,k, n;
 	for (n=0;n<8;n++)
-	{
 		for(i=0;i<Grid_Num_x;i++)
-		{
 			for(j=0;j<Grid_Num_y;j++)
-			{
 				for(k=0;k<Grid_Num_z;k++)
 				{
 					tempvar[n].value[i][j][k]=pointer[n].value[i][j][k]-var_x[n][i];
 				}
-			}
-		}
-	}
+
 	if (nstep%3==0)
 	{
 		for (n=0;n<8;n++)
@@ -1073,10 +1034,10 @@ void smooth(VARIABLE *pointer, double time, int nstep)      // how many times do
 		tempvar[1].boundary_set(Negative,Positive);tempvar[2].boundary_set(Negative,Positive);tempvar[3].boundary_set(Positive,Negative);
 		tempvar[4].boundary_set(Positive,Negative);tempvar[5].boundary_set(Positive,Negative);tempvar[6].boundary_set(Negative,Positive);
 		tempvar[7].boundary_set(Positive,Positive);
+
 		for (n=4;n<7;n++)
-		{
 			tempvar[n].average(0.996);                       // avrg2
-		}
+
 		tempvar[0].boundary_set(Positive,Positive);
 		tempvar[1].boundary_set(Negative,Positive);tempvar[2].boundary_set(Negative,Positive);tempvar[3].boundary_set(Positive,Negative);
 		tempvar[4].boundary_set(Positive,Negative);tempvar[5].boundary_set(Positive,Negative);tempvar[6].boundary_set(Negative,Positive);
@@ -1084,19 +1045,13 @@ void smooth(VARIABLE *pointer, double time, int nstep)      // how many times do
 	}
 	
 	for (n=0;n<8;n++)
-	{
 		for(i=0;i<Grid_Num_x;i++)
-		{
 			for(j=0;j<Grid_Num_y;j++)
-			{
 				for(k=0;k<Grid_Num_z;k++)
 				{
 					sub_var[n][i][j][k]=tempvar[n].value[i][j][k];
 					pointer[n].value[i][j][k]=tempvar[n].value[i][j][k]+var_x[n][i];
 				}
-			}
-		}
-	}
 // deleting dynamic memory space
 	delete []tempvar;
 }

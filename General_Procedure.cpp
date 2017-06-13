@@ -14,9 +14,6 @@ using namespace std;
 extern double X[], Y[], Z[], X_interval[], Y_interval[], Z_interval[];
 extern double var_x[][Grid_Num_x], var_x_plushalfdx[][Grid_Num_x];          // Declaration of external variables
 extern double sub_var[8][Grid_Num_x][Grid_Num_y][Grid_Num_z];
-extern int nstep;
-//char * file_name, open a file
-ofstream pre_out("pressure_is_negative.txt");
 
 // Integarting variables for half dt from Fluxes using 2-order Lax-Wendroff method
 // First time (Order o=1) forward difference; Second time (Order o=2) backward difference
@@ -38,9 +35,7 @@ void exclude_soucrce_half_7update(VARIABLE *update_var, BASIC_VARIABLE flux[][3]
 			for (n=0;n<7;n++)
 			{				
 				for (i=0;i<Grid_Num_x-1;i++)
-				{
 					for (j=0;j<Grid_Num_y-1;j++)
-					{
 						for (k=0;k<Grid_Num_z-1;k++)
 						{
 							dx=X_interval[i];                      
@@ -100,8 +95,6 @@ void exclude_soucrce_half_7update(VARIABLE *update_var, BASIC_VARIABLE flux[][3]
 
 							update_var[n].value[i][j][k]=var_x_plushalfdx[n][i]+Temp_var+dtflux_x+dtflux_y+dtflux_z;						
 						}
-					}
-				}
 			}			
 			break;
 		}
@@ -111,9 +104,7 @@ void exclude_soucrce_half_7update(VARIABLE *update_var, BASIC_VARIABLE flux[][3]
 			for (n=0;n<7;n++)
 			{				
 				for (i=1;i<Grid_Num_x-1;i++)
-				{
 					for (j=1;j<Grid_Num_y-1;j++)
-					{
 						for (k=1;k<Grid_Num_z-1;k++)
 						{
 							dx=X_interval[i-1];
@@ -161,14 +152,12 @@ void exclude_soucrce_half_7update(VARIABLE *update_var, BASIC_VARIABLE flux[][3]
 										+f001-f000)/(4*dz);
 							update_var[n].value[i][j][k]=update_var[n].value[i][j][k]+dtflux_x+dtflux_y+dtflux_z;						
 						}
-					}
-				}
 			}			
 			break;
 		}
 	default:
 		{
-			//cout<<"Do you know what is the default method to calculate divergence of the flux in 3D situation? "<<endl;
+			;//cout<<"Do you know what is the default method to calculate divergence of the flux in 3D situation? "<<endl;
 			//cout<<"I will do nothing if you call default case!"<<endl;
 		}
 	}
@@ -180,9 +169,7 @@ void exclude_soucrce_half_7update(VARIABLE *update_var, BASIC_VARIABLE flux[][3]
 	case Second:
 		;
 	default:
-		{
-			//cout<<"But it's default call! And I will do nothing until you tell me what is the default method to calculate divergence of the flux in 3D situation? "<<endl;
-		}	
+		;//cout<<"But it's default call! And I will do nothing until you tell me what is the default method to calculate divergence of the flux in 3D situation? "<<endl;	
 	}
 }
 
@@ -204,7 +191,6 @@ void exclude_source_hlaf_update_eng(VARIABLE &eng_obj, BASIC_VARIABLE *eng_flux,
 			for (i=0;i<Grid_Num_x-1;i++)
 			{
 				for (j=0;j<Grid_Num_y-1;j++)
-				{
 					for (k=0;k<Grid_Num_z-1;k++)
 					{
 						dx=X_interval[i];                      
@@ -264,7 +250,6 @@ void exclude_source_hlaf_update_eng(VARIABLE &eng_obj, BASIC_VARIABLE *eng_flux,
 
 						eng_obj.value[i][j][k]=var_x_plushalfdx[7][i]+Temp_var+dtflux_x+dtflux_y+dtflux_z;						
 					}
-				}
 			}			
 			break;
 		}
@@ -274,7 +259,6 @@ void exclude_source_hlaf_update_eng(VARIABLE &eng_obj, BASIC_VARIABLE *eng_flux,
 			for (i=1;i<Grid_Num_x-1;i++)
 			{
 				for (j=1;j<Grid_Num_y-1;j++)
-				{
 					for (k=1;k<Grid_Num_z-1;k++)
 					{
 						dx=X_interval[i-1];
@@ -322,7 +306,6 @@ void exclude_source_hlaf_update_eng(VARIABLE &eng_obj, BASIC_VARIABLE *eng_flux,
 									+f001-f000)/(4*dz);
 						eng_obj.value[i][j][k]=eng_obj.value[i][j][k]+dtflux_x+dtflux_y+dtflux_z;						
 					}
-				}
 			}			
 			break;
 		}
@@ -340,316 +323,14 @@ void source_update(VARIABLE *update_var, double time_interv)
 	//cout<<"Source_Update invoked! But there is no source term!"<<endl;
 }
 
-void make_pressure_positive(BASIC_VARIABLE & pressure_obj, double positive_value)
-{
-	int times=0;
-	int i,j,k;
-	for(i=0;i<Grid_Num_x;i++)
-	{
-		for(j=0;j<Grid_Num_y;j++)
-		{
-			for(k=0;k<Grid_Num_z;k++)
-			{
-				if(pressure_obj.value[i][j][k]<0.)
-				{
-					if (times==0)
-					{
-						pre_out<<"  Oops, pressure is negative, and program can be stopped!!!"<<endl;
-						pre_out<<"Located in ( xi = "<<setw(3)<<i<<", yj = "<<setw(3)<<j<<", zk = "<<setw(3)<<k<<" ) " \
-							<<" when time step is nt = "<<nstep<<"."<<endl;
-						times+=1;
-					}
-					else
-					{
-						pre_out<<"And        ( xi = "<<setw(3)<<i<<", yj = "<<setw(3)<<j<<", zk = "<<setw(3)<<k<<" ) ";
-						pre_out<<endl;
-					}
-				}
-				if(pressure_obj.value[i][j][k]<positive_value)
-					pressure_obj.value[i][j][k]=positive_value;
-			}
-		}
-	}	
-}
-
 void copy(VARIABLE *update_var, VARIABLE *mother_var)
 {
 	int i,j,k,n;
 	for (n=0;n<8;n++)
-	{
 		for (i=0;i<Grid_Num_x;i++)
-		{
 			for (j=0;j<Grid_Num_y;j++)
-			{
 				for (k=0;k<Grid_Num_z;k++)
-				{
 					update_var[n].value[i][j][k]=mother_var[n].value[i][j][k];
-				}
-			}
-		}
-	}
+
 	//cout<<"Copy invoked!"<<endl;
 }
-
-/* changed to member function of Class
-void boudary_set(VARIABLE &variable, Symmetry_Type sign_x, Symmetry_Type sign_z)
-{
-	int i,j,k;
-	// Magnet0sheath and -pause boundary
-	// Inflow boundary ,    equivalent extrapolation!!!!????????
-	if (half_x==True)
-	{
-		for (j=1;j<Grid_Num_y-1;j++)
-		{
-			for (k=1;k<Grid_Num_z-1;k++)
-			{
-				variable.value[0][j][k]=variable.value[1][j][k];
-				variable.value[Grid_Num_x-1][j][k]=sign_x*variable.value[Grid_Num_x-3][Grid_Num_y-1-j][k];    // minus axial symmetry
-			}
-		}
-	}
-	else
-	{
-		for (j=1;j<Grid_Num_y-1;j++)
-		{
-			for (k=1;k<Grid_Num_z-1;k++)
-			{
-				variable.value[0][j][k]=variable.value[1][j][k];
-				variable.value[Grid_Num_x-1][j][k]=variable.value[Grid_Num_x-2][j][k];
-			}
-		}
-	}		
-		
-	// outflow boundary,     equiv. extrap.
-	if (period_y==True)
-	{		
-		for(i=0;i<Grid_Num_x;i++)
-		{
-			for(k=1;k<Grid_Num_z-1;k++)
-			{
-				variable.value[i][0][k]=variable.value[i][Grid_Num_z-2][k];
-				variable.value[i][Grid_Num_z-1][k]=variable.value[i][1][k];
-			}
-		}
-	}
-	else
-	{
-		for(i=0;i<Grid_Num_x;i++)
-		{
-			for(k=1;k<Grid_Num_z-1;k++)
-			{
-				variable.value[i][0][k]=variable.value[i][1][k];
-				variable.value[i][Grid_Num_z-1][k]=variable.value[i][Grid_Num_z-2][k];
-			}
-		}
-	}
-
-	if (half_z==True)
-	{
-		for (i=0;i<Grid_Num_x;i++)
-		{
-			for (j=0;j<Grid_Num_y;j++)
-			{
-				variable.value[i][j][0]=variable.value[i][j][1];
-				variable.value[i][j][Grid_Num_z-1]=sign_z*variable.value[i][j][Grid_Num_z-3];
-			}
-		}
-	}
-	else
-	{
-		for (i=0;i<Grid_Num_x;i++)
-		{
-			for (j=0;j<Grid_Num_y;j++)
-			{
-				variable.value[i][j][0]=variable.value[i][j][1];
-				variable.value[i][j][Grid_Num_z-1]=variable.value[i][j][Grid_Num_z-2];
-			}
-		}
-	}    
-}
-
-void smooth_xyz(double var[][Grid_Num_x][Grid_Num_y][Grid_Num_z], int times)
-{
-	double temp_var[Grid_Num_x][Grid_Num_y][Grid_Num_z];
-	int i,j,k, m,n;
-	double theta;
-	for (m=0;m<times;m++)
-	{
-		for(n=0;n<8;n++)
-		{
-			for(i=1;i<Grid_Num_x-1;i++)
-			{
-				for(j=1;j<Grid_Num_y-1;j++)
-				{
-					for(k=1;k<Grid_Num_z-1;k++)
-					{
-						temp_var[i][j][k]=var[n][i-1][j][k]+var[n][i+1][j][k]+var[n][i][j-1][k] +\
-							var[n][i][j+1][k]+var[n][i][j][k-1]+var[n][i][j][k+1]-6*var[n][i][j][k];
-					}
-				}
-			}
-
-			// Here starts smooth
-			// x-direction
-			for(i=1;i<Num_Smooth_x;i++)
-			{
-				for(j=1;j<Grid_Num_y-1;j++)
-				{
-					for(k=1;k<Grid_Num_z-1;k++)
-					{
-						theta=3.1415926*(i-1)/(Num_Smooth_x-3);              //...........??????
-						var[n][i][j][k]=var[n][i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
-							temp_var[i][j][k];                               //...........??????					
-					}
-				}
-			}
-			if(half_x==False)
-			{
-				for(i=Grid_Num_x-Num_Smooth_x;i<Grid_Num_x-1;i++)
-				{
-					for(j=1;j<Grid_Num_y-1;j++)
-					{
-						for(k=1;k<Grid_Num_z-1;k++)
-						{
-							theta=3.1415926*(Grid_Num_x-i-2)/(Num_Smooth_x-3);              //...........??????
-							var[n][i][j][k]=var[n][i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
-								temp_var[i][j][k];                               //...........??????					
-						}
-					}
-				}
-			}
-			// y-direction
-			if(period_y==False)
-			{
-				for(i=1;i<Grid_Num_x-1;i++)
-				{
-					for(j=1;j<Num_Smooth_y;j++)
-					{
-						for(k=1;k<Grid_Num_z-1;k++)
-						{
-							theta=3.1415926*(j-1)/(Num_Smooth_x-3);              //...........??????
-							var[n][i][j][k]=var[n][i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
-								temp_var[i][j][k];                               //...........??????						
-						}
-					}
-				}
-				for(i=1;i<Grid_Num_x-1;i++)
-				{
-					for(j=Grid_Num_y-Num_Smooth_y;j<Grid_Num_y-1;j++)
-					{
-						for(k=1;k<Grid_Num_z-1;k++)
-						{
-							theta=3.1415926*(Grid_Num_y-j-2)/(Num_Smooth_x-3);              //...........?????
-							var[n][i][j][k]=var[n][i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
-								temp_var[i][j][k];                               //...........?????					
-						}
-					}
-				}
-			}
-			/*
-			if (period_y==True)
-			{
-			;
-			}
-			
-			// z-direction
-			for(i=1;i<Grid_Num_x-1;i++)
-			{
-				for(j=1;j<Grid_Num_y-1;j++)
-				{
-					for(k=1;k<Grid_Num_z-1;k++)
-					{
-						// theta=2*3.1415926*Z[k]/Z_min;              //...........????
-						var[n][i][j][k]=var[n][i][j][k]+(1./48.)* \
-							temp_var[i][j][k];                        //...........?????
-						// (1./48.)* (2.+cos(theta)/3.*temp_var[i][j][k];       
-					}
-				}
-			}
-			if(half_z==False)
-			{
-				for(i=1;i<Grid_Num_x-1;i++)
-				{
-					for(j=1;j<Grid_Num_y-1;j++)
-					{
-						for(k=Grid_Num_z-Num_Smooth_z;k<Grid_Num_z-1;k++)
-						{
-							theta=3.1415926*(Grid_Num_z-k-2)/(Num_Smooth_x-3);         //...........????
-							var[n][i][j][k]=var[n][i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
-								temp_var[i][j][k];                                     //...........??????
-						}
-					}
-				}
-			}
-		}
-		pointer[0].boundary_set(Positive,Positive);
-		pointer[1].boundary_set(Negative,Positive);pointer[2].boundary_set(Negative,Positive);pointer[3].boundary_set(Positive,Negative);
-		pointer[4].boundary_set(Positive,Negative);pointer[5].boundary_set(Positive,Negative);pointer[6].boundary_set(Negative,Positive);
-		pointer[7].boundary_set(Positive,Positive);
-	}
-}
-
-void average(double var[][Grid_Num_x][Grid_Num_y][Grid_Num_z],double aver_coeff)
-{
-	double temp_var[Grid_Num_x][Grid_Num_y][Grid_Num_z];
-	int i,j,k n;
-	for (n=0;n<8;n++)
-	{
-		for(i=1;i<Grid_Num_x-1;i++)
-		{
-			for(j=1;j<Grid_Num_y-1;j++)
-			{
-				for(k=1;k<Grid_Num_z-1;k++)
-				{
-					temp_var[i][j][k]=aver_coeff*var[n][i][j][k]+ \
-						(1-aver_coeff)*( var[n][i-1][j][k]+var[n][i+1][j][k]+ \
-						var[n][i][j-1][k]+var[n][i][j+1][k]+ \
-						var[n][i][j][k-1]+var[n][i][j][k+1] )/6.;
-				}
-			}
-		}
-		for(i=1;i<Grid_Num_x-1;i++)
-		{
-			for(j=1;j<Grid_Num_y-1;j++)
-			{
-				for(k=1;k<Grid_Num_z-1;k++)
-				{
-					var[n][i][j1][k]=temp_var[i][j][k];
-				}
-			}
-		}
-	}
-}
-
-void average_B(double var[][Grid_Num_x][Grid_Num_y][Grid_Num_z],double aver_coeff)
-{
-	double temp_var[Grid_Num_x][Grid_Num_y][Grid_Num_z];
-	int i,j,k n;
-	for (n=4;n<7;n++)
-	{
-		for(i=1;i<Grid_Num_x-1;i++)
-		{
-			for(j=1;j<Grid_Num_y-1;j++)
-			{
-				for(k=1;k<Grid_Num_z-1;k++)
-				{
-					temp_var[i][j][k]=aver_coeff*var[n][i][j][k]+ \
-						(1-aver_coeff)*( var[n][i-1][j][k]+var[n][i+1][j][k]+ \
-						var[n][i][j-1][k]+var[n][i][j+1][k]+ \
-						var[n][i][j][k-1]+var[n][i][j][k+1] )/6.;
-				}
-			}
-		}
-		for(i=1;i<Grid_Num_x-1;i++)
-		{
-			for(j=1;j<Grid_Num_y-1;j++)
-			{
-				for(k=1;k<Grid_Num_z-1;k++)
-				{
-					var[n][i][j1][k]=temp_var[i][j][k];
-				}
-			}
-		}
-	}
-}
-changed to member function of Class*/

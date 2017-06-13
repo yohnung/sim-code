@@ -34,7 +34,7 @@ int main()
 	out[0].open("rho.dat");
 	out[1].open("rhoVx.dat");out[2].open("rhoVy.dat");out[3].open("rhoVz.dat"); 
 	out[4].open("Bx.dat");out[5].open("By.dat");out[6].open("Bz.dat");
-	out[7].open("E.dat");
+	out[7].open("Eng.dat");
 	out[8].open("Electric_Field_x.dat");
 	out[9].open("Electric_Field_y.dat");
 	out[10].open("Electric_Field_z.dat");	
@@ -58,7 +58,7 @@ int main()
 		if (nstep==2)
 			add_fluc(var);
 		step_on(var, current, p, eta, system_time, dt);                // Main procedure to time step on variables from Flux explicitly and from Source implicitly.
-		smooth(var,system_time, nstep);                     // ?????????? Havn't understand yet ???????????
+		smooth(var,system_time);                     // ?????????? Havn't understand yet ???????????
 		system_time=system_time+dt;		
 		cout<<setw(8)<<nstep<<setw(15)<<\
 			"time = "<<setiosflags(ios::scientific)<<setprecision(15)<<system_time\

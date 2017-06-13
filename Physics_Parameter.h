@@ -2,7 +2,7 @@
 // Used in Important_Procedure.cpp
 
 /* Physical Parameter: start */
-const double phy_gamma=1.66667;      // 5./3. means physics_gamma;
+const double phy_gamma=5./3.;      // 5./3.=1.66667 means physics_gamma;
 const double di=1.;                  // a switch of Hall-effect
 const double magnetic_Renolds_Number=1./200;
 // Magneto-pause parameter, mainly used in 'initialize()'

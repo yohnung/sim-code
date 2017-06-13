@@ -3,7 +3,7 @@
 
 /* Macro and Variable-Type definition: start */
 // Macro definition
-#define Pi 3.1415926
+#define Pi 3.141592653589793
 // Logic value
 #define True 1
 #define False 0

@@ -34,7 +34,7 @@ void exclude_soucrce_half_7update(VARIABLE *update_var, BASIC_VARIABLE flux[][3]
 			dt=0.5*time_interv;
 			for (n=0;n<7;n++)
 			{				
-				for (i=0;i<Grid_Num_x-1;i++)
+				for (i=x_fixed_bndry;i<Grid_Num_x-1;i++)
 					for (j=0;j<Grid_Num_y-1;j++)
 						for (k=0;k<Grid_Num_z-1;k++)
 						{
@@ -188,7 +188,7 @@ void exclude_source_hlaf_update_eng(VARIABLE &eng_obj, BASIC_VARIABLE *eng_flux,
 	case First:
 		{
 			dt=0.5*time_interv;							
-			for (i=0;i<Grid_Num_x-1;i++)
+			for (i=x_fixed_bndry;i<Grid_Num_x-1;i++)
 			{
 				for (j=0;j<Grid_Num_y-1;j++)
 					for (k=0;k<Grid_Num_z-1;k++)

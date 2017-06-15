@@ -48,6 +48,7 @@ const int num_out=40;
 const Logic uniform_x=True;
 const Logic uniform_y=True;       // Unifrom mesh or non-uniform mesh
 const Logic uniform_z=True;       // Fortran doesn't use it!
+const Logic x_fixed_bndry=True;   // fixed bndry means boundary value need not to be updated
 const Logic period_y=True; // False;     // Periodic Condition in Y-direction
 const Logic half_x=False;  
 // const Logic half_y=False;       // Not used now! Symmetric or antisymmetric simulation. 

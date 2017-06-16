@@ -965,15 +965,15 @@ void cal_eng_flux(BASIC_VARIABLE *eng_flux, VARIABLE *pointer, VARIABLE *current
 				// Energy_fulx
 				V_dot_B=(Vx-di/rho*current_x)*Bx+(Vy-di/rho*current_y)*By \
 					+(Vz-di/rho*current_z)*Bz;
-				Energy=Energy+pressure;       // Energy flux brought by V
+				Energy=Energy-B_Energy+pressure;       // Energy flux brought by V
 				eng_flux[0].value[i][j][k]=Vx*Energy \
-					+(Vx-di/rho*current_x)*B_Energy-Bx*V_dot_B+eta* \
+					+(Vx-di/rho*current_x)*2*B_Energy-Bx*V_dot_B+eta* \
 					(current_y*Bz-current_z*By);
 				eng_flux[1].value[i][j][k]=Vy*Energy \
-					+(Vy-di/rho*current_y)*B_Energy-By*V_dot_B+eta* \
+					+(Vy-di/rho*current_y)*2*B_Energy-By*V_dot_B+eta* \
 					(current_z*Bx-current_x*Bz);
 				eng_flux[2].value[i][j][k]=Vz*Energy \
-					+(Vz-di/rho*current_z)*B_Energy-Bz*V_dot_B+eta* \
+					+(Vz-di/rho*current_z)*2*B_Energy-Bz*V_dot_B+eta* \
 					(current_x*By-current_y*Bx);
 			}
 

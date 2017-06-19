@@ -1,30 +1,42 @@
 // Variables_Definition.cpp
-// output is changed to 2D output
+// 2D output is addedto output file  
 
 #include <iostream>
 #include <fstream>
 #include <iomanip>
 #include <cmath>
 using namespace std;
+#include "Basic_Parameter.h"
 #include "Variables_Definition.h"
-// Clarification of mesh-grid
+
+// declarification of mesh-grid
 extern double X[], Y[], Z[], X_interval[], Y_interval[], Z_interval[];
 
 // Recording variables' value
 void BASIC_VARIABLE::record(ofstream &out_obj)       // recrd1
 			   {
-				   out_obj<<setprecision(5)<<setiosflags(ios::fixed);
+				   int out_Grid_x, out_Grid_y, out_Grid_z;
 				   int i,j,k;
-				   j=1;
-				   for (i=0;i<Grid_Num_x;i++)
+				   out_Grid_x=(Grid_Num_x-1)/num_out;
+				   out_Grid_y=(Grid_Num_y-1)/num_out;
+				   out_Grid_z=(Grid_Num_z-1)/num_out;
+				   out_obj<<setiosflags(ios::scientific)<<setprecision(15);
+				   for (i=0;i<=num_out;i++)
 				   {
-					   for (j=0;j<Grid_Num_y;j++)
+					   if (out_Grid_y==0)
 					   {
-						   for (k=0;k<Grid_Num_z;k++)
+						   for (k=0;k<=num_out;k++)
+							   out_obj<<" "<<value[i*out_Grid_x][0][k*out_Grid_z];
+						   out_obj<<endl;
+					   }
+					   else
+					   {
+						   for (j=0;j<=num_out;j++)
 						   {
-							   out_obj<<" "<<value[i][j][k];
+							   for (k=0;k<=num_out;k++)
+								   out_obj<<" "<<value[i*out_Grid_x][j*out_Grid_y][k*out_Grid_z];
+							   out_obj<<endl;
 						   }
-					   out_obj<<endl;
 					   }
 				   }
 				   //cout<<"BASIC_VARIABLE::record invoked! But I don't write anything, just to show up!"<<endl;
@@ -39,81 +51,81 @@ void VARIABLE::boundary_set(Symmetry_Type sign_x, Symmetry_Type sign_z)
 				// Inflow boundary ,    equivalent extrapolation!!!!????????
 				if (half_x==True)
 				{
-					for (j=1;j<Grid_Num_y-1;j++)
+					if (x_fixed_bndry == False)
 					{
-						for (k=1;k<Grid_Num_z-1;k++)
-						{
-							value[0][j][k]=value[1][j][k];
-							value[Grid_Num_x-1][j][k]=sign_x*value[Grid_Num_x-3][Grid_Num_y-1-j][k];    // minus axial symmetry
-						}
+						for (j=1;j<Grid_Num_y-1;j++)
+							for (k=1;k<Grid_Num_z-1;k++)
+							{
+								value[0][j][k]=value[1][j][k];
+								value[Grid_Num_x-1][j][k]=sign_x*value[Grid_Num_x-3][Grid_Num_y-1-j][k];    // minus axial symmetry
+							}	
+					}
+					else
+					{
+						for (j=1;j<Grid_Num_y-1;j++)
+							for (k=1;k<Grid_Num_z-1;k++)
+								value[Grid_Num_x-1][j][k]=sign_x*value[Grid_Num_x-3][Grid_Num_y-1-j][k];    // minus axial symmetry
 					}
 				}
 				else
 				{
-					for (j=1;j<Grid_Num_y-1;j++)
-					{
-						for (k=1;k<Grid_Num_z-1;k++)
-						{
-							value[0][j][k]=value[1][j][k];
-							value[Grid_Num_x-1][j][k]=value[Grid_Num_x-2][j][k];
-						}
-					}
+					if (x_fixed_bndry == False)
+						for (j=1;j<Grid_Num_y-1;j++)
+							for (k=1;k<Grid_Num_z-1;k++)
+							{
+								value[0][j][k]=value[1][j][k];
+								value[Grid_Num_x-1][j][k]=value[Grid_Num_x-2][j][k];
+							}					
 				}		
 		
 				// outflow boundary,     equiv. extrap.
 				if (period_y==True)
 				{		
-					for(i=0;i<Grid_Num_x;i++)
-					{
+					for(i=x_fixed_bndry;i<Grid_Num_x-(1-half_x)*x_fixed_bndry;i++)
 						for(k=1;k<Grid_Num_z-1;k++)
 						{
 							value[i][0][k]=value[i][Grid_Num_y-2][k];
 							value[i][Grid_Num_y-1][k]=value[i][1][k];
 						}
-					}
 				}
 				else
 				{
-					for(i=0;i<Grid_Num_x;i++)
-					{
+					for(i=x_fixed_bndry;i<Grid_Num_x-(1-half_x)*x_fixed_bndry;i++)
 						for(k=1;k<Grid_Num_z-1;k++)
 						{
 							value[i][0][k]=value[i][1][k];
 							value[i][Grid_Num_y-1][k]=value[i][Grid_Num_y-2][k];
 						}
-					}
 				}
 
 				if (half_z==True)
 				{
-					for (i=0;i<Grid_Num_x;i++)
-					{
+					for (i=x_fixed_bndry;i<Grid_Num_x-(1-half_x)*x_fixed_bndry;i++)
 						for (j=0;j<Grid_Num_y;j++)
 						{
 							value[i][j][0]=value[i][j][1];
 							value[i][j][Grid_Num_z-1]=sign_z*value[i][j][Grid_Num_z-3];
 						}
-					}
 				}
 				else
 				{
-					for (i=0;i<Grid_Num_x;i++)
-					{
+					for (i=x_fixed_bndry;i<Grid_Num_x-(1-half_x)*x_fixed_bndry;i++)
 						for (j=0;j<Grid_Num_y;j++)
 						{
 							value[i][j][0]=value[i][j][1];
 							value[i][j][Grid_Num_z-1]=value[i][j][Grid_Num_z-2];
 						}
-					}
 				}   
 				//cout<<"VARIABLE::basic_boundary_set invoked! Have set the boundary for you!  for you!!!"<<endl;
 			}
 
+// set right boundary 
+
 void VARIABLE::smooth_xyz(int times)
 {
-	double temp_var[Grid_Num_x][Grid_Num_y][Grid_Num_z];
 	int i,j,k, m;
 	double theta;
+	double (*temp_var)[Grid_Num_y][Grid_Num_z]= new double[Grid_Num_x][Grid_Num_y][Grid_Num_z];
 	for (m=0;m<times;m++)
 	{		
 		for(i=1;i<Grid_Num_x-1;i++)
@@ -222,14 +234,14 @@ void VARIABLE::smooth_xyz(int times)
 			}
 		}		
 */
-	}	
+	}
+	delete []temp_var;
 }
 
 void VARIABLE::average(double aver_coeff)
 {
-	double temp_var[Grid_Num_x][Grid_Num_y][Grid_Num_z];
 	int i,j,k;
-	
+	double (*temp_var)[Grid_Num_y][Grid_Num_z]= new double[Grid_Num_x][Grid_Num_y][Grid_Num_z];	
 	for(i=1;i<Grid_Num_x-1;i++)
 	{
 		for(j=1;j<Grid_Num_y-1;j++)
@@ -253,4 +265,5 @@ void VARIABLE::average(double aver_coeff)
 			}
 		}
 	}
+	delete []temp_var;
 }	

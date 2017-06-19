@@ -1,12 +1,5 @@
 // Variable_Definition.h
 
-#include "Type_and_Macro_Definition.h"
-#include "Basic_Parameter.h"
-#include "Runtime_Diagnostic_Parameter.h"
-//#include <iostream>
-//#include <fstream>
-//#include <iomanip>
-//using namespace std;
 
 class BASIC_VARIABLE
 {
@@ -18,7 +11,7 @@ public:
 class VARIABLE: public BASIC_VARIABLE
 {
 public:	
-	void boundary_set(Symmetry_Type, Symmetry_Type);	
+	void boundary_set(Symmetry_Type, Symmetry_Type);
 	void smooth_xyz(int times);
 	void average(double);
 };

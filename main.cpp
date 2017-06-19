@@ -5,8 +5,11 @@
 #include <iomanip>
 #include <cmath>
 using namespace std;
+#include "Basic_Parameter.h"
+#include "Runtime_Diagnostic_Parameter.h"
 #include "Variables_Definition.h"
 #include "Procedure.h"
+
 
 /*global mesh   X[0]_____X_interval[0]_____X[1]: start*/ 
 double  X[Grid_Num_x],Y[Grid_Num_y],Z[Grid_Num_z];
@@ -20,47 +23,49 @@ double  X_interval[Grid_Num_x],Y_interval[Grid_Num_y],Z_interval[Grid_Num_z];   
 	VARIABLE current[3]; // vorticity[3];          // Define more varibles.
 	BASIC_VARIABLE flux[8][3];
 	double system_time=0;
-	double dt;                                     // Define time.
+	double dt=0.1;                                     // Define time.
 	int nstep=0;
 /* global paremeter: end*/
 
 int main()
 {
-	ofstream out[11];
+	ofstream out[11];	
+	ofstream timeout("step_to_time.txt");         // file="stepnm"
 	out[0].open("rho.dat");
-	out[1].open("Vx.dat");out[2].open("Vy.dat");out[3].open("Vz.dat");
+	out[1].open("rhoVx.dat");out[2].open("rhoVy.dat");out[3].open("rhoVz.dat"); 
 	out[4].open("Bx.dat");out[5].open("By.dat");out[6].open("Bz.dat");
-	out[7].open("E.dat");
+	out[7].open("Eng.dat");
 	out[8].open("Electric_Field_x.dat");
 	out[9].open("Electric_Field_y.dat");
-	out[10].open("Electric_Field_z.dat");
-	ofstream timeout("step_to_time.dat");         // file="stepnm"	
+	out[10].open("Electric_Field_z.dat");	
 
 	int i;                                         // cycle variable
 
 	set_mesh();
-	initialize(var, p);	                           // Initializing variables and pressure 
+	//initialize(var, p);	                           // Initializing variables and pressure 
+	harris_current_initia(var,p);
 	for (i=0;i<8;i++)                              // and out put
 		var[i].record(out[i]);
 
 	/* time step on variables:start */
 	for (nstep=nstart;nstep<nend;nstep++)
-	{
+	{	 
 		cal_current(current, var);                          // Calculating current from Magnetic Field.
 		set_eta(eta, var, current, system_time);            // Setting space dependent conductivity. (Can make it depend on current)
 		cal_pressure(p, var);                               // Calculating pressure from various kinds of energy.	
-		cal_flux(flux, var, current, p, eta);               // Calculating flux from variables, current and pressure.	 
-		ext_from_flux(Elec_field, flux);                     // extractig electric field from flux
-		dt=set_dt(var, eta, current, p, system_time);       // Settiing appropriate time-interval from main variables, conductivity and pressure. This statement doesn't change pressure.
-		step_on(var, flux, system_time, dt);                // Main procedure to time step on variables from Flux explicitly and from Source implicitly.
-		smooth(var,system_time, nstep);                     // ?????????? Havn't understand yet ???????????
+		ext_from_var(Elec_field, var, current, eta);         // 重新些一个从var计算Elec的函数                 // extractig electric field from flux
+		dt=set_dt(var, eta, current, p, system_time, dt);       // Settiing appropriate time-interval from main variables, conductivity and pressure and so on. This statement change dt only.
+		if (nstep==2)
+			add_fluc(var);
+		step_on(var, current, p, eta, system_time, dt);                // Main procedure to time step on variables from Flux explicitly and from Source implicitly.
+		smooth(var,system_time);                     // ?????????? Havn't understand yet ???????????
 		system_time=system_time+dt;		
-		cout<<setw(4)<<setiosflags(ios::right)<<nstep<<" "<<\
-			"time="<<setw(15)<<setprecision(19)<<setiosflags(ios::fixed)<<system_time<<\
-			" "<<"dt="<<dt<<endl;
-		timeout<<endl<<nstep<<endl<<"time="<<setprecision(19)\
-			<<setiosflags(ios::fixed)<<system_time<<" "<<"dt="<<dt;	
-		if (nstep%12==0 && nstep!=0)
+		cout<<setw(8)<<nstep<<setw(15)<<\
+			"time = "<<setiosflags(ios::scientific)<<setprecision(15)<<system_time\
+			<<setw(14)<<"dt = "<<dt<<endl;
+		timeout<<"nstep = "<<nstep<<endl<<" "<<setw(20)<<"and time = "<<setiosflags(ios::scientific)\
+			<<setprecision(15)<<system_time<<" ,"<<setw(14)<<"dt = "<<dt<<endl;	
+		if ((nstep+1)%12==0)
 		{
 			for (i=0;i<8;i++)
 				var[i].record(out[i]);

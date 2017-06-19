@@ -29,10 +29,7 @@ void set_eta(BASIC_VARIABLE &, VARIABLE *, VARIABLE *, double, Type=Complete, Ty
 void accumulate_eng(double [][Grid_Num_y][Grid_Num_z], VARIABLE *, BASIC_VARIABLE &, Type=Complete);
 
 // Calculating fluxes
-void cal_7flux(BASIC_VARIABLE [][3], VARIABLE *, VARIABLE *, BASIC_VARIABLE &, BASIC_VARIABLE &, Type=Complete);
-
-// calculate energy flux
-void cal_eng_flux(BASIC_VARIABLE *, VARIABLE *, VARIABLE *,	BASIC_VARIABLE &, BASIC_VARIABLE &, Type=Complete);
+void cal_flux(BASIC_VARIABLE [][3], VARIABLE *, VARIABLE *, BASIC_VARIABLE &, BASIC_VARIABLE &, Type=Complete);
 
 // Setting time-interval
 double set_dt(VARIABLE *, BASIC_VARIABLE &, VARIABLE *, BASIC_VARIABLE &, double, double);
@@ -47,10 +44,7 @@ void smooth(VARIABLE *, double);
 // General_Procedure.h
 
 // Update variables using 2-order Lax-Wendroff method
-void exclude_soucrce_half_7update(VARIABLE *, BASIC_VARIABLE [][3], double, Order);
-
-// update energy
-void exclude_source_hlaf_update_eng(VARIABLE &, BASIC_VARIABLE *, double, Order);
+void exclude_soucrce_half_update(VARIABLE *, BASIC_VARIABLE [][3], double, Order);
 
 // Update variables from source term
 void source_update(VARIABLE *, double);

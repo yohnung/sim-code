@@ -119,8 +119,6 @@ void VARIABLE::boundary_set(Symmetry_Type sign_x, Symmetry_Type sign_z)
 				//cout<<"VARIABLE::basic_boundary_set invoked! Have set the boundary for you!  for you!!!"<<endl;
 			}
 
-// set right boundary 
-
 void VARIABLE::smooth_xyz(int times)
 {
 	int i,j,k, m;
@@ -148,7 +146,7 @@ void VARIABLE::smooth_xyz(int times)
 			{
 				for(k=1;k<Grid_Num_z-1;k++)
 				{
-					theta=3.1415926*(i-1)/(Num_Smooth_x-3);              //...........?????
+					theta=Pi*(i-1)/(Num_Smooth_x-3);              //...........?????
 					value[i][j][k]=value[i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
 						temp_var[i][j][k];                               //...........?????						
 				}
@@ -162,7 +160,7 @@ void VARIABLE::smooth_xyz(int times)
 				{
 					for(k=1;k<Grid_Num_z-1;k++)
 					{
-						theta=3.1415926*(Grid_Num_x-i-2)/(Num_Smooth_x-3);              //...........?????
+						theta=Pi*(Grid_Num_x-i-2)/(Num_Smooth_x-3);              //...........?????
 						value[i][j][k]=value[i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
 							temp_var[i][j][k];                               //...........?????						
 					}
@@ -178,7 +176,7 @@ void VARIABLE::smooth_xyz(int times)
 				{
 					for(k=1;k<Grid_Num_z-1;k++)
 					{
-						theta=3.1415926*(j-1)/(Num_Smooth_y-3);              //...........?????
+						theta=Pi*(j-1)/(Num_Smooth_y-3);              //...........?????
 						value[i][j][k]=value[i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
 							temp_var[i][j][k];                               //...........?????						
 					}
@@ -190,7 +188,7 @@ void VARIABLE::smooth_xyz(int times)
 				{
 					for(k=1;k<Grid_Num_z-1;k++)
 					{
-						theta=3.1415926*(Grid_Num_y-j-2)/(Num_Smooth_y-3);              //...........?????
+						theta=Pi*(Grid_Num_y-j-2)/(Num_Smooth_y-3);              //...........?????
 						value[i][j][k]=value[i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
 							temp_var[i][j][k];                               //...........?????						
 					}
@@ -210,7 +208,7 @@ void VARIABLE::smooth_xyz(int times)
 			{
 				for(k=1;k<Grid_Num_z-1;k++)
 				{
-					// theta=2*3.1415926*Z[k]/z_min;              //...........?????
+					// theta=2*Pi*Z[k]/z_min;              //...........?????
 					value[i][j][k]=value[i][j][k]+(1./48.)* \
 						temp_var[i][j][k];                        //...........?????
 					// (1./48.)* (2.+cos(theta))/3.*temp_var[i][j][k];       
@@ -226,7 +224,7 @@ void VARIABLE::smooth_xyz(int times)
 				{
 					for(k=Grid_Num_z-Num_Smooth_z;k<Grid_Num_z-1;k++)
 					{
-						theta=3.1415926*(Grid_Num_z-k-2)/(Num_Smooth_z-3);         //...........?????
+						theta=Pi*(Grid_Num_z-k-2)/(Num_Smooth_z-3);         //...........?????
 						value[i][j][k]=value[i][j][k]+(1./96.)*(.5*(1+cos(theta)))* \
 							temp_var[i][j][k];                                     //...........?????
 					}

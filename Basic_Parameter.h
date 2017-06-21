@@ -36,9 +36,9 @@ typedef char Position;
    In 2D simulation Grid_Num_y=7 is best, with others 4n+1.   
    4n+1 is for the sake of 'record()', defined in Variables_Definition.cpp
    7 is for the consideration of 'smooth_xyz()' function.                    */
-const int Grid_Num_x=801; 
+const int Grid_Num_x=41; 
 const int Grid_Num_y=7;
-const int Grid_Num_z=401; 
+const int Grid_Num_z=41; 
 const int num_out=40;
 /* Grid Number: end */			    
 
@@ -48,7 +48,7 @@ const int num_out=40;
 const Logic uniform_x=True;
 const Logic uniform_y=True;       // Unifrom mesh or non-uniform mesh
 const Logic uniform_z=True;       // Fortran doesn't use it!
-const Logic x_fixed_bndry=True;   // fixed bndry means boundary value need not to be updated
+const Logic x_fixed_bndry=False;   // fixed bndry means boundary value need not to be updated
 const Logic period_y=True; // False;     // Periodic Condition in Y-direction
 const Logic half_x=False;  
 // const Logic half_y=False;       // Not used now! Symmetric or antisymmetric simulation. 
@@ -56,12 +56,12 @@ const Logic half_z=False;
 /* Controlling and Logical Parameter: end */
 
 /* Spatial Range: start */
-const double x_min=-6.4;       //1.;
-const double x_max=6.4;        //11.;
+const double x_min=-5.;
+const double x_max=5.;
 const double y_min=1.;
 const double y_max=7.;
-const double z_min=-12.8;
-const double z_max=12.8;
+const double z_min=-5.;
+const double z_max=5.;
 /* Spatial Range: end */
 
 /* smooth parameter: start */

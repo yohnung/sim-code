@@ -746,25 +746,25 @@ void add_fluc(VARIABLE *var)
 				fluc_Bx=-kz*fluc*sin(kz*z);
 				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
 				Bx=Bx+fluc_Bx;
-				var[4].value[0][j][k]=Bx; var[7].value[0][j][k]=Eng;
+				var[4].value[0][j][k]=Bx; //var[7].value[0][j][k]=Eng;
 				// at i=1
 				Bx=var[4].value[1][j][k]; Eng=var[7].value[1][j][k];
 				fluc_Bx=-kz*fluc*sin(kz*z);
 				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
 				Bx=Bx+fluc_Bx;
-				var[4].value[1][j][k]=Bx; var[7].value[1][j][k]=Eng;
+				var[4].value[1][j][k]=Bx; //var[7].value[1][j][k]=Eng;
 				// at i=Grid_Num_x-2
 				Bx=var[4].value[Grid_Num_x-2][j][k]; Eng=var[7].value[Grid_Num_x-2][j][k];
 				fluc_Bx=-kz*fluc*sin(kz*z);
 				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
 				Bx=Bx+fluc_Bx;
-				var[4].value[Grid_Num_x-2][j][k]=Bx; var[7].value[Grid_Num_x-2][j][k]=Eng;
+				var[4].value[Grid_Num_x-2][j][k]=Bx; //var[7].value[Grid_Num_x-2][j][k]=Eng;
 				// at i=Grid_Num_x-1
 				Bx=var[4].value[Grid_Num_x-1][j][k]; Eng=var[7].value[Grid_Num_x-1][j][k];
 				fluc_Bx=-kz*fluc*sin(kz*z);
 				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
 				Bx=Bx+fluc_Bx;
-				var[4].value[Grid_Num_x-1][j][k]=Bx; var[7].value[Grid_Num_x-1][j][k]=Eng;
+				var[4].value[Grid_Num_x-1][j][k]=Bx; //var[7].value[Grid_Num_x-1][j][k]=Eng;
 			    // Does it need to add an fluctuation on sub_var[[][][]?????
 			}
 	}
@@ -782,7 +782,7 @@ void add_fluc(VARIABLE *var)
 						fluc_Bx=-kz*fluc*cos(kx*x)*sin(kz*z); fluc_Bz=kx*fluc*sin(kx*x)*cos(kz*z);
 						Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx)+1./2*(2*Bz*fluc_Bz+fluc_Bz*fluc_Bz);
 						Bx=Bx+fluc_Bx; Bz=Bz+fluc_Bz;
-						var[4].value[i][j][k]=Bx; var[6].value[i][j][k]=Bz; var[7].value[i][j][k]=Eng;
+						var[4].value[i][j][k]=Bx; var[6].value[i][j][k]=Bz; //var[7].value[i][j][k]=Eng;
 					}
 					// Does it need to add an fluctuation on sub_var[[][][]?????
 				}

@@ -18,7 +18,7 @@
       dxmin=0.05d0         ! not used temporarily ! d0 is for double precision
       dymin=0.5d0          ! not used temporarily
       dzmin=0.5d0          ! not used temporarily
-      xmin=-5.d0   ! -1.
+      xmin=-5.d0   ! 1.
       xmax=5.d0    ! 11.
       ymin=1.d0    ! -5.
       ymax=7.d0    ! 5.
@@ -29,7 +29,7 @@
       nsmthz=2*mz/3
       if(halfz) nsmthz=mz-1
 !      gatma=1.66667d0        ! not used temporarily ! should be gamma
-      gamma=1.66667d0        ! This is added by cwm
+      gamma=5./3.d0          ! 1.66667d0        ! This is added by cwm
       cj=1.d0                ! not used temporarily
       dis=1.d0               ! not used temporarily
       betam= 0.01d0
@@ -52,11 +52,12 @@
       caf=0.997d0
 
 ! cwm add :start
+      pi=3.141592653589793d0
 ! harris-current and fluctuation
       rhoinfinity=0.2d0
-      balcoeff=1.d0
+      balcoeff=.5d0
       normlambda=0.5d0
-      fluc=0.2d0
-      kx=4*3.1415926d0/xmax
-      kz=2*3.1415926d0/zmax
+      fluc=0.1d0
+      kx=pi/(xmax-xmin)
+      kz=2*pi/(zmax-zmin)
 ! cwm add: end

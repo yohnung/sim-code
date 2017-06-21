@@ -7,7 +7,9 @@
       dimension xx(mx), yy(my),zz(mz)
       dimension nstp(250)
 ! cwm add: start
+      double precision pi
       double precision rhoinfinity, balcoeff, normlambda, fluc, kx, kz
+      common /physpara/    pi
       common /fluctuation/ rhoinfinity, balcoeff, normlambda, &
       fluc, kx, kz
 ! cwm add: end

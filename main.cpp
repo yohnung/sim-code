@@ -55,7 +55,7 @@ int main()
 		cal_pressure(p, var);                               // Calculating pressure from various kinds of energy.	
 		ext_from_var(Elec_field, var, current, eta);         // 重新些一个从var计算Elec的函数                 // extractig electric field from flux
 		dt=set_dt(var, eta, current, p, system_time, dt);       // Settiing appropriate time-interval from main variables, conductivity and pressure and so on. This statement change dt only.
-		if (nstep==2)
+		if (nstep==10)
 			add_fluc(var);
 		step_on(var, current, p, eta, system_time, dt);                // Main procedure to time step on variables from Flux explicitly and from Source implicitly.
 		smooth(var,system_time);                     // ?????????? Havn't understand yet ???????????

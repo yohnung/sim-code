@@ -224,7 +224,7 @@
       include 'ma3ds2.for'
 !
 ! assign asymmetric quantities:
-      pi     = 3.1415926
+!      pi     = 3.1415926   ! in ma3ds3.for, pi is assigned a value 3.141592658...
       rhom   = 1.0d0
       rhos   = 1.0d0
       pp     = 0.
@@ -458,10 +458,10 @@
       do 9 jz=1,nzp1
       do 9 jy=1,nyp1
       do 9 jx=1,nxp1
-      if (abs(xx(jx))<normlambda) then
+!      if (abs(xx(jx))<normlambda) then
       x(jx,jy,jz,5) = x(jx,jy,jz,5)-kz*fluc*cos(kx*xx(jx))*sin(kz*zz(jz))
       x(jx,jy,jz,7) = x(jx,jy,jz,7)+kx*fluc*sin(kx*xx(jx))*cos(kz*zz(jz))
-      endif
+!      endif
     9 continue
       end
 ! cwm add: end
@@ -490,9 +490,11 @@
 
 ! 1.2 Advance the first step
       hdt=0.5*dt                       ! hdt for half_dt
+!cwm delete: start
 !     call current(x,1)                ! replaced to the front of setdt
-!     call foreta(time,1)              ! replaced to the front of setdt
-!     call pressure(x,1)               ! replaced to the front of setdt
+!     call foreta(time,1)
+!     call pressure(x,1)
+!cwm delete: end
       do 1000 m=1,8
       call flux(x,fs,gs,hs,mx,my,mz,m,1)
       do 100 jz=1,nz
@@ -799,8 +801,8 @@
       include 'ma3ds2.for'      
 !
       dimension temp(mx)
-      call foreta(time,1)
-      call pressure(x,1)
+!      call foreta(time,1)           ! already been called
+!      call pressure(x,1)            ! already been called
       dtmin=1000.      ! A new variables
       dxyz=.5*dx*dy*dz/sqrt((dx**2*dy**2+dy**2*dz**2+dx**2*dz**2))
       do 1 jz=1,mz
@@ -1146,22 +1148,44 @@
 ! [4] Energy eq.
 !
       b2=x(jx,jy,jz,5)**2+x(jx,jy,jz,6)**2+x(jx,jy,jz,7)**2
-      bdotv=(x(jx,jy,jz,5)*x(jx,jy,jz,2)+x(jx,jy,jz,6)*x(jx,jy,jz,3)&
-            +x(jx,jy,jz,7)*x(jx,jy,jz,4))/x(jx,jy,jz,1)
-      eng=x(jx,jy,jz,8)+pr(jx,jy,jz)+.5*b2
+!cwm make change: start  add hall effec into energy equaiton
+!      bdotv=(x(jx,jy,jz,5)*x(jx,jy,jz,2)+x(jx,jy,jz,6)*x(jx,jy,jz,3)&
+!            +x(jx,jy,jz,7)*x(jx,jy,jz,4))/x(jx,jy,jz,1)
+!      eng=x(jx,jy,jz,8)+pr(jx,jy,jz)+.5*b2
 !
+!      fs(jx,jy,jz)=eng*x(jx,jy,jz,2)/x(jx,jy,jz,1)&
+!                 -bdotv*x(jx,jy,jz,5)&
+!                 +etaf(jx,jy,jz)*(w0(jx,jy,jz,2)*x(jx,jy,jz,7)&
+!                -w0(jx,jy,jz,3)*x(jx,jy,jz,6))
+!      gs(jx,jy,jz)=eng*x(jx,jy,jz,3)/x(jx,jy,jz,1)&
+!                 -bdotv*x(jx,jy,jz,6)&
+!                 +etaf(jx,jy,jz)*(w0(jx,jy,jz,3)*x(jx,jy,jz,5)&
+!                 -w0(jx,jy,jz,1)*x(jx,jy,jz,7))
+!      hs(jx,jy,jz)=eng*x(jx,jy,jz,4)/x(jx,jy,jz,1)&
+!                 -bdotv*x(jx,jy,jz,7)&
+!                 +etaf(jx,jy,jz)*(w0(jx,jy,jz,1)*x(jx,jy,jz,6)&
+!                 -w0(jx,jy,jz,2)*x(jx,jy,jz,5))
+      bdotv=( x(jx,jy,jz,5)*( x(jx,jy,jz,2)-di*w0(jx,jy,jz,1) )&
+             +x(jx,jy,jz,6)*( x(jx,jy,jz,3)-di*w0(jx,jy,jz,2) )&
+             +x(jx,jy,jz,7)*( x(jx,jy,jz,4)-di*w0(jx,jy,jz,3) )  )/x(jx,jy,jz,1)
+      eng=x(jx,jy,jz,8)+pr(jx,jy,jz)-.5*b2
       fs(jx,jy,jz)=eng*x(jx,jy,jz,2)/x(jx,jy,jz,1)&
+                 +b2*( x(jx,jy,jz,2)-di*w0(jx,jy,jz,1) )/x(jx,jy,jz,1)&
                  -bdotv*x(jx,jy,jz,5)&
                  +etaf(jx,jy,jz)*(w0(jx,jy,jz,2)*x(jx,jy,jz,7)&
                 -w0(jx,jy,jz,3)*x(jx,jy,jz,6))
       gs(jx,jy,jz)=eng*x(jx,jy,jz,3)/x(jx,jy,jz,1)&
+                 +b2*( x(jx,jy,jz,3)-di*w0(jx,jy,jz,2) )/x(jx,jy,jz,1)&
                  -bdotv*x(jx,jy,jz,6)&
                  +etaf(jx,jy,jz)*(w0(jx,jy,jz,3)*x(jx,jy,jz,5)&
                  -w0(jx,jy,jz,1)*x(jx,jy,jz,7))
       hs(jx,jy,jz)=eng*x(jx,jy,jz,4)/x(jx,jy,jz,1)&
+                 +b2*( x(jx,jy,jz,4)-di*w0(jx,jy,jz,3) )/x(jx,jy,jz,1)&
                  -bdotv*x(jx,jy,jz,7)&
                  +etaf(jx,jy,jz)*(w0(jx,jy,jz,1)*x(jx,jy,jz,6)&
                  -w0(jx,jy,jz,2)*x(jx,jy,jz,5))
+!cwm make change: end  add hall effec into energy equaiton
+      
 !
     8 continue
       else
@@ -1529,14 +1553,14 @@
       do 13 jz=2,nz
       do 13 jy=2,ny
       do 13 jx=2,nsmthx
-      theta=3.1415926d0*(jx-2)/(nsmthx-3)
+      theta=pi*(jx-2)/(nsmthx-3)
       x(jx,jy,jz,m)=x(jx,jy,jz,m)+(1.d0/96.0d0)*(.5d0*(1.d0+cos(theta)))*w0(jx,jy,jz,1)
    13 continue
       if(.not.halfx) then
       do 23 jz=2,nz
       do 23 jy=2,ny
       do 23 jx=mx-nsmthx+1,nx
-      theta=3.1415926d0*(mx-jx-1)/(nsmthx-3)
+      theta=pi*(mx-jx-1)/(nsmthx-3)
       x(jx,jy,jz,m)=x(jx,jy,jz,m)+(1.d0/96.0d0)*(.5d0*(1.d0+cos(theta)))*w0(jx,jy,jz,1)
    23 continue
       endif
@@ -1544,20 +1568,20 @@
       do 33 jz=2,nz
       do 33 jy=2,nsmthy
       do 33 jx=2,nx
-      theta=3.1415926d0*(jy-2)/(nsmthy-3)
+      theta=pi*(jy-2)/(nsmthy-3)
       x(jx,jy,jz,m)=x(jx,jy,jz,m)+(1.d0/96.0d0)*(.5d0*(1.d0+cos(theta)))*w0(jx,jy,jz,1)
    33 continue
       do 35 jz=2,nz 
       do 35 jy=nyp1-nsmthy+1,ny
       do 35 jx=2,nx 
-      theta=3.1415926d0*(nyp1-jy-1)/(nsmthy-3)
+      theta=pi*(nyp1-jy-1)/(nsmthy-3)
       x(jx,jy,jz,m)=x(jx,jy,jz,m)+(1.d0/96.0d0)*(.5d0*(1.d0+cos(theta)))*w0(jx,jy,jz,1)
    35 continue
       endif
       do 43 jz=2,nz
       do 43 jy=2,ny
       do 43 jx=2,nx
-!      theta=2.*3.1415926*zz(jz)/zmin
+!      theta=2.*pi*zz(jz)/zmin
       x(jx,jy,jz,m)=x(jx,jy,jz,m) +(1.d0/48.0d0)*w0(jx,jy,jz,1)
 !     1     +(1./48.0)*(2.+cos(theta))/3.*w0(jx,jy,jz,1)
    43 continue
@@ -1565,7 +1589,7 @@
 !      do 53 jz=nzp1-nsmthz+1,nz
 !      do 53 jy=2,ny
 !      do 53 jx=2,nx
-!      theta=3.1415926*(nzp1-jz-1)/(nsmthz-3)
+!      theta=pi*(nzp1-jz-1)/(nsmthz-3)
 !      x(jx,jy,jz,m)=x(jx,jy,jz,m)
 !     1     +(1./96.0)*(.5*(1.+cos(theta)))*w0(jx,jy,jz,1)
 !   53 continue
@@ -1682,6 +1706,9 @@
       b2=x(jx,jy,jz,5)**2+x(jx,jy,jz,6)**2+x(jx,jy,jz,7)**2
       pr(jx,jy,jz)=(gamma-1.)*(x(jx,jy,jz,8)-.5*rv2-.5*b2)
     1 continue
+!cwm add: start
+      call positive(pr,1.d-5)
+!cwm add: end
       else
       do 2 jz=1,nz
       do 2 jy=1,ny
@@ -1692,7 +1719,9 @@
       pr(jx,jy,jz)=(gamma-1.)*(x(jx,jy,jz,8)-.5*rv2-.5*b2)
     2 continue
       endif
-      call positive(pr,1.d-5)
+!cwm delete: start
+!      call positive(pr,1.d-5)
+!cwm delete: end
       return
       end
 !
@@ -1821,7 +1850,7 @@
 	lsy=1.   !两端随y衰减因子
 	tao=100   !随时间变化因子
 	t0=t1
-    	pi=3.1415926
+!    	pi=3.1415926    ! 把这个改写到了 ma3ds3.for 中去了
     xx0=0.
     xx1=xx0
     

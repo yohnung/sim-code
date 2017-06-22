@@ -22,7 +22,7 @@ const double normalized_lambda=0.5;
 
 /* fluctuation parameter: start */
 const Position position_fluc=Boundary;
-const double fluctuation=0.1;
+const double fluctuation=0.1*di;
 const double fluc_kx=Pi/(x_max-x_min);
 const double fluc_kz=2*Pi/(z_max-z_min);
 /* fluctuation parameter: end */

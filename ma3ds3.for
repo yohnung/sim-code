@@ -57,7 +57,7 @@
       rhoinfinity=0.2d0
       balcoeff=.5d0
       normlambda=0.5d0
-      fluc=0.1d0
+      fluc=0.1d0*di
       kx=pi/(xmax-xmin)
       kz=2*pi/(zmax-zmin)
 ! cwm add: end

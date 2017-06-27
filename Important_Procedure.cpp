@@ -86,14 +86,16 @@ void set_mesh()
 	}
 	Z_interval[Grid_Num_z-1]=Z_interval[Grid_Num_z-2];
 	
+	out<<setiosflags(ios::fixed)<<setprecision(6);
 	for (i=0;i<=num_out;i++)
-		out<<" "<<X[i*out_Grid_x];
+		out<<setw(10)<<X[i*out_Grid_x]<<" ";
 	out<<endl;
-	for (j=0;j<=num_out;j++)
-		out<<" "<<Y[j*out_Grid_y];
+	if (out_Grid_y !=0)
+		for (j=0;j<=num_out;j++)
+			out<<setw(10)<<Y[j*out_Grid_y]<<" ";
 	out<<endl;
 	for (k=0;k<=num_out;k++)
-		out<<" "<<Z[k*out_Grid_z];
+		out<<setw(10)<<Z[k*out_Grid_z]<<" ";
 	out<<endl;
 
 	out.close();
@@ -304,12 +306,12 @@ void write_out(VARIABLE *pointer, int nstop, double time)
 	ofstream timeout("temp_step_to_time.dat");
 	ofstream var_out[8];
 	ofstream sub_var_out("temp_sub_var.dat");                  // This and the following two is very important for calculating 
-	ofstream var_x_out("temp_var_x_out");
+	ofstream var_x_out("temp_var_x_out.dat");
 	ofstream var_x_plushalfdx_out("temp_var_x_plushalfdx.dat");
 	open_var_files(var_out);
-	timeout<<nstop<<" ";
+	timeout<<setw(6)<<nstop<<setw(6)<<" ";
 	timeout<<setiosflags(ios::scientific)<<setprecision(16);
-	timeout<<time<<endl;
+	timeout<<setw(25)<<time<<endl;
 	sub_var_out<<setiosflags(ios::scientific)<<setprecision(16);
 	var_x_out<<setiosflags(ios::scientific)<<setprecision(16);
 	var_x_plushalfdx_out<<setiosflags(ios::scientific)<<setprecision(16);
@@ -318,17 +320,27 @@ void write_out(VARIABLE *pointer, int nstop, double time)
 		pointer[n].record(var_out[n]);
 		for (i=0;i<Grid_Num_x;i++)
 		{
-			var_x_out<<var_x[n][i]<<" ";
-			var_x_plushalfdx_out<<var_x_plushalfdx[n][i]<<" ";
+			var_x_out<<setw(25)<<var_x[n][i]<<" ";
+			var_x_plushalfdx_out<<setw(25)<<var_x_plushalfdx[n][i]<<" ";
 			for (j=0;j<Grid_Num_y;j++)
 			{
 				for (k=0;k<Grid_Num_z;k++)
-					sub_var_out<<sub_var[n][i][j][k]<<" ";
+					sub_var_out<<setw(25)<<sub_var[n][i][j][k]<<" ";
+				sub_var_out<<endl;
 			}
+			var_x_out<<endl;
+			var_x_plushalfdx_out<<endl;
+			sub_var_out<<endl;
 		}
+		var_x_out<<endl;
+		var_x_plushalfdx_out<<endl;
+		sub_var_out<<endl;
 	}
 	timeout.close();
 	close_var_files(var_out);
+	sub_var_out.close();
+	var_x_out.close();
+	var_x_plushalfdx_out.close();
 }
 
 void read_in(VARIABLE *pointer, int &nstart, double &time)
@@ -337,7 +349,7 @@ void read_in(VARIABLE *pointer, int &nstart, double &time)
 	ifstream timeout("temp_step_to_time.dat");
 	ifstream var_in[8];
 	ifstream sub_var_in("temp_sub_var.dat");                  // This and the following two is very important for calculating 
-	ifstream var_x_in("temp_var_x_out");
+	ifstream var_x_in("temp_var_x_out.dat");
 	ifstream var_x_plushalfdx_in("temp_var_x_plushalfdx.dat");
 	open_var_files(var_in);
 	timeout>>nstart>>time;
@@ -1066,12 +1078,13 @@ void record(ofstream &timeout, int run_num, int record_step, double system_time,
 		{
 			for (k=0;k<=num_out;k++)
 			{
-				out<<X[i*out_Grid_x]<<" "<<Z[k*out_Grid_z]<<" ";
+				out<<setw(13)<<X[i*out_Grid_x]<<" "<<setw(13)<<Z[k*out_Grid_z]<<" ";
 				for (n=0; n<7; n++)
-					out<<pointer[i].value[i*out_Grid_x][0][k*out_Grid_z]<<" ";
-				out<<current_y.value[i*out_Grid_x][0][k*out_Grid_z]<<" ";
-				out<<Electric_y.value[i*out_Grid_x][0][k*out_Grid_z]<<" ";
-				out<<endl;
+					out<<setw(13)<<pointer[n].value[i*out_Grid_x][0][k*out_Grid_z]<<" ";
+				out<<setw(13)<<Pressure_obj.value[i*out_Grid_x][0][k*out_Grid_z]<<" ";
+				out<<setw(13)<<current_y.value[i*out_Grid_x][0][k*out_Grid_z]<<" ";
+				out<<setw(13)<<Electric_y.value[i*out_Grid_x][0][k*out_Grid_z]<<" ";
+				out<<setw(13)<<endl;
 			}
 		}
 		else
@@ -1080,18 +1093,20 @@ void record(ofstream &timeout, int run_num, int record_step, double system_time,
 			{
 				for (k=0;k<=num_out;k++)
 				{
-					out<<X[i*out_Grid_x]<<" "<<Y[j*out_Grid_y]<<" "<<Z[k*out_Grid_z]<<" ";
+					out<<setw(13)<<X[i*out_Grid_x]<<" "\
+						<<setw(13)<<Y[j*out_Grid_y]<<" "<<setw(13)<<Z[k*out_Grid_z]<<" ";
 					for (n=0; n<7; n++)
-						out<<pointer[i].value[i*out_Grid_x][j*out_Grid_y][k*out_Grid_z]<<" ";
-					out<<current_y.value[i*out_Grid_x][j*out_Grid_y][k*out_Grid_z]<<" ";
-					out<<Electric_y.value[i*out_Grid_x][j*out_Grid_y][k*out_Grid_z]<<" ";
-					out<<endl;
+						out<<setw(13)<<pointer[i].value[i*out_Grid_x][j*out_Grid_y][k*out_Grid_z]<<" ";
+					out<<setw(13)<<Pressure_obj.value[i*out_Grid_x][j*out_Grid_y][k*out_Grid_z]<<" ";
+					out<<setw(13)<<current_y.value[i*out_Grid_x][j*out_Grid_y][k*out_Grid_z]<<" ";
+					out<<setw(13)<<Electric_y.value[i*out_Grid_x][j*out_Grid_y][k*out_Grid_z]<<" ";
+					out<<setw(13)<<endl;
 				}
 			}
 		}
 	}
-	timeout<<record_step<<" "<<setiosflags(ios::scientific)\
-			<<setprecision(5)<<system_time<<endl;
+	timeout<<setw(6)<<record_step<<setw(6)<<" "<<setiosflags(ios::scientific)\
+			<<setprecision(5)<<setw(15)<<system_time<<endl;
 	out.close();
 //	cout<<"record() is called;"<<endl;
 }

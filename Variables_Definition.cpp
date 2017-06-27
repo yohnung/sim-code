@@ -22,10 +22,13 @@ void BASIC_VARIABLE::record(ofstream &out_obj)       // recrd1
 						for (j=0;j<Grid_Num_y;j++)
 						{
 							for (k=0;k<Grid_Num_z;k++)
-								out_obj<<" "<<value[i][j][k];
+								out_obj<<setw(25)<<value[i][j][k]<<" ";
+							out_obj<<endl;
 						}
+						out_obj<<endl;
 				   }
 				   out_obj<<endl;
+				   
 				   //cout<<"BASIC_VARIABLE::record invoked! But I don't write anything, just to show up!"<<endl;
 				   //Recording the value
 			   }

@@ -15,32 +15,35 @@ extern double X[], Y[], Z[], X_interval[], Y_interval[], Z_interval[];
 // Recording variables' value
 void BASIC_VARIABLE::record(ofstream &out_obj)       // recrd1
 			   {
-				   int out_Grid_x, out_Grid_y, out_Grid_z;
 				   int i,j,k;
-				   out_Grid_x=(Grid_Num_x-1)/num_out;
-				   out_Grid_y=(Grid_Num_y-1)/num_out;
-				   out_Grid_z=(Grid_Num_z-1)/num_out;
-				   out_obj<<setiosflags(ios::scientific)<<setprecision(15);
-				   for (i=0;i<=num_out;i++)
-				   {
-					   if (out_Grid_y==0)
-					   {
-						   for (k=0;k<=num_out;k++)
-							   out_obj<<" "<<value[i*out_Grid_x][0][k*out_Grid_z];
-						   out_obj<<endl;
-					   }
-					   else
-					   {
-						   for (j=0;j<=num_out;j++)
-						   {
-							   for (k=0;k<=num_out;k++)
-								   out_obj<<" "<<value[i*out_Grid_x][j*out_Grid_y][k*out_Grid_z];
-							   out_obj<<endl;
-						   }
-					   }
+				   out_obj<<setiosflags(ios::scientific)<<setprecision(16);
+				   for (i=0;i<Grid_Num_x;i++)
+				   {					  
+						for (j=0;j<Grid_Num_y;j++)
+						{
+							for (k=0;k<Grid_Num_z;k++)
+								out_obj<<" "<<value[i][j][k];
+						}
 				   }
+				   out_obj<<endl;
 				   //cout<<"BASIC_VARIABLE::record invoked! But I don't write anything, just to show up!"<<endl;
 				   //Recording the value
+			   }
+
+// filling data from files
+void BASIC_VARIABLE::fill(ifstream &in_obj)       // filling data
+			   {
+				   int i,j,k;
+				   for (i=0;i<Grid_Num_x;i++)
+				   {					  
+						for (j=0;j<Grid_Num_y;j++)
+						{
+							for (k=0;k<Grid_Num_z;k++)
+								in_obj>>value[i][j][k];
+						}
+				   }
+				   //cout<<"BASIC_VARIABLE::fill invoked! But I don't write anything, just to show up!"<<endl;
+				   //filling data
 			   }
 
 // Setting variables' boundary at 0(Start-point) or Grid_Num_?-1-T(End-point)

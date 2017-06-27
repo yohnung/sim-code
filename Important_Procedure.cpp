@@ -298,6 +298,67 @@ void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 	//cout<<"Initialize invoked! But I really don't know the setup written by Teacher Ma! Waiting to be changed to a symmetric Harris Current Sheet!"<<endl;
 }
 
+void write_out(VARIABLE *pointer, int nstop, double time)
+{
+	int i,j,k, n;
+	ofstream timeout("temp_step_to_time.dat");
+	ofstream var_out[8];
+	ofstream sub_var_out("temp_sub_var.dat");                  // This and the following two is very important for calculating 
+	ofstream var_x_out("temp_var_x_out");
+	ofstream var_x_plushalfdx_out("temp_var_x_plushalfdx.dat");
+	open_var_files(var_out);
+	timeout<<nstop<<" ";
+	timeout<<setiosflags(ios::scientific)<<setprecision(16);
+	timeout<<time<<endl;
+	sub_var_out<<setiosflags(ios::scientific)<<setprecision(16);
+	var_x_out<<setiosflags(ios::scientific)<<setprecision(16);
+	var_x_plushalfdx_out<<setiosflags(ios::scientific)<<setprecision(16);
+	for (n=0;n<8;n++)
+	{
+		pointer[n].record(var_out[n]);
+		for (i=0;i<Grid_Num_x;i++)
+		{
+			var_x_out<<var_x[n][i]<<" ";
+			var_x_plushalfdx_out<<var_x_plushalfdx[n][i]<<" ";
+			for (j=0;j<Grid_Num_y;j++)
+			{
+				for (k=0;k<Grid_Num_z;k++)
+					sub_var_out<<sub_var[n][i][j][k]<<" ";
+			}
+		}
+	}
+	timeout.close();
+	close_var_files(var_out);
+}
+
+void read_in(VARIABLE *pointer, int &nstart, double &time)
+{
+	int i,j,k, n;
+	ifstream timeout("temp_step_to_time.dat");
+	ifstream var_in[8];
+	ifstream sub_var_in("temp_sub_var.dat");                  // This and the following two is very important for calculating 
+	ifstream var_x_in("temp_var_x_out");
+	ifstream var_x_plushalfdx_in("temp_var_x_plushalfdx.dat");
+	open_var_files(var_in);
+	timeout>>nstart>>time;
+	for (n=0; n<8; n++)
+	{
+		pointer[n].fill(var_in[n]);
+		for (i=0;i<Grid_Num_x;i++)
+		{
+			var_x_in>>var_x[n][i];
+			var_x_plushalfdx_in>>var_x_plushalfdx[n][i];
+			for (j=0;j<Grid_Num_y;j++)
+			{
+				for (k=0;k<Grid_Num_z;k++)
+					sub_var_in>>sub_var[n][i][j][k];
+			}
+		}			
+	}
+	timeout.close();
+	close_var_files(var_in);
+}
+
 void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 {
 	double Bx_ym, Bx_zm, By_zm, By_xm, Bz_xm, Bz_ym;
@@ -967,4 +1028,70 @@ void smooth(VARIABLE *pointer, double time)      // how many times do smooth
 				}
 // deleting dynamic memory space
 	delete []tempvar;
+}
+
+void record(ofstream &timeout, int run_num, int record_step, double system_time, VARIABLE *pointer, \
+	BASIC_VARIABLE &Pressure_obj, VARIABLE &current_y, BASIC_VARIABLE &Electric_y)
+{
+	ofstream out;
+	char str[12]="time000.dat";
+	int out_Grid_x, out_Grid_y, out_Grid_z;
+	int i,j,k, n;
+
+	out_Grid_x=(Grid_Num_x-1)/num_out;
+	out_Grid_y=(Grid_Num_y-1)/num_out;
+	out_Grid_z=(Grid_Num_z-1)/num_out;
+
+	num2str(str+4, run_num);
+
+	out.open(str);
+	out<<setiosflags(ios::scientific)<<setprecision(5);
+	out<<"title = \"Hall Magnetic Reconnection\""<<endl;
+	out<<"variables = \"x\"";
+	if (out_Grid_y != 0)
+		out<<", \"y\"";
+	out<<", \"z\"";
+	out<<", \"rho\", \"rhoVx\", \"rhoVy\", \"rhoVz\"";
+	out<<", \"Bx\", \"By\", \"Bz\"";
+	out<<", \"Pressure\", \"Jy\", \"Ey\""<<endl;
+	out<<"zone t = \" "<<system_time<<" \""<<endl;
+	out<<"i = "<<num_out+1;
+	if (out_Grid_y != 0)
+		out<<" , j = "<<num_out+1;
+	out<<" , k = "<<num_out+1<<endl;
+
+	for (i=0;i<=num_out;i++)
+	{
+		if (out_Grid_y==0)
+		{
+			for (k=0;k<=num_out;k++)
+			{
+				out<<X[i*out_Grid_x]<<" "<<Z[k*out_Grid_z]<<" ";
+				for (n=0; n<7; n++)
+					out<<pointer[i].value[i*out_Grid_x][0][k*out_Grid_z]<<" ";
+				out<<current_y.value[i*out_Grid_x][0][k*out_Grid_z]<<" ";
+				out<<Electric_y.value[i*out_Grid_x][0][k*out_Grid_z]<<" ";
+				out<<endl;
+			}
+		}
+		else
+		{
+			for (j=0;j<=num_out;j++)
+			{
+				for (k=0;k<=num_out;k++)
+				{
+					out<<X[i*out_Grid_x]<<" "<<Y[j*out_Grid_y]<<" "<<Z[k*out_Grid_z]<<" ";
+					for (n=0; n<7; n++)
+						out<<pointer[i].value[i*out_Grid_x][j*out_Grid_y][k*out_Grid_z]<<" ";
+					out<<current_y.value[i*out_Grid_x][j*out_Grid_y][k*out_Grid_z]<<" ";
+					out<<Electric_y.value[i*out_Grid_x][j*out_Grid_y][k*out_Grid_z]<<" ";
+					out<<endl;
+				}
+			}
+		}
+	}
+	timeout<<record_step<<" "<<setiosflags(ios::scientific)\
+			<<setprecision(5)<<system_time<<endl;
+	out.close();
+//	cout<<"record() is called;"<<endl;
 }

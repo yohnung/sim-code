@@ -174,6 +174,36 @@ void exclude_soucrce_half_update(VARIABLE *update_var, BASIC_VARIABLE flux[][3],
 }
 
 // Update variables from source term
+void open_var_files(ofstream *var_out)
+{
+	var_out[0].open("rho.dat");
+	var_out[1].open("rhoVx.dat");var_out[2].open("rhoVy.dat");var_out[3].open("rhoVz.dat"); 
+	var_out[4].open("Bx.dat");   var_out[5].open("By.dat");   var_out[6].open("Bz.dat");
+	var_out[7].open("Eng.dat");
+}
+
+void close_var_files(ofstream *var_out)
+{
+	int i;
+	for(i=0;i<8;i++)
+		var_out[i].close();
+}
+
+void open_var_files(ifstream *var_in)
+{
+	var_in[0].open("rho.dat");
+	var_in[1].open("rhoVx.dat");var_in[2].open("rhoVy.dat");var_in[3].open("rhoVz.dat"); 
+	var_in[4].open("Bx.dat");   var_in[5].open("By.dat");   var_in[6].open("Bz.dat");
+	var_in[7].open("Eng.dat");
+}
+
+void close_var_files(ifstream *var_in)
+{
+	int i;
+	for(i=0;i<8;i++)
+		var_in[i].close();
+}
+
 void source_update(VARIABLE *update_var, double time_interv)
 {
 	//cout<<"Source_Update invoked! But there is no source term!"<<endl;
@@ -189,4 +219,20 @@ void copy(VARIABLE *update_var, VARIABLE *mother_var)
 					update_var[n].value[i][j][k]=mother_var[n].value[i][j][k];
 
 	//cout<<"Copy invoked!"<<endl;
+}
+
+void num2str( char *str, int n )
+{
+	int hundred_num, deci_num, digi_num;
+	
+	hundred_num=n/100;
+	deci_num=(n-100*hundred_num)/10;
+	digi_num=n-100*hundred_num-10*deci_num;
+	hundred_num+=48;
+	deci_num+=48;
+	digi_num+=48;
+	
+	str[0] = char(hundred_num);
+	str[1] = char(deci_num);
+	str[2] = char(digi_num);
 }

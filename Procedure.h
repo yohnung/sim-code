@@ -10,6 +10,10 @@ void initialize(VARIABLE *, BASIC_VARIABLE &);
 // initialize the problem as a harris-current-shet probelm
 void harris_current_initia(VARIABLE *, BASIC_VARIABLE &);
 
+// write to files
+void write_out(VARIABLE *, int, double);
+// read from files
+void read_in(VARIABLE *, int &, double&);
 // Extracting electric field from flux
 void ext_from_var(BASIC_VARIABLE *, BASIC_VARIABLE *, VARIABLE *, BASIC_VARIABLE &);
 
@@ -39,12 +43,24 @@ void step_on(VARIABLE *, VARIABLE *, BASIC_VARIABLE &, BASIC_VARIABLE &, double 
 
 void smooth(VARIABLE *, double);
 
-
+void record(ofstream &, int, int, double, VARIABLE *, \
+	BASIC_VARIABLE &, VARIABLE &, BASIC_VARIABLE &);
 
 // General_Procedure.h
+// open and close writting files
+void open_var_files(ofstream *);
+
+void close_var_files(ofstream *);
+
+// open and close reading files
+void open_var_files(ifstream *);
+
+void close_var_files(ifstream *);
 
 // Update variables using 2-order Lax-Wendroff method
 void exclude_soucrce_half_update(VARIABLE *, BASIC_VARIABLE [][3], double, Order);
 
 // Update variables from source term
 void source_update(VARIABLE *, double);
+
+void num2str(char *, int);

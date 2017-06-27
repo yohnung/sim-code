@@ -6,6 +6,7 @@ class BASIC_VARIABLE
 public:
 	double value[Grid_Num_x][Grid_Num_y][Grid_Num_z];
 	void record(ofstream &);
+	void fill(ifstream &);
 };
 
 class VARIABLE: public BASIC_VARIABLE

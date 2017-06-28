@@ -300,6 +300,30 @@ void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 	//cout<<"Initialize invoked! But I really don't know the setup written by Teacher Ma! Waiting to be changed to a symmetric Harris Current Sheet!"<<endl;
 }
 
+void shear_flow_harris_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
+{
+	double v, x;
+	double max_v, ls, x0;
+	int i,j,k;
+	max_v = max_shear_velocity;
+	ls = shear_length;
+	x0 = shear_location;
+
+	harris_current_initia(pointer, pressure_obj);
+
+	for (i=0; i<Grid_Num_x; i++)
+	{
+		x=X[i];
+		for (j=0; j<Grid_Num_y; j++)
+			for(k=0; k<Grid_Num_z; k++)
+			{
+				v = pointer[3].value[i][j][k];
+				v += max_v*exp(-pow( (x - x0) / ls, 2))+max_v*exp( - pow( ( x+x0 )/ls, 2) );
+				pointer[3].value[i][j][k]=v;
+			}
+	}
+}
+
 void write_out(VARIABLE *pointer, int nstop, double time)
 {
 	int i,j,k, n;

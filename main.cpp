@@ -36,7 +36,8 @@ int main()
 	if (continue_from_files==False)
 	{
 		//initialize(var, p);	                           // Initializing variables and pressure 
-		harris_current_initia(var,p);
+//		harris_current_initia(var,p);
+		shear_flow_harris_initia(var,p);
 	}
 	else
 		read_in(var, nstart, system_time);

@@ -10,6 +10,9 @@ void initialize(VARIABLE *, BASIC_VARIABLE &);
 // initialize the problem as a harris-current-shet probelm
 void harris_current_initia(VARIABLE *, BASIC_VARIABLE &);
 
+// initialize harris current sheet with a shear flow
+void shear_flow_harris_initia(VARIABLE *, BASIC_VARIABLE &);
+
 // write to files
 void write_out(VARIABLE *, int, double);
 // read from files

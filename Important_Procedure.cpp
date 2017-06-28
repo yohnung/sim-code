@@ -1066,8 +1066,9 @@ void record(ofstream &timeout, int run_num, int record_step, double system_time,
 	out<<", \"rho\", \"rhoVx\", \"rhoVy\", \"rhoVz\"";
 	out<<", \"Bx\", \"By\", \"Bz\"";
 	out<<", \"Pressure\", \"Jy\", \"Ey\""<<endl;
-	out<<"zone t = \" "<<system_time<<" \""<<endl;
-	out<<"i = "<<num_out+1;
+	out<<"zone t = \" nstep ="<<record_step<<" \""<<endl;
+	out<<" strandid = 1, "<<"solutiontime = "<<system_time<<endl;
+	out<<" i = "<<num_out+1;
 	if (out_Grid_y != 0)
 		out<<" , j = "<<num_out+1;
 	out<<" , k = "<<num_out+1<<endl;
@@ -1078,7 +1079,7 @@ void record(ofstream &timeout, int run_num, int record_step, double system_time,
 		{
 			for (k=0;k<=num_out;k++)
 			{
-				out<<setw(13)<<X[i*out_Grid_x]<<" "<<setw(13)<<Z[k*out_Grid_z]<<" ";
+				out<<setw(15)<<X[i*out_Grid_x]<<" "<<setw(13)<<Z[k*out_Grid_z]<<" ";
 				for (n=0; n<7; n++)
 					out<<setw(13)<<pointer[n].value[i*out_Grid_x][0][k*out_Grid_z]<<" ";
 				out<<setw(13)<<Pressure_obj.value[i*out_Grid_x][0][k*out_Grid_z]<<" ";
@@ -1093,7 +1094,7 @@ void record(ofstream &timeout, int run_num, int record_step, double system_time,
 			{
 				for (k=0;k<=num_out;k++)
 				{
-					out<<setw(13)<<X[i*out_Grid_x]<<" "\
+					out<<setw(15)<<X[i*out_Grid_x]<<" "\
 						<<setw(13)<<Y[j*out_Grid_y]<<" "<<setw(13)<<Z[k*out_Grid_z]<<" ";
 					for (n=0; n<7; n++)
 						out<<setw(13)<<pointer[i].value[i*out_Grid_x][j*out_Grid_y][k*out_Grid_z]<<" ";

@@ -302,26 +302,89 @@ void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 
 void shear_flow_harris_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 {
-	double v, x;
+	double rhoinfinity, Bal_coeff, norm_lambda;
+	double x,y,z, dx,dy,dz;
+	double rho, Bx, By, Bz, rhoVx, rhoVy, rhoVz;
+	double B_Energy, V_Energy, pressure;
 	double max_v, ls, x0;
-	int i,j,k;
+
+// Following used are global variables listed in "Physics_Parameter.h"
+	rhoinfinity=rho_infinity;
+	Bal_coeff=Balance_coefficient;
+	norm_lambda=normalized_lambda;
+
+// shear concerned, listed in "Physics_Parameter.h"
 	max_v = max_shear_velocity;
 	ls = shear_length;
 	x0 = shear_location;
 
-	harris_current_initia(pointer, pressure_obj);
-
-	for (i=0; i<Grid_Num_x; i++)
+	int i,j,k,n;
+	for (i=0;i<Grid_Num_x;i++)
 	{
-		x=X[i];
-		for (j=0; j<Grid_Num_y; j++)
-			for(k=0; k<Grid_Num_z; k++)
+		for (j=0;j<Grid_Num_y;j++)
+			for (k=0;k<Grid_Num_z;k++)
 			{
-				v = pointer[3].value[i][j][k];
-				v += max_v*exp(-pow( (x - x0) / ls, 2))+max_v*exp( - pow( ( x+x0 )/ls, 2) );
-				pointer[3].value[i][j][k]=v;
+				x=X[i]; dx=X_interval[i];
+				y=Y[j]; dy=Y_interval[j];
+				z=Z[k]; dz=Z_interval[k];
+				rho=pow(1./cosh(x/norm_lambda),2)+rhoinfinity;
+				Bz=tanh(x/norm_lambda);
+				By=0;
+				Bx=0;
+				pointer[0].value[i][j][k]=rho;
+				pointer[4].value[i][j][k]=Bx;
+				pointer[5].value[i][j][k]=By;
+				pointer[6].value[i][j][k]=Bz;				
+				rhoVx=0.;
+				rhoVy=0;       // rho*Bal_coeff*2./norm_lambda should be present in PIC simulation, not in fluid  
+							   // when fluid equation does not take collision into consideration
+				rhoVz=rho*(0+max_v*exp(-pow((x-x0)/ls,2))+max_v*exp(-pow((x+x0)/ls,2)));        // initia shear flow
+				pointer[1].value[i][j][k]=rhoVx;
+				pointer[2].value[i][j][k]=rhoVy;
+				pointer[3].value[i][j][k]=rhoVz;				
+				B_Energy=0.5*(pow(Bx,2)+pow(By,2)+pow(Bz,2));
+				V_Energy=0.5*(pow(rhoVx,2)+pow(rhoVy,2)+pow(rhoVz,2))/rho;
+				pressure=Bal_coeff*rho;
+				pointer[7].value[i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma-1);
+				pressure_obj.value[i][j][k]=pressure;
+				/*plus half dx: start*/
+				rho=pow(1./cosh((x+dx/2.)/norm_lambda),2)+rhoinfinity;
+				Bz=tanh((x+dx/2.)/norm_lambda);
+				By=0;
+				Bx=0;
+				sub_var[0][i][j][k]=rho;
+				sub_var[4][i][j][k]=Bx;
+				sub_var[5][i][j][k]=By;
+				sub_var[6][i][j][k]=Bz;				
+				rhoVx=0.;
+				rhoVy=0;       // rho*Bal_coeff*2./norm_lambda should be present in PIC simulation, not in fluid  
+							   // when fluid equation does not take collision into consideration
+				rhoVz=rho*(0+max_v*exp(-pow((x+dx/2.-x0)/ls,2))+max_v*exp(-pow((x+dx/2.+x0)/ls,2)));
+				sub_var[1][i][j][k]=rhoVx;
+				sub_var[2][i][j][k]=rhoVy;
+				sub_var[3][i][j][k]=rhoVz;				
+				B_Energy=0.5*(pow(Bx,2)+pow(By,2)+pow(Bz,2));
+				V_Energy=0.5*(pow(rhoVx,2)+pow(rhoVy,2)+pow(rhoVz,2))/rho;
+				pressure=Bal_coeff*rho;
+				sub_var[7][i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma-1);
+				/*plus half dx: end*/
 			}
 	}
+	
+	for (n=0;n<8;n++)
+		for (i=0;i<Grid_Num_x;i++)
+		{
+			var_x[n][i]=pointer[n].value[i][0][0];
+			var_x_plushalfdx[n][i]=sub_var[n][i][0][0];
+		}
+
+	for (n=0;n<8;n++)
+		for (i=0;i<Grid_Num_x;i++)
+			for (j=0;j<Grid_Num_y;j++)
+				for (k=0;k<Grid_Num_z;k++)
+					sub_var[n][i][j][k]=pointer[n].value[i][j][k]-var_x[n][i];
+	
+	//cout<<"shear_flow_harris_initia invoked!"<<endl;
 }
 
 void write_out(VARIABLE *pointer, int nstop, double time)
@@ -656,7 +719,7 @@ void set_eta(BASIC_VARIABLE &eta_obj, VARIABLE *pointer, VARIABLE *current, doub
 	//cout<<"Set_eta invoked! But for now eta is simply setted to 0.1! And I'm sorry to inform you that you should change it!"<<endl;
 }
 
-void cal_pressure(BASIC_VARIABLE &pressure_obj, VARIABLE *pointer, Type T)
+Logic cal_pressure(BASIC_VARIABLE &pressure_obj, VARIABLE *pointer, Type T)
 {	
 	double rho,rhoVx, rhoVy, rhoVz, Bx, By, Bz, Eng, pressure;
 	double B_Energy, V_Energy;
@@ -704,6 +767,10 @@ void cal_pressure(BASIC_VARIABLE &pressure_obj, VARIABLE *pointer, Type T)
 					pressure_obj.value[i][j][k]=positive_value;
 			}
 	}
+	if (times==0)
+		return True;
+	else
+		return False;
 	//cout<<"Pressure is calculated from various kinds of energy, and doesn't explicitly step on according to equation!"<<endl;
 }
 

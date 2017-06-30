@@ -27,7 +27,7 @@ void add_fluc(VARIABLE *);
 void cal_current(VARIABLE *, VARIABLE *, Type=Complete); 
 
 // Calculate pressure
-void cal_pressure(BASIC_VARIABLE &, VARIABLE *, Type=Complete);
+Logic cal_pressure(BASIC_VARIABLE &, VARIABLE *, Type=Complete);
 
 // Setting eta
 void set_eta(BASIC_VARIABLE &, VARIABLE *, VARIABLE *, double, Type=Complete, Type=Uniform);

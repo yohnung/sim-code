@@ -31,7 +31,7 @@ double  X_interval[Grid_Num_x],Y_interval[Grid_Num_y],Z_interval[Grid_Num_z];   
 int main()
 {
 	int run_num=0, record_step;
-
+	Logic P_positive;
 	set_mesh();
 	if (continue_from_files==False)
 	{
@@ -47,7 +47,11 @@ int main()
 	{	 
 		cal_current(current, var);                          // Calculating current from Magnetic Field.
 		set_eta(eta, var, current, system_time);            // Setting space dependent conductivity. (Can make it depend on current)
-		cal_pressure(p, var);                               // Calculating pressure from various kinds of energy.	
+		P_positive=cal_pressure(p, var);                               // Calculating pressure from various kinds of energy.
+
+		if (P_positive==False)
+			return 0;
+
 		ext_from_var(Elec_field, var, current, eta);         // 重新些一个从var计算Elec的函数                 // extractig electric field from flux
 		
 		if(system_time==0)
@@ -76,4 +80,6 @@ int main()
 		}
 	}
 	/* time step on variables:end */
+
+	return 1;
 }

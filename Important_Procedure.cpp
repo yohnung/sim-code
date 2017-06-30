@@ -433,13 +433,13 @@ void write_out(VARIABLE *pointer, int nstop, double time)
 void read_in(VARIABLE *pointer, int &nstart, double &time)
 {
 	int i,j,k, n;
-	ifstream timeout("temp_step_to_time.dat");
+	ifstream timein("temp_step_to_time.dat");
 	ifstream var_in[8];
 	ifstream sub_var_in("temp_sub_var.dat");                  // This and the following two is very important for calculating 
 	ifstream var_x_in("temp_var_x_out.dat");
 	ifstream var_x_plushalfdx_in("temp_var_x_plushalfdx.dat");
 	open_var_files(var_in);
-	timeout>>nstart>>time;
+	timein>>nstart>>time;
 	for (n=0; n<8; n++)
 	{
 		pointer[n].fill(var_in[n]);
@@ -454,8 +454,11 @@ void read_in(VARIABLE *pointer, int &nstart, double &time)
 			}
 		}			
 	}
-	timeout.close();
+	timein.close();
 	close_var_files(var_in);
+	sub_var_in.close();
+	var_x_in.close();
+	var_x_plushalfdx_in.close();
 }
 
 void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)

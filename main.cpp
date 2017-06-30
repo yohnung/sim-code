@@ -52,7 +52,7 @@ int main()
 		if (P_positive==False)
 			return 0;
 
-		ext_from_var(Elec_field, var, current, eta);         // 重新些一个从var计算Elec的函数                 // extractig electric field from flux
+		ext_from_var(Elec_field, var, current, eta);         // calculating Electric field from variables
 		
 		if(system_time==0)
 		{

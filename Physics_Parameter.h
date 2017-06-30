@@ -19,9 +19,9 @@ const double rho_infinity=0.2;
 const double Balance_coefficient=.5;
 const double normalized_lambda=0.5;
 // shear flow
-const double max_shear_velocity = 2.5E-02;
+const double max_shear_velocity = 0;
 const double shear_length = 1.;
-const double shear_location = 5.;
+const double shear_location = 0.;
 /* Physical Parameter: end */
 
 /* fluctuation parameter: start */

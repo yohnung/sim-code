@@ -14,9 +14,9 @@ void harris_current_initia(VARIABLE *, BASIC_VARIABLE &);
 void shear_flow_harris_initia(VARIABLE *, BASIC_VARIABLE &);
 
 // write to files
-void write_out(VARIABLE *, int, double);
+void write_out(VARIABLE *, int, double, double);
 // read from files
-void read_in(VARIABLE *, int &, double&);
+void read_in(VARIABLE *, int &, double &, double &);
 // Extracting electric field from flux
 void ext_from_var(BASIC_VARIABLE *, BASIC_VARIABLE *, VARIABLE *, BASIC_VARIABLE &);
 

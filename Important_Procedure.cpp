@@ -387,7 +387,7 @@ void shear_flow_harris_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 	//cout<<"shear_flow_harris_initia invoked!"<<endl;
 }
 
-void write_out(VARIABLE *pointer, int nstop, double time)
+void write_out(VARIABLE *pointer, int nstop, double time, double time_interval)
 {
 	int i,j,k, n;
 	ofstream timeout("temp_step_to_time.dat");
@@ -398,7 +398,7 @@ void write_out(VARIABLE *pointer, int nstop, double time)
 	open_var_files(var_out);
 	timeout<<setw(6)<<nstop<<setw(6)<<" ";
 	timeout<<setiosflags(ios::scientific)<<setprecision(16);
-	timeout<<setw(25)<<time<<endl;
+	timeout<<setw(25)<<time<<setw(25)<<time_interval<<endl;
 	sub_var_out<<setiosflags(ios::scientific)<<setprecision(16);
 	var_x_out<<setiosflags(ios::scientific)<<setprecision(16);
 	var_x_plushalfdx_out<<setiosflags(ios::scientific)<<setprecision(16);
@@ -430,7 +430,7 @@ void write_out(VARIABLE *pointer, int nstop, double time)
 	var_x_plushalfdx_out.close();
 }
 
-void read_in(VARIABLE *pointer, int &nstart, double &time)
+void read_in(VARIABLE *pointer, int &nstart, double &time, double &time_interval)
 {
 	int i,j,k, n;
 	ifstream timein("temp_step_to_time.dat");
@@ -439,7 +439,7 @@ void read_in(VARIABLE *pointer, int &nstart, double &time)
 	ifstream var_x_in("temp_var_x_out.dat");
 	ifstream var_x_plushalfdx_in("temp_var_x_plushalfdx.dat");
 	open_var_files(var_in);
-	timein>>nstart>>time;
+	timein>>nstart>>time>>time_interval;
 	for (n=0; n<8; n++)
 	{
 		pointer[n].fill(var_in[n]);

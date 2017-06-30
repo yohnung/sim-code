@@ -22,7 +22,7 @@ double  X_interval[Grid_Num_x],Y_interval[Grid_Num_y],Z_interval[Grid_Num_z];   
 	VARIABLE var[8];                               // Define main variables, and var_int for variable_intermediate
 	VARIABLE current[3]; // vorticity[3];          // Define more varibles.
 	BASIC_VARIABLE flux[8][3];
-	ofstream timeout("step_to_time.dat");
+	ofstream timeout;
 	double system_time=0;
 	double dt=0.1;                                     // Define time.
 	int nstep=0;
@@ -38,9 +38,16 @@ int main()
 		//initialize(var, p);	                           // Initializing variables and pressure 
 //		harris_current_initia(var,p);
 		shear_flow_harris_initia(var,p);
+		timeout.open("step_to_time.dat");
 	}
 	else
-		read_in(var, nstart, system_time);
+	{
+		read_in(var, nstart, system_time, dt);
+		nstep=nstart;
+		run_num=int(system_time/average_time_interval)+1+1;   // int()+1 is last run stopping value, int()+1+1 is new starting value
+		record_step=nstart;
+		timeout.open("step_to_time.dat", ios::app);
+	}
 
 	/* time step on variables:start */
 	for (nstep=nstart;nstep<nstart+nend;nstep++)
@@ -50,7 +57,10 @@ int main()
 		P_positive=cal_pressure(p, var);                               // Calculating pressure from various kinds of energy.
 
 		if (P_positive==False)
+		{
+			cout<<"Oops, Pressure becoomes negative!"<<endl;
 			return 0;
+		}
 
 		ext_from_var(Elec_field, var, current, eta);         // calculating Electric field from variables
 		
@@ -76,7 +86,7 @@ int main()
 			record_step=nstep+1;
 			record(timeout, run_num, record_step, system_time, var, p, current[1], Elec_field[1]);
 			run_num+=1;
-			write_out(var, record_step, system_time);
+			write_out(var, record_step, system_time, dt);
 		}
 	}
 	/* time step on variables:end */

@@ -26,7 +26,8 @@ const double shear_location = 0.;
 
 /* fluctuation parameter: start */
 const Position position_fluc=Boundary;
-const double fluctuation=0.1*di;
+const double fluctuation_mag=0.1;     // this will generates an island whose width is 1a (current layer's width)
+const double fluctuation_velocity=0.0;
 const double fluc_kx=Pi/(x_max-x_min);
 const double fluc_kz=2*Pi/(z_max-z_min);
 /* fluctuation parameter: end */

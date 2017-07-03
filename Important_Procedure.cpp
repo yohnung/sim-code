@@ -895,10 +895,12 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 void add_fluc(VARIABLE *var)
 {
 	double norm_lambda;
-	double x, z, kx, kz, fluc;
+	double x, z, kx, kz, fluc_B, fluc_V;
 	double Bx, Bz, Eng, fluc_Bx, fluc_Bz;
+	double rho, rhoVx, rhoVz, fluc_rhoVx, fluc_rhoVz;
 	int i, j, k;
-	fluc=fluctuation;
+	fluc_B=fluctuation_mag;
+	fluc_V=fluctuation_velocity;
 	kx=fluc_kx; kz=fluc_kz;
 	norm_lambda=normalized_lambda;
 	// add fluctuation at z=up and down boundary according to <Hurricane, PoP, 1995>, \delta\psi=fluctuation*cos(k_z*z) 
@@ -910,28 +912,52 @@ void add_fluc(VARIABLE *var)
 				z=Z[k];
 				// at i=0
 				Bx=var[4].value[0][j][k]; Eng=var[7].value[0][j][k];
-				fluc_Bx=-kz*fluc*sin(kz*z);
+				fluc_Bx=-kz*fluc_B*sin(kz*z);
 				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
+
+				rho=var[0].value[0][j][k]; rhoVx=var[1].value[0][j][k];
+				fluc_rhoVx=rho*(-kz*fluc_V*sin(kz*z));
+				Eng=Eng+1./2*(2*rhoVx*fluc_rhoVx+fluc_rhoVx*fluc_rhoVx)/rho;
+
+				rhoVx=rhoVx+fluc_rhoVx; var[1].value[0][j][k]=rhoVx;				
 				Bx=Bx+fluc_Bx;
-				var[4].value[0][j][k]=Bx; //var[7].value[0][j][k]=Eng;
+				var[4].value[0][j][k]=Bx; var[7].value[0][j][k]=Eng;
 				// at i=1
 				Bx=var[4].value[1][j][k]; Eng=var[7].value[1][j][k];
-				fluc_Bx=-kz*fluc*sin(kz*z);
+				fluc_Bx=-kz*fluc_B*sin(kz*z);
 				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
+
+				rho=var[0].value[1][j][k]; rhoVx=var[1].value[1][j][k];
+				fluc_rhoVx=rho*(-kz*fluc_V*sin(kz*z));
+				Eng=Eng+1./2*(2*rhoVx*fluc_rhoVx+fluc_rhoVx*fluc_rhoVx)/rho;
+
+				rhoVx=rhoVx+fluc_rhoVx; var[1].value[1][j][k]=rhoVx;
 				Bx=Bx+fluc_Bx;
-				var[4].value[1][j][k]=Bx; //var[7].value[1][j][k]=Eng;
+				var[4].value[1][j][k]=Bx; var[7].value[1][j][k]=Eng;
 				// at i=Grid_Num_x-2
 				Bx=var[4].value[Grid_Num_x-2][j][k]; Eng=var[7].value[Grid_Num_x-2][j][k];
-				fluc_Bx=-kz*fluc*sin(kz*z);
+				fluc_Bx=-kz*fluc_B*sin(kz*z);
 				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
+
+				rho=var[0].value[Grid_Num_x-2][j][k]; rhoVx=var[1].value[Grid_Num_x-2][j][k];
+				fluc_rhoVx=rho*(-kz*fluc_V*sin(kz*z));
+				Eng=Eng+1./2*(2*rhoVx*fluc_rhoVx+fluc_rhoVx*fluc_rhoVx)/rho;
+
+				rhoVx=rhoVx+fluc_rhoVx; var[1].value[Grid_Num_x-2][j][k]=rhoVx;
 				Bx=Bx+fluc_Bx;
-				var[4].value[Grid_Num_x-2][j][k]=Bx; //var[7].value[Grid_Num_x-2][j][k]=Eng;
+				var[4].value[Grid_Num_x-2][j][k]=Bx; var[7].value[Grid_Num_x-2][j][k]=Eng;
 				// at i=Grid_Num_x-1
 				Bx=var[4].value[Grid_Num_x-1][j][k]; Eng=var[7].value[Grid_Num_x-1][j][k];
-				fluc_Bx=-kz*fluc*sin(kz*z);
+				fluc_Bx=-kz*fluc_B*sin(kz*z);
 				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
+				
+				rho=var[0].value[Grid_Num_x-1][j][k]; rhoVx=var[1].value[Grid_Num_x-1][j][k];
+				fluc_rhoVx=rho*(-kz*fluc_V*sin(kz*z));
+				Eng=Eng+1./2*(2*rhoVx*fluc_rhoVx+fluc_rhoVx*fluc_rhoVx)/rho;
+
+				rhoVx=rhoVx+fluc_rhoVx; var[1].value[Grid_Num_x-1][j][k]=rhoVx;
 				Bx=Bx+fluc_Bx;
-				var[4].value[Grid_Num_x-1][j][k]=Bx; //var[7].value[Grid_Num_x-1][j][k]=Eng;
+				var[4].value[Grid_Num_x-1][j][k]=Bx; var[7].value[Grid_Num_x-1][j][k]=Eng;
 			    // Does it need to add an fluctuation on sub_var[[][][]?????
 			}
 	}
@@ -946,7 +972,7 @@ void add_fluc(VARIABLE *var)
 					//if (abs(x)<norm_lambda)
 					{
 						Bx=var[4].value[i][j][k]; Bz=var[6].value[i][j][k]; Eng=var[7].value[i][j][k];
-						fluc_Bx=-kz*fluc*cos(kx*x)*sin(kz*z); fluc_Bz=kx*fluc*sin(kx*x)*cos(kz*z);
+						fluc_Bx=-kz*fluc_B*cos(kx*x)*sin(kz*z); fluc_Bz=kx*fluc_B*sin(kx*x)*cos(kz*z);
 						Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx)+1./2*(2*Bz*fluc_Bz+fluc_Bz*fluc_Bz);
 						Bx=Bx+fluc_Bx; Bz=Bz+fluc_Bz;
 						var[4].value[i][j][k]=Bx; var[6].value[i][j][k]=Bz; //var[7].value[i][j][k]=Eng;

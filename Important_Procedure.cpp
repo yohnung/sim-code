@@ -562,13 +562,27 @@ void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 		}
 		else
 		{
-			for (n=0;n<3;n++)
-				for (i=0;i<Grid_Num_x;i++)
-					for (j=0;j<Grid_Num_y;j++)
-					{
-						current[n].value[i][j][0]=current[n].value[i][j][1];
-						current[n].value[i][j][Grid_Num_z-1]=current[n].value[i][j][Grid_Num_z-2];
-					}
+			if(period_z == True)
+			{
+				for (n=0;n<3;n++)
+					for (i=0;i<Grid_Num_x;i++)
+						for (j=0;j<Grid_Num_y;j++)
+						{
+							current[n].value[i][j][0]=current[n].value[i][j][Grid_Num_z-2];
+							current[n].value[i][j][Grid_Num_z-1]=current[n].value[i][j][1];
+						}
+			}
+			else
+			{
+				for (n=0;n<3;n++)
+					for (i=0;i<Grid_Num_x;i++)
+						for (j=0;j<Grid_Num_y;j++)
+						{
+							current[n].value[i][j][0]=current[n].value[i][j][1];
+							current[n].value[i][j][Grid_Num_z-1]=current[n].value[i][j][Grid_Num_z-2];
+						}
+			}
+			
 		}
 	}
 
@@ -638,13 +652,26 @@ void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 		}
 		else
 		{
-			for (n=0;n<3;n++)
-				for (i=0;i<Grid_Num_x-T;i++)
-					for (j=0;j<Grid_Num_y-T;j++)
-					{
-						current[n].value[i][j][0]=current[n].value[i][j][1];
-						current[n].value[i][j][Grid_Num_z-1-T]=current[n].value[i][j][Grid_Num_z-2-T];
-					}
+			if(period_z == True)
+			{
+				for (n=0;n<3;n++)
+					for (i=0;i<Grid_Num_x-T;i++)
+						for (j=0;j<Grid_Num_y-T;j++)
+						{
+							current[n].value[i][j][0]=current[n].value[i][j][Grid_Num_z-2-T];
+							current[n].value[i][j][Grid_Num_z-1-T]=current[n].value[i][j][1];
+						}
+			}
+			else
+			{
+				for (n=0;n<3;n++)
+					for (i=0;i<Grid_Num_x-T;i++)
+						for (j=0;j<Grid_Num_y-T;j++)
+						{
+							current[n].value[i][j][0]=current[n].value[i][j][1];
+							current[n].value[i][j][Grid_Num_z-1-T]=current[n].value[i][j][Grid_Num_z-2-T];
+						}
+			}
 		}
 	}					
 	//cout<<"Current is calculated form Curl B! It's simple, I know!!!"<<endl;	

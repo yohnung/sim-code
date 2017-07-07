@@ -56,38 +56,28 @@ void VARIABLE::boundary_set(Symmetry_Type sign_x, Symmetry_Type sign_z)
 				// Magnet0sheath and -pause boundary
 				// Inflow boundary ,    equivalent extrapolation!!!!????????
 				if (half_x==True)
-				{
-					if (x_fixed_bndry == False)
-					{
-						for (j=1;j<Grid_Num_y-1;j++)
-							for (k=1;k<Grid_Num_z-1;k++)
-							{
-								value[0][j][k]=value[1][j][k];
-								value[Grid_Num_x-1][j][k]=sign_x*value[Grid_Num_x-3][Grid_Num_y-1-j][k];    // minus axial symmetry
-							}	
-					}
-					else
-					{
-						for (j=1;j<Grid_Num_y-1;j++)
-							for (k=1;k<Grid_Num_z-1;k++)
-								value[Grid_Num_x-1][j][k]=sign_x*value[Grid_Num_x-3][Grid_Num_y-1-j][k];    // minus axial symmetry
-					}
+				{					
+					for (j=1;j<Grid_Num_y-1;j++)
+						for (k=1;k<Grid_Num_z-1;k++)
+						{
+							value[0][j][k]=value[1][j][k];
+							value[Grid_Num_x-1][j][k]=sign_x*value[Grid_Num_x-3][Grid_Num_y-1-j][k];    // minus axial symmetry
+						}					
 				}
 				else
 				{
-					if (x_fixed_bndry == False)
-						for (j=1;j<Grid_Num_y-1;j++)
-							for (k=1;k<Grid_Num_z-1;k++)
-							{
-								value[0][j][k]=value[1][j][k];
-								value[Grid_Num_x-1][j][k]=value[Grid_Num_x-2][j][k];
-							}					
+					for (j=1;j<Grid_Num_y-1;j++)
+						for (k=1;k<Grid_Num_z-1;k++)
+						{
+							value[0][j][k]=value[1][j][k];
+							value[Grid_Num_x-1][j][k]=value[Grid_Num_x-2][j][k];
+						}					
 				}		
 		
 				// outflow boundary,     equiv. extrap.
 				if (period_y==True)
 				{		
-					for(i=x_fixed_bndry;i<Grid_Num_x-(1-half_x)*x_fixed_bndry;i++)
+					for(i=0;i<Grid_Num_x;i++)
 						for(k=1;k<Grid_Num_z-1;k++)
 						{
 							value[i][0][k]=value[i][Grid_Num_y-2][k];
@@ -96,7 +86,7 @@ void VARIABLE::boundary_set(Symmetry_Type sign_x, Symmetry_Type sign_z)
 				}
 				else
 				{
-					for(i=x_fixed_bndry;i<Grid_Num_x-(1-half_x)*x_fixed_bndry;i++)
+					for(i=0;i<Grid_Num_x;i++)
 						for(k=1;k<Grid_Num_z-1;k++)
 						{
 							value[i][0][k]=value[i][1][k];
@@ -106,7 +96,7 @@ void VARIABLE::boundary_set(Symmetry_Type sign_x, Symmetry_Type sign_z)
 
 				if (half_z==True)
 				{
-					for (i=x_fixed_bndry;i<Grid_Num_x-(1-half_x)*x_fixed_bndry;i++)
+					for (i=0;i<Grid_Num_x;i++)
 						for (j=0;j<Grid_Num_y;j++)
 						{
 							value[i][j][0]=value[i][j][1];
@@ -115,12 +105,24 @@ void VARIABLE::boundary_set(Symmetry_Type sign_x, Symmetry_Type sign_z)
 				}
 				else
 				{
-					for (i=x_fixed_bndry;i<Grid_Num_x-(1-half_x)*x_fixed_bndry;i++)
-						for (j=0;j<Grid_Num_y;j++)
-						{
-							value[i][j][0]=value[i][j][1];
-							value[i][j][Grid_Num_z-1]=value[i][j][Grid_Num_z-2];
-						}
+					if (period_z == True)
+					{
+						for (i=0;i<Grid_Num_x;i++)
+							for (j=0;j<Grid_Num_y;j++)
+							{
+								value[i][j][0]=value[i][j][Grid_Num_z-2];
+								value[i][j][Grid_Num_z-1]=value[i][j][1];
+							}
+					}
+					else
+					{
+						for (i=0;i<Grid_Num_x;i++)
+							for (j=0;j<Grid_Num_y;j++)
+							{
+								value[i][j][0]=value[i][j][1];
+								value[i][j][Grid_Num_z-1]=value[i][j][Grid_Num_z-2];
+							}
+					}
 				}   
 				//cout<<"VARIABLE::basic_boundary_set invoked! Have set the boundary for you!  for you!!!"<<endl;
 			}

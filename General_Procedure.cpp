@@ -34,7 +34,7 @@ void exclude_soucrce_half_update(VARIABLE *update_var, BASIC_VARIABLE flux[][3],
 			dt=0.5*time_interv;
 			for (n=0;n<8;n++)
 			{				
-				for (i=x_fixed_bndry;i<Grid_Num_x-1;i++)
+				for (i=0;i<Grid_Num_x-1;i++)
 					for (j=0;j<Grid_Num_y-1;j++)
 						for (k=0;k<Grid_Num_z-1;k++)
 						{

@@ -306,7 +306,7 @@ void shear_flow_harris_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 	double x,y,z, dx,dy,dz;
 	double rho, Bx, By, Bz, rhoVx, rhoVy, rhoVz;
 	double B_Energy, V_Energy, pressure;
-	double max_v, ls, x0;
+	double v_tanh, v_tanh_0, vb, ls, xs;
 
 // Following used are global variables listed in "Physics_Parameter.h"
 	rhoinfinity=rho_infinity;
@@ -314,9 +314,10 @@ void shear_flow_harris_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 	norm_lambda=normalized_lambda;
 
 // shear concerned, listed in "Physics_Parameter.h"
-	max_v = max_shear_velocity;
+	vb = velocity_boundary;
 	ls = shear_length;
-	x0 = shear_location;
+	xs = shear_location;
+	v_tanh_0 = 0.5*vb*tanh(-xs/ls);
 
 	int i,j,k,n;
 	for (i=0;i<Grid_Num_x;i++)
@@ -338,7 +339,11 @@ void shear_flow_harris_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				rhoVx=0.;
 				rhoVy=0;       // rho*Bal_coeff*2./norm_lambda should be present in PIC simulation, not in fluid  
 							   // when fluid equation does not take collision into consideration
-				rhoVz=rho*(0+max_v*exp(-pow((x-x0)/ls,2))+max_v*exp(-pow((x+x0)/ls,2)));        // initia shear flow
+				v_tanh = 0.5*vb*tanh( (abs(x)-xs)/ls );
+				if (x>=0)
+					rhoVz = rho*(v_tanh-v_tanh_0);        // initia shear flow
+				else
+					rhoVz = -rho*(v_tanh-v_tanh_0);
 				pointer[1].value[i][j][k]=rhoVx;
 				pointer[2].value[i][j][k]=rhoVy;
 				pointer[3].value[i][j][k]=rhoVz;				
@@ -359,7 +364,11 @@ void shear_flow_harris_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				rhoVx=0.;
 				rhoVy=0;       // rho*Bal_coeff*2./norm_lambda should be present in PIC simulation, not in fluid  
 							   // when fluid equation does not take collision into consideration
-				rhoVz=rho*(0+max_v*exp(-pow((x+dx/2.-x0)/ls,2))+max_v*exp(-pow((x+dx/2.+x0)/ls,2)));
+				v_tanh = 0.5*vb*tanh( (abs(x+dx/2.)-xs)/ls );
+				if (x>=0)
+					rhoVz = rho*(v_tanh-v_tanh_0);        // initia shear flow
+				else
+					rhoVz = -rho*(v_tanh-v_tanh_0);
 				sub_var[1][i][j][k]=rhoVx;
 				sub_var[2][i][j][k]=rhoVy;
 				sub_var[3][i][j][k]=rhoVz;				

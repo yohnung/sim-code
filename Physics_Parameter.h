@@ -19,15 +19,15 @@ const double rho_infinity=0.2;
 const double Balance_coefficient=.5;
 const double normalized_lambda=0.5;
 // shear flow
-const double max_shear_velocity = 0;
-const double shear_length = 1.;
-const double shear_location = 0.;
+const double velocity_boundary = -3;
+const double shear_length = 2.;
+const double shear_location = 5.;
 /* Physical Parameter: end */
 
 /* fluctuation parameter: start */
 const Position position_fluc=Boundary;
-const double fluctuation_mag=0.1;     // this will generates an island whose width is 1a (current layer's width)
-const double fluctuation_velocity=0.0;
+const double fluctuation_mag= -0.1;     // this will generates an island whose width is 1a (current layer's width)
+const double fluctuation_velocity= 0.1;
 const double fluc_kx=Pi/(x_max-x_min);
 const double fluc_kz=2*Pi/(z_max-z_min);
 /* fluctuation parameter: end */

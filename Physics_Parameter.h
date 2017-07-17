@@ -2,6 +2,7 @@
 // Used in Important_Procedure.cpp
 
 /* Physical Parameter: start */
+const double iso_therm_coeff = 1e-4;   // when gamma-1 is lower than 1e-5, it's isothermal process
 const double phy_gamma=5./3.;      // 5./3.=1.66667 means physics_gamma;
 const double di=1.;                  // a switch of Hall-effect
 const double magnetic_Renolds_Number=1./200;
@@ -27,7 +28,9 @@ const double shear_location = 5.;
 /* fluctuation parameter: start */
 const Position position_fluc=Boundary;
 const double fluctuation_mag= -0.1;     // this will generates an island whose width is 1a (current layer's width)
-const double fluctuation_velocity= 0.1;
-const double fluc_kx=Pi/(x_max-x_min);
-const double fluc_kz=2*Pi/(z_max-z_min);
+const double fluctuation_velocity= -0.1;
+const double fluc_B_kx=Pi/(x_max-x_min);
+const double fluc_B_kz=2*Pi/(z_max-z_min);
+const double fluc_V_kx= Pi / (x_max - x_min);
+const double fluc_V_kz = 2 * Pi / (z_max - z_min);
 /* fluctuation parameter: end */

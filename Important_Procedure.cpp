@@ -1,6 +1,7 @@
 // Important_Procedure.cpp
 // 2017/5/22 : 2D output is added
 // 2017/5/25 : In order to spare stack space, change arguments of function from class type to class referrence type, for example, in 'cal_flux' and 'set_dt' and 'step_on'
+// 2017/7/16 : Add iosthermal process when initial energy with pressure and calculating pressure
 
 #include <iostream>
 #include <fstream>
@@ -11,6 +12,9 @@ using namespace std;
 #include "Physics_Parameter.h"
 #include "Variables_Definition.h"
 #include "Procedure.h"
+#ifndef min
+#define min(a,b) (a<b ? a : b)
+#endif
 
 // Clarification of mesh-grid
 extern double X[], Y[], Z[], X_interval[], Y_interval[], Z_interval[];
@@ -153,7 +157,7 @@ void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				B_Energy=0.5*(pow(Bx,2)+pow(By,2)+pow(Bz,2));
 				V_Energy=0.5*(pow(rhoVx,2)+pow(rhoVy,2)+pow(rhoVz,2))/rho;
 				pressure=pressuremtotal-B_Energy;
-				pointer[7].value[i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma-1);
+				pointer[7].value[i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma - 1);
 				pressure_obj.value[i][j][k]=pressure;
 				/*plus half dx: start*/
 				rho=0.5*(rm+rs);
@@ -174,7 +178,7 @@ void initialize(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				B_Energy=0.5*(pow(Bx,2)+pow(By,2)+pow(Bz,2));
 				V_Energy=0.5*(pow(rhoVx,2)+pow(rhoVy,2)+pow(rhoVz,2))/rho;
 				pressure=pressuremtotal-B_Energy;
-				sub_var[7][i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma-1);
+				sub_var[7][i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma - 1);
 				/*plus half dx: end*/
 			}
 	}
@@ -255,7 +259,10 @@ void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				B_Energy=0.5*(pow(Bx,2)+pow(By,2)+pow(Bz,2));
 				V_Energy=0.5*(pow(rhoVx,2)+pow(rhoVy,2)+pow(rhoVz,2))/rho;
 				pressure=Bal_coeff*rho;
-				pointer[7].value[i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma-1);
+				if (phy_gamma - 1 < iso_therm_coeff)
+					pointer[7].value[i][j][k] = B_Energy + V_Energy;
+				else
+					pointer[7].value[i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma - 1);
 				pressure_obj.value[i][j][k]=pressure;
 				/*plus half dx: start*/
 				rho=pow(1./cosh((x+dx/2.)/norm_lambda),2)+rhoinfinity;
@@ -276,7 +283,10 @@ void harris_current_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				B_Energy=0.5*(pow(Bx,2)+pow(By,2)+pow(Bz,2));
 				V_Energy=0.5*(pow(rhoVx,2)+pow(rhoVy,2)+pow(rhoVz,2))/rho;
 				pressure=Bal_coeff*rho;
-				sub_var[7][i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma-1);
+				if (phy_gamma - 1 < iso_therm_coeff)
+					sub_var[7][i][j][k] = B_Energy + V_Energy;
+				else
+					sub_var[7][i][j][k] = B_Energy + V_Energy + pressure / (phy_gamma - 1);
 				/*plus half dx: end*/
 			}
 	}
@@ -350,7 +360,10 @@ void shear_flow_harris_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				B_Energy=0.5*(pow(Bx,2)+pow(By,2)+pow(Bz,2));
 				V_Energy=0.5*(pow(rhoVx,2)+pow(rhoVy,2)+pow(rhoVz,2))/rho;
 				pressure=Bal_coeff*rho;
-				pointer[7].value[i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma-1);
+				if (phy_gamma - 1 < iso_therm_coeff)
+					pointer[7].value[i][j][k] = B_Energy + V_Energy;
+				else
+					pointer[7].value[i][j][k] = B_Energy + V_Energy + pressure / (phy_gamma - 1);
 				pressure_obj.value[i][j][k]=pressure;
 				/*plus half dx: start*/
 				rho=pow(1./cosh((x+dx/2.)/norm_lambda),2)+rhoinfinity;
@@ -375,7 +388,10 @@ void shear_flow_harris_initia(VARIABLE *pointer, BASIC_VARIABLE &pressure_obj)
 				B_Energy=0.5*(pow(Bx,2)+pow(By,2)+pow(Bz,2));
 				V_Energy=0.5*(pow(rhoVx,2)+pow(rhoVy,2)+pow(rhoVz,2))/rho;
 				pressure=Bal_coeff*rho;
-				sub_var[7][i][j][k]=B_Energy+V_Energy+pressure/(phy_gamma-1);
+				if (phy_gamma - 1 < iso_therm_coeff)
+					sub_var[7][i][j][k] = B_Energy + V_Energy;
+				else
+					sub_var[7][i][j][k] = B_Energy + V_Energy + pressure / (phy_gamma - 1);
 				/*plus half dx: end*/
 			}
 	}
@@ -779,7 +795,10 @@ Logic cal_pressure(BASIC_VARIABLE &pressure_obj, VARIABLE *pointer, Type T)
 				Eng=pointer[7].value[i][j][k];
 				B_Energy=0.5*(pow(Bx,2)+pow(By,2)+pow(Bz,2));
 				V_Energy=0.5*(pow(rhoVx,2)+pow(rhoVy,2)+pow(rhoVz,2))/rho;
-				pressure=(phy_gamma-1)*(Eng-B_Energy-V_Energy);
+				if (phy_gamma - 1 < iso_therm_coeff)               // iso_therm_coeff is a small value
+					pressure = Balance_coefficient * rho; 
+				else
+					pressure = (phy_gamma - 1)*(Eng - B_Energy - V_Energy);
 				pressure_obj.value[i][j][k]=pressure;
 				if(pressure<0.)
 				{
@@ -931,13 +950,14 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 void add_fluc(VARIABLE *var)
 {
 	double norm_lambda;
-	double x, z, kx, kz, fluc_B, fluc_V;
+	double x, z, Bkx, Bkz, fluc_B, Vkx, Vkz, fluc_V;
 	double Bx, Bz, Eng, fluc_Bx, fluc_Bz;
 	double rho, rhoVx, rhoVz, fluc_rhoVx, fluc_rhoVz;
 	int i, j, k;
 	fluc_B=fluctuation_mag;
 	fluc_V=fluctuation_velocity;
-	kx=fluc_kx; kz=fluc_kz;
+	Bkx=fluc_B_kx; Bkz=fluc_B_kz;
+	Vkx = fluc_V_kx; Vkz = fluc_V_kz;
 	norm_lambda=normalized_lambda;
 	// add fluctuation at z=up and down boundary according to <Hurricane, PoP, 1995>, \delta\psi=fluctuation*cos(k_z*z) 
 	if (position_fluc==Boundary)
@@ -948,11 +968,11 @@ void add_fluc(VARIABLE *var)
 				z=Z[k];
 				// at i=0
 				Bx=var[4].value[0][j][k]; Eng=var[7].value[0][j][k];
-				fluc_Bx=-kz*fluc_B*sin(kz*z);
+				fluc_Bx=-Bkz*fluc_B*sin(Bkz*z);
 				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
 
 				rho=var[0].value[0][j][k]; rhoVx=var[1].value[0][j][k];
-				fluc_rhoVx=rho*(-kz*fluc_V*sin(kz*z));
+				fluc_rhoVx=rho*(-Vkz*fluc_V*sin(Vkz*z));
 				Eng=Eng+1./2*(2*rhoVx*fluc_rhoVx+fluc_rhoVx*fluc_rhoVx)/rho;
 
 				rhoVx=rhoVx+fluc_rhoVx; var[1].value[0][j][k]=rhoVx;				
@@ -960,11 +980,11 @@ void add_fluc(VARIABLE *var)
 				var[4].value[0][j][k]=Bx; var[7].value[0][j][k]=Eng;
 				// at i=1
 				Bx=var[4].value[1][j][k]; Eng=var[7].value[1][j][k];
-				fluc_Bx=-kz*fluc_B*sin(kz*z);
+				fluc_Bx=-Bkz*fluc_B*sin(Bkz*z);
 				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
 
 				rho=var[0].value[1][j][k]; rhoVx=var[1].value[1][j][k];
-				fluc_rhoVx=rho*(-kz*fluc_V*sin(kz*z));
+				fluc_rhoVx=rho*(-Vkz*fluc_V*sin(Vkz*z));
 				Eng=Eng+1./2*(2*rhoVx*fluc_rhoVx+fluc_rhoVx*fluc_rhoVx)/rho;
 
 				rhoVx=rhoVx+fluc_rhoVx; var[1].value[1][j][k]=rhoVx;
@@ -972,11 +992,11 @@ void add_fluc(VARIABLE *var)
 				var[4].value[1][j][k]=Bx; var[7].value[1][j][k]=Eng;
 				// at i=Grid_Num_x-2
 				Bx=var[4].value[Grid_Num_x-2][j][k]; Eng=var[7].value[Grid_Num_x-2][j][k];
-				fluc_Bx=-kz*fluc_B*sin(kz*z);
+				fluc_Bx=-Bkz*fluc_B*sin(Bkz*z);
 				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
 
 				rho=var[0].value[Grid_Num_x-2][j][k]; rhoVx=var[1].value[Grid_Num_x-2][j][k];
-				fluc_rhoVx=rho*(-kz*fluc_V*sin(kz*z));
+				fluc_rhoVx=rho*(-Vkz*fluc_V*sin(Vkz*z));
 				Eng=Eng+1./2*(2*rhoVx*fluc_rhoVx+fluc_rhoVx*fluc_rhoVx)/rho;
 
 				rhoVx=rhoVx+fluc_rhoVx; var[1].value[Grid_Num_x-2][j][k]=rhoVx;
@@ -984,11 +1004,11 @@ void add_fluc(VARIABLE *var)
 				var[4].value[Grid_Num_x-2][j][k]=Bx; var[7].value[Grid_Num_x-2][j][k]=Eng;
 				// at i=Grid_Num_x-1
 				Bx=var[4].value[Grid_Num_x-1][j][k]; Eng=var[7].value[Grid_Num_x-1][j][k];
-				fluc_Bx=-kz*fluc_B*sin(kz*z);
+				fluc_Bx=-Bkz*fluc_B*sin(Bkz*z);
 				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
 				
 				rho=var[0].value[Grid_Num_x-1][j][k]; rhoVx=var[1].value[Grid_Num_x-1][j][k];
-				fluc_rhoVx=rho*(-kz*fluc_V*sin(kz*z));
+				fluc_rhoVx=rho*(-Vkz*fluc_V*sin(Vkz*z));
 				Eng=Eng+1./2*(2*rhoVx*fluc_rhoVx+fluc_rhoVx*fluc_rhoVx)/rho;
 
 				rhoVx=rhoVx+fluc_rhoVx; var[1].value[Grid_Num_x-1][j][k]=rhoVx;
@@ -1007,11 +1027,19 @@ void add_fluc(VARIABLE *var)
 					x=X[i]; z=Z[k];
 					//if (abs(x)<norm_lambda)
 					{
-						Bx=var[4].value[i][j][k]; Bz=var[6].value[i][j][k]; Eng=var[7].value[i][j][k];
-						fluc_Bx=-kz*fluc_B*cos(kx*x)*sin(kz*z); fluc_Bz=kx*fluc_B*sin(kx*x)*cos(kz*z);
+						Bx=var[4].value[i][j][k]; Bz=var[6].value[i][j][k]; 
+						rho = var[0].value[i][j][k];
+						rhoVx = var[1].value[i][j][k]; rhoVz = var[3].value[i][j][k];
+						Eng=var[7].value[i][j][k];
+						fluc_Bx=-Bkz*fluc_B*cos(Bkx*x)*sin(Bkz*z); fluc_Bz=Bkx*fluc_B*sin(Bkx*x)*cos(Bkz*z);
 						Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx)+1./2*(2*Bz*fluc_Bz+fluc_Bz*fluc_Bz);
+						fluc_rhoVx = rho*(-Vkz*fluc_V*cos(Vkx*x)*sin(Vkz*z)); fluc_rhoVz = rho*(Vkx*fluc_V*sin(Vkx*x)*cos(Vkz*z));
+						Eng=Eng + 1. / 2 * (2 * rhoVx*fluc_rhoVx + fluc_rhoVx*fluc_rhoVx)/rho + 1. / 2 * (2 * rhoVz*fluc_rhoVz + fluc_rhoVz*fluc_rhoVz)/rho;
 						Bx=Bx+fluc_Bx; Bz=Bz+fluc_Bz;
-						var[4].value[i][j][k]=Bx; var[6].value[i][j][k]=Bz; //var[7].value[i][j][k]=Eng;
+						rhoVx += fluc_rhoVx; rhoVz += fluc_rhoVz;
+						var[4].value[i][j][k]=Bx; var[6].value[i][j][k]=Bz; 
+						var[1].value[i][j][k] = rhoVx; var[3].value[i][j][k] = rhoVz;
+						var[7].value[i][j][k]=Eng;
 					}
 					// Does it need to add an fluctuation on sub_var[[][][]?????
 				}

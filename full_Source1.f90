@@ -229,7 +229,7 @@
       rhos   = 1.0d0
       pp     = 0.
       gaminv = 1./gamma
-      phirad = 2.*pi*phi/360.
+      phirad = 2.*pi*phi/360.                   ! phirad is the angle between B_magnetopause and B_sheath
       delbz  = 0.5*sqrt( bm0**2+bs0**2-2.*bm0*bs0*cos(phirad) )
       by0    = 0.5*bs0*sin(phirad)/delbz
       bz0    = 0.25*(bm0**2 - bs0**2)/delbz
@@ -240,7 +240,7 @@
       bzm    = bz0 + delbz
       bzs    = bz0 - delbz
       ymax   = -yy(1)
-!
+!                                               ! from here, x-z should be reconnection-plane and y is guid field
       signy=1
       if(phi.lt.180) signy=-1
 

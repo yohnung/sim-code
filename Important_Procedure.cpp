@@ -703,14 +703,16 @@ void cal_current(VARIABLE *current, VARIABLE *pointer, Type T)
 }
 
 // Homogeneous eta, waiting to be amended.
-void set_eta(BASIC_VARIABLE &eta_obj, VARIABLE *pointer, VARIABLE *current, double time, Type T, Type TT)   // Type T is for Complete or Incomplete setting; Type TT is for uniform or non-uniform setting
+void set_eta(BASIC_VARIABLE &eta_obj, VARIABLE *pointer, VARIABLE *current, double time, Type T)   // Type T is for Complete or Incomplete setting; Type TT is for uniform or non-uniform setting
 {
-	double etam[Grid_Num_y];                                                 // in l-m-n coordinates-systme m-direction dependent value, in another way eta_y
-	double etax, etaz, etal=0., etab=0.005, alpha0=2.0;	                     // etab for eta_background
-	double ytrig=15., xtrig=0.0, ztrig=0.0;                                  // ytrig for xlen 
+	double etam[Grid_Num_y];													// eta_main direction, in another wrod eta along guid field, that is y-directin
+	double etax, etaz, etal, etab, alpha0=2.0;									// etal for eta_localize; etab for eta_background
+	double ylength=15., xtrig=0.0, ztrig=0.0;									// 'ylength' is 'xlen' in Fortran version, which is length of localized region in y-direction; xtrig and ztrig is localized resistivity region's center
 	double widthx=width_rho, widthz=2*width_rho;
 	double x,y,z, dx,dy,dz;
 	int i,j,k;
+	etab = Lundquist_Number;
+	etal = localized_Resistivity;
 	if(T==Complete)
 	{		
 		for (i=0;i<Grid_Num_x-T;i++)
@@ -723,10 +725,10 @@ void set_eta(BASIC_VARIABLE &eta_obj, VARIABLE *pointer, VARIABLE *current, doub
 			for (j=0;j<Grid_Num_y-T;j++)
 			{
 				y=Y[j];
-				if(abs(y)<=ytrig)                    // ytrig is somewhat length,and it's for ytrig
+				if(abs(y)<=ylength)					// ylength is the length of localized resitivity region along y-directiont
 					etam[j]=1;                      // This is True
 				else
-					etam[j]=1.-pow(tanh(abs(y)-ytrig),2);
+					etam[j]=1.-pow(tanh(abs(y)-ylength),2);
 				for (k=0;k<Grid_Num_z-T;k++)
 				{
 					z=Z[k];
@@ -735,8 +737,6 @@ void set_eta(BASIC_VARIABLE &eta_obj, VARIABLE *pointer, VARIABLE *current, doub
 					else
 						etaz=1.-pow(tanh((abs(z)-ztrig)/widthz),2);
 					eta_obj.value[i][j][k]=etab+etam[j]*etal*etax*etaz;
-					if (TT==Uniform)
-						eta_obj.value[i][j][k]=magnetic_Renolds_Number;
 				}
 			}
 		}
@@ -753,10 +753,10 @@ void set_eta(BASIC_VARIABLE &eta_obj, VARIABLE *pointer, VARIABLE *current, doub
 			for (j=0;j<Grid_Num_y-T;j++)
 			{
 				y=Y[j]; dy=Y_interval[j];    
-				if(abs(y+dy/2.)<=ytrig)                    
+				if(abs(y+dy/2.)<=ylength)                    
 					etam[j]=1;                      // This is True
 				else
-					etam[j]=1.-pow(tanh(abs(y+dy/2.)-ytrig),2);
+					etam[j]=1.-pow(tanh(abs(y+dy/2.)-ylength),2);
 				for (k=0;k<Grid_Num_z-T;k++)
 				{
 					z=Z[k]; dz=Z_interval[k];
@@ -765,8 +765,6 @@ void set_eta(BASIC_VARIABLE &eta_obj, VARIABLE *pointer, VARIABLE *current, doub
 					else
 						etaz=1.-pow(tanh(((z+dz/2.)-ztrig)/widthz),2);     // ????????? bot tanh((abs(zz(jz)+dz/2.)-ztrig)/aw2)?????
 					eta_obj.value[i][j][k]=etab+etam[j]*etal*etax*etaz;
-					if (TT==Uniform)
-						eta_obj.value[i][j][k]=magnetic_Renolds_Number;
 				}
 			}
 		}

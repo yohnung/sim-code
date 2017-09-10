@@ -30,7 +30,7 @@ void cal_current(VARIABLE *, VARIABLE *, Type=Complete);
 Logic cal_pressure(BASIC_VARIABLE &, VARIABLE *, Type=Complete);
 
 // Setting eta
-void set_eta(BASIC_VARIABLE &, VARIABLE *, VARIABLE *, double, Type=Complete, Type=Uniform);
+void set_eta(BASIC_VARIABLE &, VARIABLE *, VARIABLE *, double, Type=Complete);
 
 // accumulate energy form V, B and P
 void accumulate_eng(double [][Grid_Num_y][Grid_Num_z], VARIABLE *, BASIC_VARIABLE &, Type=Complete);

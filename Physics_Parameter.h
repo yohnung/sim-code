@@ -5,7 +5,8 @@
 const double iso_therm_coeff = 1e-4;   // when gamma-1 is lower than 1e-5, it's isothermal process
 const double phy_gamma=5./3.;      // 5./3.=1.66667 means physics_gamma;
 const double di=1.;                  // a switch of Hall-effect
-const double magnetic_Renolds_Number=1./200;
+const double Lundquist_Number=1./200;
+const double localized_Resistivity = 0.005;
 // Magneto-pause parameter, mainly used in 'initialize()'
 const double beta_m=0.01;        // 0.01
 const double rho_m_0=1.;            // 1.

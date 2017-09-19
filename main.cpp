@@ -72,8 +72,9 @@ int main()
 		}
 
 		dt=set_dt(var, eta, current, p, system_time, dt);       // Settiing appropriate time-interval from main variables, conductivity and pressure and so on. This statement change dt only.
-		if (nstep+1==10)
-			add_fluc(var);
+//		if (nstep+1==10)
+//			add_fluc(var,system_time);
+		set_bndry_fluc(var, system_time);
 		step_on(var, current, p, eta, system_time, dt);                // Main procedure to time step on variables from Flux explicitly and from Source implicitly.
 		smooth(var,system_time);                     // ?????????? Havn't understand yet ???????????
 		system_time=system_time+dt;		

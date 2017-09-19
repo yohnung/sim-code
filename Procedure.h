@@ -21,7 +21,10 @@ void read_in(VARIABLE *, int &, double &, double &);
 void ext_from_var(BASIC_VARIABLE *, BASIC_VARIABLE *, VARIABLE *, BASIC_VARIABLE &);
 
 // add fluctuation mainly to B variables, specificly refer to fluc_at_bndry/neutral_line
-void add_fluc(VARIABLE *);
+void add_fluc(VARIABLE *, double);
+
+// set fluctuation boundary value at upper or lower, left or right boundary
+void set_bndry_fluc(VARIABLE *, double);
 
 // Calculate current
 void cal_current(VARIABLE *, VARIABLE *, Type=Complete); 

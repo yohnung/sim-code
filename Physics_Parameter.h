@@ -18,7 +18,7 @@ const double v_0=1.;               // 0.    initialize rhoVy
 const double vyi_0=1.;             // 0.    amend rhoVy in magtopause problem
 // Harris current parameter, mainly used in 'harris_initia()'
 const double rho_infinity=0.2;
-const double Balance_coefficient=.5;
+const double Balance_coefficient=.5;		// can not be altered! Mention!!!
 const double normalized_lambda=0.5;
 // shear flow
 const double velocity_boundary = -3;
@@ -27,9 +27,10 @@ const double shear_location = 5.;
 /* Physical Parameter: end */
 
 /* fluctuation parameter: start */
-const Position position_fluc=Boundary;
-const double fluctuation_mag= -0.1;     // this will generates an island whose width is 1a (current layer's width)
-const double fluctuation_velocity= -0.1;
+const Position position_fluc= Neutral_Line;
+const double velocity_phase = 1.;
+const double fluctuation_mag_psi= 0.1;     // this will generates an island whose width is 1a (current layer's width)
+const double fluctuation_velocity_phi= 0.1;
 const double fluc_B_kx=Pi/(x_max-x_min);
 const double fluc_B_kz=2*Pi/(z_max-z_min);
 const double fluc_V_kx= Pi / (x_max - x_min);

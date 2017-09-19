@@ -945,56 +945,34 @@ double set_dt(VARIABLE *pointer, BASIC_VARIABLE &eta_obj, VARIABLE *current, BAS
 }
 
 // add fluctuation to B variable
-void add_fluc(VARIABLE *var)
+void add_fluc(VARIABLE *var, double time)
 {
 	double norm_lambda;
-	double x, z, Bkx, Bkz, fluc_B, Vkx, Vkz, fluc_V;
+	double x, z;
+	double Bkx, Bkz, fluc_B, Vkx, Vkz, fluc_V, omega;
 	double Bx, Bz, Eng, fluc_Bx, fluc_Bz;
 	double rho, rhoVx, rhoVz, fluc_rhoVx, fluc_rhoVz;
 	int i, j, k;
-	fluc_B=fluctuation_mag;
-	fluc_V=fluctuation_velocity;
+	fluc_B=fluctuation_mag_psi;
+	fluc_V=fluctuation_velocity_phi;
 	Bkx=fluc_B_kx; Bkz=fluc_B_kz;
 	Vkx = fluc_V_kx; Vkz = fluc_V_kz;
+	omega = fluc_B_kz*velocity_phase;
 	norm_lambda=normalized_lambda;
 	// add fluctuation at z=up and down boundary according to <Hurricane, PoP, 1995>, \delta\psi=fluctuation*cos(k_z*z) 
-	if (position_fluc==Boundary)
+	if (position_fluc == x_Boundary || position_fluc == upperBoundary)
 	{
 		for (j=0;j<Grid_Num_y;j++)
 			for (k=0; k<Grid_Num_z; k++)
 			{
 				z=Z[k];
-				// at i=0
-				Bx=var[4].value[0][j][k]; Eng=var[7].value[0][j][k];
-				fluc_Bx=-Bkz*fluc_B*sin(Bkz*z);
-				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
-
-				rho=var[0].value[0][j][k]; rhoVx=var[1].value[0][j][k];
-				fluc_rhoVx=rho*(-Vkz*fluc_V*sin(Vkz*z));
-				Eng=Eng+1./2*(2*rhoVx*fluc_rhoVx+fluc_rhoVx*fluc_rhoVx)/rho;
-
-				rhoVx=rhoVx+fluc_rhoVx; var[1].value[0][j][k]=rhoVx;				
-				Bx=Bx+fluc_Bx;
-				var[4].value[0][j][k]=Bx; var[7].value[0][j][k]=Eng;
-				// at i=1
-				Bx=var[4].value[1][j][k]; Eng=var[7].value[1][j][k];
-				fluc_Bx=-Bkz*fluc_B*sin(Bkz*z);
-				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
-
-				rho=var[0].value[1][j][k]; rhoVx=var[1].value[1][j][k];
-				fluc_rhoVx=rho*(-Vkz*fluc_V*sin(Vkz*z));
-				Eng=Eng+1./2*(2*rhoVx*fluc_rhoVx+fluc_rhoVx*fluc_rhoVx)/rho;
-
-				rhoVx=rhoVx+fluc_rhoVx; var[1].value[1][j][k]=rhoVx;
-				Bx=Bx+fluc_Bx;
-				var[4].value[1][j][k]=Bx; var[7].value[1][j][k]=Eng;
 				// at i=Grid_Num_x-2
 				Bx=var[4].value[Grid_Num_x-2][j][k]; Eng=var[7].value[Grid_Num_x-2][j][k];
-				fluc_Bx=-Bkz*fluc_B*sin(Bkz*z);
+				fluc_Bx = Bkz*fluc_B*sin(Bkz*z - omega*time);
 				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
 
 				rho=var[0].value[Grid_Num_x-2][j][k]; rhoVx=var[1].value[Grid_Num_x-2][j][k];
-				fluc_rhoVx=rho*(-Vkz*fluc_V*sin(Vkz*z));
+				fluc_rhoVx=rho*Vkz*fluc_V*sin(Vkz*z - omega*time);
 				Eng=Eng+1./2*(2*rhoVx*fluc_rhoVx+fluc_rhoVx*fluc_rhoVx)/rho;
 
 				rhoVx=rhoVx+fluc_rhoVx; var[1].value[Grid_Num_x-2][j][k]=rhoVx;
@@ -1002,11 +980,11 @@ void add_fluc(VARIABLE *var)
 				var[4].value[Grid_Num_x-2][j][k]=Bx; var[7].value[Grid_Num_x-2][j][k]=Eng;
 				// at i=Grid_Num_x-1
 				Bx=var[4].value[Grid_Num_x-1][j][k]; Eng=var[7].value[Grid_Num_x-1][j][k];
-				fluc_Bx=-Bkz*fluc_B*sin(Bkz*z);
+				fluc_Bx = Bkz*fluc_B*sin(Bkz*z - omega*time);
 				Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx);
 				
 				rho=var[0].value[Grid_Num_x-1][j][k]; rhoVx=var[1].value[Grid_Num_x-1][j][k];
-				fluc_rhoVx=rho*(-Vkz*fluc_V*sin(Vkz*z));
+				fluc_rhoVx= rho*Vkz*fluc_V*sin(Vkz*z - omega*time);
 				Eng=Eng+1./2*(2*rhoVx*fluc_rhoVx+fluc_rhoVx*fluc_rhoVx)/rho;
 
 				rhoVx=rhoVx+fluc_rhoVx; var[1].value[Grid_Num_x-1][j][k]=rhoVx;
@@ -1015,8 +993,65 @@ void add_fluc(VARIABLE *var)
 			    // Does it need to add an fluctuation on sub_var[[][][]?????
 			}
 	}
+
+	if (position_fluc == x_Boundary || position_fluc == downBoundary)
+	{
+		for (j = 0; j<Grid_Num_y; j++)
+			for (k = 0; k<Grid_Num_z; k++)
+			{
+				z = Z[k];
+				// at i=0
+				Bx = var[4].value[0][j][k]; Eng = var[7].value[0][j][k];
+				fluc_Bx = (-1) * (Bkz*fluc_B*sin(Bkz*z - omega*time));
+				Eng = Eng + 1. / 2 * (2 * Bx*fluc_Bx + fluc_Bx*fluc_Bx);
+
+				rho = var[0].value[0][j][k]; rhoVx = var[1].value[0][j][k];
+				fluc_rhoVx = (-1) * rho*(Vkz*fluc_V*sin(Vkz*z - omega*time));
+				Eng = Eng + 1. / 2 * (2 * rhoVx*fluc_rhoVx + fluc_rhoVx*fluc_rhoVx) / rho;
+
+				rhoVx = rhoVx + fluc_rhoVx; var[1].value[0][j][k] = rhoVx;
+				Bx = Bx + fluc_Bx;
+				var[4].value[0][j][k] = Bx; var[7].value[0][j][k] = Eng;
+				// at i=1
+				Bx = var[4].value[1][j][k]; Eng = var[7].value[1][j][k];
+				fluc_Bx = (-1) * (Bkz*fluc_B*sin(Bkz*z - omega*time));
+				Eng = Eng + 1. / 2 * (2 * Bx*fluc_Bx + fluc_Bx*fluc_Bx);
+
+				rho = var[0].value[1][j][k]; rhoVx = var[1].value[1][j][k];
+				fluc_rhoVx = (-1) * rho*(Vkz*fluc_V*sin(Vkz*z - omega*time));
+				Eng = Eng + 1. / 2 * (2 * rhoVx*fluc_rhoVx + fluc_rhoVx*fluc_rhoVx) / rho;
+
+				rhoVx = rhoVx + fluc_rhoVx; var[1].value[1][j][k] = rhoVx;
+				Bx = Bx + fluc_Bx;
+				var[4].value[1][j][k] = Bx; var[7].value[1][j][k] = Eng;
+				// Does it need to add an fluctuation on sub_var[[][][]?????
+			}
+	}
+
+	// add fluctuation at left or right boundary
+	if (position_fluc == leftBoundary)
+	{
+		for (i = 0; i<Grid_Num_x; i++)
+			for (j=0; j<Grid_Num_y; j++)
+			{
+				x = X[i];
+				// at k=0
+				Bx = var[4].value[i][j][0]; Eng = var[7].value[i][j][0];
+				fluc_Bx = Bkz*fluc_B*tanh(x)*cos(omega*time);
+				Eng = Eng + 1. / 2 * (2 * Bx*fluc_Bx + fluc_Bx*fluc_Bx);
+
+				rho = var[0].value[i][j][0]; rhoVx = var[1].value[i][j][0];
+				fluc_rhoVx = rho*Vkz*fluc_V*tanh(x)*cos(omega*time);
+				Eng = Eng + 1. / 2 * (2 * rhoVx*fluc_rhoVx + fluc_rhoVx*fluc_rhoVx) / rho;
+
+				rhoVx = rhoVx + fluc_rhoVx; var[1].value[i][j][0] = rhoVx;
+				Bx = Bx + fluc_Bx;
+				var[4].value[i][j][0] = Bx; var[7].value[i][j][0] = Eng;
+			}
+	}
+
 	// add fluctuation at neutral-line according to <karimabadi, JGR, 2004>, 
-	else if (position_fluc==Neutral_Line)
+	if (position_fluc == Neutral_Line)
 	{
 		for (i=0; i<Grid_Num_x; i++)
 			for (j=0;j<Grid_Num_y;j++)
@@ -1029,9 +1064,9 @@ void add_fluc(VARIABLE *var)
 						rho = var[0].value[i][j][k];
 						rhoVx = var[1].value[i][j][k]; rhoVz = var[3].value[i][j][k];
 						Eng=var[7].value[i][j][k];
-						fluc_Bx=-Bkz*fluc_B*cos(Bkx*x)*sin(Bkz*z); fluc_Bz=Bkx*fluc_B*sin(Bkx*x)*cos(Bkz*z);
+						fluc_Bx = Bkz*fluc_B*cos(Bkx*x)*sin(Bkz*z); fluc_Bz = -Bkx*fluc_B*sin(Bkx*x)*cos(Bkz*z);
 						Eng=Eng+1./2*(2*Bx*fluc_Bx+fluc_Bx*fluc_Bx)+1./2*(2*Bz*fluc_Bz+fluc_Bz*fluc_Bz);
-						fluc_rhoVx = rho*(-Vkz*fluc_V*cos(Vkx*x)*sin(Vkz*z)); fluc_rhoVz = rho*(Vkx*fluc_V*sin(Vkx*x)*cos(Vkz*z));
+						fluc_rhoVx = rho*(Vkz*fluc_V*cos(Vkx*x)*sin(Vkz*z)); fluc_rhoVz = rho*(-Vkx*fluc_V*sin(Vkx*x)*cos(Vkz*z));
 						Eng=Eng + 1. / 2 * (2 * rhoVx*fluc_rhoVx + fluc_rhoVx*fluc_rhoVx)/rho + 1. / 2 * (2 * rhoVz*fluc_rhoVz + fluc_rhoVz*fluc_rhoVz)/rho;
 						Bx=Bx+fluc_Bx; Bz=Bz+fluc_Bz;
 						rhoVx += fluc_rhoVx; rhoVz += fluc_rhoVz;
@@ -1043,6 +1078,81 @@ void add_fluc(VARIABLE *var)
 				}
 	}
 	
+}
+
+// set fluctuation boundary value
+void set_bndry_fluc(VARIABLE *var, double time)
+{
+	double norm_lambda;
+	double x, z;
+	double Bkz, omega;
+	double time_delay = 10.;
+	double Bx, Bz, Eng, delta_Bx, fluc_psi;				// for consistence of P, change in B must be represented in change of Eng
+	int i, j, k;
+	fluc_psi = fluctuation_mag_psi;
+	Bkz = fluc_B_kz;
+	omega = fluc_B_kz*velocity_phase;
+	// set fluctuated boundary value at z=up or down boundary
+	if (position_fluc == x_Boundary || position_fluc == upperBoundary)
+	{
+		for (j = 0; j<Grid_Num_y; j++)
+			for (k = 0; k<Grid_Num_z; k++)
+			{
+				z = Z[k];
+				// at i=Grid_Num_x-2
+				Bx = var[4].value[Grid_Num_x - 2][j][k]; Eng = var[7].value[Grid_Num_x - 2][j][k];
+				delta_Bx = Bkz*fluc_psi*sin(Bkz*z - omega*time)*(1 - exp(-time / time_delay)) - Bx;
+				Eng = Eng + 1. / 2 * (2 * Bx*delta_Bx + delta_Bx*delta_Bx);
+				var[4].value[Grid_Num_x - 2][j][k] = Bx + delta_Bx; var[7].value[Grid_Num_x - 2][j][k] = Eng;
+				// at i=Grid_Num_x-1
+				Bx = var[4].value[Grid_Num_x - 1][j][k]; Eng = var[7].value[Grid_Num_x - 1][j][k];
+				delta_Bx = Bkz*fluc_psi*sin(Bkz*z - omega*time)*(1 - exp(-time / time_delay)) - Bx;
+				Eng = Eng + 1. / 2 * (2 * Bx*delta_Bx + delta_Bx*delta_Bx);
+				var[4].value[Grid_Num_x - 1][j][k] = Bx + delta_Bx; var[7].value[Grid_Num_x - 1][j][k] = Eng;
+				// Does it need to add an fluctuation on sub_var[[][][]?????
+			}
+	}
+	// set fluctuated boundary value at z=up or down boundary
+	if (position_fluc == x_Boundary || position_fluc == downBoundary)
+	{
+		for (j = 0; j<Grid_Num_y; j++)
+			for (k = 0; k<Grid_Num_z; k++)
+			{
+				z = Z[k];
+				// at i=0
+				Bx = var[4].value[0][j][k]; Eng = var[7].value[0][j][k];
+				delta_Bx = Bkz*fluc_psi*sin(Bkz*z - omega*time)*(1 - exp(-time / time_delay)) - Bx;
+				Eng = Eng + 1. / 2 * (2 * Bx*delta_Bx + delta_Bx*delta_Bx);
+				var[4].value[0][j][k] = Bx + delta_Bx; var[7].value[0][j][k] = Eng;
+				// at i=1
+				Bx = var[4].value[1][j][k]; Eng = var[7].value[1][j][k];
+				delta_Bx = Bkz*fluc_psi*sin(Bkz*z - omega*time)*(1 - exp(-time / time_delay)) - Bx;
+				Eng = Eng + 1. / 2 * (2 * Bx*delta_Bx + delta_Bx*delta_Bx);
+				var[4].value[1][j][k] = Bx + delta_Bx; var[7].value[1][j][k] = Eng;
+				// Does it need to add an fluctuation on sub_var[[][][]?????
+			}
+	}
+	// add fluctuation at left or right boundary
+	if (position_fluc == leftBoundary)
+	{
+		norm_lambda = normalized_lambda;
+		for (i = 0; i<Grid_Num_x; i++)
+			for (j = 0; j<Grid_Num_y; j++)
+			{
+				x = X[i];
+				// at k=0
+				Bx = var[4].value[i][j][0]; Eng = var[7].value[i][j][0];
+				delta_Bx = Bkz*fluc_psi*tanh(x / norm_lambda)*sin(omega*time)*(1 - exp(-time / time_delay));
+				Eng = Eng + 1. / 2 * (2 * Bx*delta_Bx + delta_Bx*delta_Bx);
+				var[4].value[i][j][0] = Bx + delta_Bx; var[7].value[i][j][0] = Eng;
+				// at k=1
+				Bx = var[4].value[i][j][1]; Eng = var[7].value[i][j][1];
+				delta_Bx = Bkz*fluc_psi*tanh(x / norm_lambda)*sin(omega*time)*(1 - exp(-time / time_delay));
+				Eng = Eng + 1. / 2 * (2 * Bx*delta_Bx + delta_Bx*delta_Bx);
+				var[4].value[i][j][1] = Bx + delta_Bx; var[7].value[i][j][1] = Eng;
+			}
+	}
+
 }
 
 // Step on variables

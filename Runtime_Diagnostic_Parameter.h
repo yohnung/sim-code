@@ -5,5 +5,5 @@
 const Logic continue_from_files=False;
 int nstart=0;
 const int nend=20;
-const int n_diag=20;   // Interval for diagnostic
+const int n_diag=20;   // Interval for diagnostic; not used now
 const double average_time_interval=.1;

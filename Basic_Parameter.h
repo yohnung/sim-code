@@ -17,7 +17,12 @@
 #define Positive 1
 #define Negative -1
 // Position value
-#define Boundary 'b'
+#define upperBoundary 'u'
+#define downBoundary 'd'
+#define x_Boundary 'x'
+#define leftBoundary 'l'
+#define rightBoundary 'r'
+#define z_Boundary 'z'
 #define Neutral_Line 'n'
 // variable-type definition
 typedef int Logic;        //Logic=True or False
@@ -36,7 +41,7 @@ typedef char Position;
 const int Grid_Num_x=41; 
 const int Grid_Num_y=7;
 const int Grid_Num_z=41; 
-const int num_out=40;
+const int num_out=20;
 /* Grid Number: end */			    
 
 /* Controlling and Logical Parameter:start */
